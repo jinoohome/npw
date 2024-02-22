@@ -1,0 +1,52 @@
+/* FILEPATH: /d:/develop/r/npw/src/css/gridChoicejs.css */
+
+.tui-grid-layer-editing .tui-grid-cell-content .tui-grid-cell-content-editor
+{
+  margin: 0;
+  padding: 0px;
+}
+
+.tui-grid-cell-content-editor .choices {
+   width: 100%;
+   height: 100%;
+   margin: 0;
+   padding: 0;
+}
+
+.tui-grid-cell-content-editor .choices__inner {
+   height: 100%;
+   background-color: transparent;
+   border: 0;
+   margin: 0;
+   padding: 0;
+}
+.tui-grid-cell-content-editor .choices__list--single{
+   height: 100%;
+   margin: 0;
+   padding: 0;
+}
+
+.tui-grid-cell-content-editor .choices__input {
+   margin: 0;
+   padding: 0 !important;
+   padding-left: 10px !important;
+  
+}
+
+.tui-grid-cell-content-editor .choices__item 
+{
+   margin: 0;
+   padding: 0!important;
+   padding-left: 10px !important;
+}
+
+.tui-grid-cell-content-editor .choices__list--dropdown, .choices__list[aria-expanded] {
+   margin-top: 0px !important;
+   left: -1px!important;
+}
+
+.tui-grid-layer-editing{
+   padding: 0!important;
+}
+
+/* Add your custom styles below this line */
