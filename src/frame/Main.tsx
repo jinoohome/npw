@@ -7,6 +7,7 @@ import Footer from "./Footer";
 import { fetchPost } from "../util/fetch";
 import { useNavigate } from "react-router-dom";
 import { SOL_ZZ_MENU_RES, SOL_ZZ_MENU_API } from "../ts/SOL_ZZ_MENU";
+import loadable from '@loadable/component';
 
 const Main = () => {
    const navigate = useNavigate();
@@ -95,7 +96,10 @@ const Main = () => {
 
    const addComponent = (menuItem: SOL_ZZ_MENU_RES) => {
       const componentName = capitalizeFirstLetter(menuItem.prgmId ?? "");
-      const Component = React.lazy(() => import(`../work/${componentName}`));
+      const Component = loadable(() => import(`../work/${componentName}`), {
+         // fallback: 옵션으로 로딩 중 표시할 컴포넌트를 지정할 수 있습니다.
+         fallback: <div>Loading...</div>,
+       });
       const newComponent = {
          id: `menu${components.length + 1}`,
          name: menuItem.menuName,

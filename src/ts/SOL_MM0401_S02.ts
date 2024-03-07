@@ -22,10 +22,9 @@ export interface SOL_MM0401_S02_RES {
 
 // API 호출 함수 정의
 export const SOL_MM0401_S02_API = async (param: SOL_MM0401_S02_REQ) => {
-  const baseURL = process.env.REACT_APP_API_URL;
 
   try {
-    const result = await fetchPost(`${baseURL}/SOL_MM0401_S02`, param);
+    const result = await fetchPost(`SOL_MM0401_S02`, param);
     return result as SOL_MM0401_S02_RES[]; // 결과를 SOLMM0401S02Res 타입으로 캐스팅
   } catch (error) {
     console.error("SOL_MM0401_S02 Error:", error);

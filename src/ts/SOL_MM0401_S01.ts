@@ -20,12 +20,11 @@ export interface SOL_MM0401_S01_RES {
 
 // API 호출 함수 정의
 export const SOL_MM0401_S01_API = async (param: SOL_MM0401_S01_REQ) => {
-  const baseURL = process.env.REACT_APP_API_URL;
 
   try {
     // JSON 형식의 데이터를 서버로 전송
     const data = JSON.stringify(param);
-    const result = await fetchPost(`${baseURL}/SOL_MM0401_S01`, { data });
+    const result = await fetchPost(`SOL_MM0401_S01`, { data });
     return result as SOL_MM0401_S01_RES[]; 
   } catch (error) {
     console.error("SOL_MM0401_S01 Error:", error);

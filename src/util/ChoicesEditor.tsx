@@ -44,25 +44,32 @@ class CustomSelectEditor {
    }
 
    mounted() {
-    this.choices = new Choices(this.el, {
-      removeItemButton: false,
-      shouldSort: false,
-      itemSelectText: '',
-    });
+      this.choices = new Choices(this.el, {
+         removeItemButton: false,
+         shouldSort: false,
+         itemSelectText: "",
+      });
 
-    this.choices.setChoices(
-      this.listItems.map(item => ({
-        value: item.value,
-        label: item.text,
-      })),
-      'value',
-      'label',
-      false
-    );
+      this.choices.setChoices(
+         this.listItems.map((item) => ({
+            value: item.value,
+            label: item.text,
+         })),
+         "value",
+         "label",
+         false
+      );
 
-    if (this.value) {
-      this.choices.setChoiceByValue(this.value); // 선택된 값을 설정
-    }
+      if (this.value) {
+         this.choices.setChoiceByValue(this.value); // 선택된 값을 설정
+      }
+      this.choices.containerOuter.element.addEventListener(
+         "mousedown",
+         (event) => {
+            event.stopPropagation();
+         },
+         true
+      );
    }
 }
 

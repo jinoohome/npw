@@ -1,17 +1,10 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../comp/Import";
 import { SOL_MM0401_S01_RES, SOL_MM0401_S01_API } from "../ts/SOL_MM0401_S01";
 import { SOL_MM0401_S02_REQ, SOL_MM0401_S02_RES, SOL_MM0401_S02_API } from "../ts/SOL_MM0401_S02";
 import { SOL_ZZ_CODE_REQ, SOL_ZZ_CODE_RES, SOL_ZZ_CODE_API } from "../ts/SOL_ZZ_CODE";
-import "tui-grid/dist/tui-grid.css";
-import "tui-pagination/dist/tui-pagination.css";
-import Grid from "@toast-ui/react-grid";
-import ChoicesEditor from "../util/ChoicesEditor";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
-import { fetchPost } from "../util/fetch";
-import Choices from "choices.js";
-import "choices.js/public/assets/styles/choices.min.css";
-import "../css/inputChoicejs.css";
+import ChoicesEditor from "../util/ChoicesEditor";
 
 interface Props {
    item: any;
@@ -30,152 +23,255 @@ const Mm0401 = ({ item, activeComp }: Props) => {
    const [minors, setMinors] = useState<SOL_MM0401_S02_RES[]>();
    const [zz0001, setZz0001] = useState<SOL_ZZ_CODE_RES[]>([]);
 
+   const [codeDivChoice, setCodeDivChoice] = useState<any>();
+   const [confirmYnChoice, setConfirmYnChoice] = useState<any>();
+
+   const breadcrumbItem = [{ name: "관리자" }, { name: "공통" }, { name: "기준정보등록" }];
+
+   // 첫 페이지 시작시 실행
    useEffect(() => {
-      let selectElement = confirmYnRef.current;
-      if (selectElement) {
-         let newChoices2 = new Choices(selectElement, {
-            removeItemButton: false,
-            shouldSort: false,
-            itemSelectText: "",
-         });
-
-         newChoices2.setChoices([
-            { value: "999", label: "전체" },
-            { value: "Y", label: "사용" },
-            { value: "N", label: "미사용" },
-         ]);
-
-         newChoices2.setChoiceByValue("999");
-      }
-      init();
-
-
-
+      setChoiceUI();
+      setGridData();
    }, []);
 
+   const setChoiceUI = () => {
+      initChoice(codeDivRef, setCodeDivChoice);
+      initChoice(confirmYnRef, setConfirmYnChoice, [
+         { value: "999", label: "전체", selected: true },
+         { value: "Y", label: "사용" },
+         { value: "N", label: "미사용" },
+      ]);
+   };
+
+   const setGridData = async () => {
+      try {
+         let zz0001Data = await SOL_ZZ_CODE({ coCd: "999", majorCode: "zz0001", div: "999" });
+         if (zz0001Data != null) {
+            setZz0001(zz0001Data);
+         }
+         const majorResult = await SOL_MM0401_S01();
+         if (majorResult?.length) {
+            await SOL_MM0401_S02({ majorCode: majorResult[0].majorCode });
+         }
+      } catch (error) {
+         console.error("setGridData Error:", error);
+      }
+   };
+
+   // 탭 클릭시 Grid 리사이즈
    useEffect(() => {
       if (majorGridRef.current) {
-         const gridInstance = majorGridRef.current.getInstance();
+         let gridInstance = majorGridRef.current.getInstance();
          gridInstance.refreshLayout();
       }
       if (minorGridRef.current) {
-         const gridInstance = minorGridRef.current.getInstance();
+         let gridInstance = minorGridRef.current.getInstance();
          gridInstance.refreshLayout();
       }
    }, [activeComp]);
 
-   useEffect(() => {
-      if (minorGridRef.current && minors) {
-         minorGridRef.current.getInstance().resetData(minors);
-      }
-   }, [minors]);
-
+   // Grid 데이터 설정
    useEffect(() => {
       if (majorGridRef.current && majors) {
-         majorGridRef.current.getInstance().resetData(majors);
+         let majorGrid = majorGridRef.current.getInstance();
+         majorGrid.resetData(majors);
+
+         let focusRowKey = majorGrid.getFocusedCell()?.rowKey || 0;
+
+         if (majors.length > 0) {
+            majorGrid.focusAt(focusRowKey, 0, true);
+         }
+      } else if (minorGridRef.current) {
+         minorGridRef.current.getInstance().clear();
       }
    }, [majors]);
 
+   // Grid 데이터 설정
+   useEffect(() => {
+      if (minorGridRef.current && minors) {
+         let minorGrid = minorGridRef.current.getInstance();
+         minorGrid.resetData(minors);
+
+         let focusRowKey = minorGrid.getFocusedCell().rowKey || 0;
+
+         if (minors.length > 0) {
+            minorGrid.focusAt(focusRowKey, 0, true);
+         }
+      }
+   }, [minors]);
+
+   // inputChoicejs 데이터 설정
+   useEffect(() => {
+      updateChoices(codeDivChoice, zz0001, "value", "text");
+   }, [zz0001]);
+
+   // Grid 내부 Choicejs 데이터 설정
    useEffect(() => {
       if (zz0001) {
-         const gridInstance = majorGridRef.current.getInstance();
-         const column = gridInstance.getColumn("codeDiv");
-         column.editor.options.listItems = zz0001;
+         let gridInstance = majorGridRef.current.getInstance();
+         let column = gridInstance.getColumn("codeDiv");
+         let zz0001Data = zz0001.filter((item) => item.value !== "999");
+         column.editor.options.listItems = zz0001Data;
          gridInstance.refreshLayout();
       }
    }, [zz0001]);
 
-   useEffect(() => {
-      let selectElement = codeDivRef.current;
-
-      if (selectElement && zz0001.length > 0) {
-         let newChoices = new Choices(selectElement, {
-            removeItemButton: false,
-            shouldSort: false,
-            itemSelectText: "",
-         });
-
-         newChoices.setChoices([
-            { value: "999", label: "전체" },
-            ...zz0001.map((item) => ({
-               value: item.value,
-               label: item.text,
-            })),
-         ]);
-
-         newChoices.setChoiceByValue("999");
-
-         return () => newChoices.destroy();
-      }
-   }, [zz0001]);
-
-
-
-   //--------------------init---------------------------
-
-   const init = async () => {
-      await SOL_ZZ_CODE();
-      const majorResult = await SOL_MM0401_S01();
-      if (majorResult?.length > 0) {
-         const param = { majorCode: majorResult[0].majorCode };
-         await SOL_MM0401_S02(param);
-      }
-   };
-
    //---------------------- api -----------------------------
 
-   const SOL_MM0401_S01 = async () => {
-      const param = {
-         codeName: codeNameRef.current.value,
-         minorCodeName: minorCodeNameRef.current.value,
-         codeDiv: codeDivRef.current.value ? codeDivRef.current.value : "999",
-         confirmYn: confirmYnRef.current.value ? confirmYnRef.current.value : "999",
-      };
-
-      const result = await SOL_MM0401_S01_API(param);
-      setMajors(result);
-      return result;
-   };
-
-   const SOL_MM0401_S02 = async (param: SOL_MM0401_S02_REQ) => {
-      const result2 = await SOL_MM0401_S02_API(param);
-      setMinors(result2);
-   };
-
-   const SOL_ZZ_CODE = async () => {
-      const param3 = {
-         coCd: "999",
-         majorCode: "zz0001",
-         div: "-999",
-      };
-      const result3 = await SOL_ZZ_CODE_API(param3);
+   const SOL_ZZ_CODE = async (param: SOL_ZZ_CODE_REQ) => {
+      const result3 = await SOL_ZZ_CODE_API(param);
       let formattedResult = Array.isArray(result3)
          ? result3.map(({ code, codeName, ...rest }) => ({
               value: code,
               text: codeName,
+              label: codeName,
               ...rest,
            }))
          : [];
-      setZz0001(formattedResult);
+      return formattedResult;
    };
 
-   //-------------------breadcrumb----------------------
-   const breadcrumb = () => (
-      <div className="flex gap-2 text-sm items-end">
-         <div className="flex items-center space-x-2">
-            <div>관리자</div>
-            <ChevronRightIcon className="w-3 h-3"></ChevronRightIcon>
-         </div>
-         <div className="flex items-center space-x-2">
-            <div>공통</div>
-            <ChevronRightIcon className="w-3 h-3"></ChevronRightIcon>
-         </div>
-         <div className="flex items-center">
-            <div className="text-rose-500">기준정보등록</div>
-         </div>
-      </div>
-   );
-   //-------------------button--------------------------
+   const SOL_MM0401_S01 = async () => {
+      const param = {
+         codeName: codeNameRef.current?.value,
+         minorCodeName: minorCodeNameRef.current?.value,
+         codeDiv: codeDivRef.current?.value || "999",
+         confirmYn: confirmYnRef.current?.value || "999",
+      };
+
+      const data = JSON.stringify(param);
+      const result = await fetchPost(`SOL_MM0401_S01`, { data });
+      setMajors(result);
+      return result;
+   };
+
+   const SOL_MM0401_S02 = async (param: { majorCode: string }) => {
+      const result2 = await fetchPost(`SOL_MM0401_S02`, param);
+      setMinors(result2);
+   };
+
+   const SOL_MM0401_U03 = async () => {
+      try {
+         const data = await getGridValues();
+         const result = await fetchPost(`SOL_MM0401_U03`, data);
+         return result as any;
+      } catch (error) {
+         console.error("SOL_MM0401_U03 Error:", error);
+         throw error;
+      }
+   };
+
+   //-------------------event--------------------------
+
+   const search = () => {
+      setGridData();
+   };
+
+   const save = async () => {
+      let result = await SOL_MM0401_U03();
+      if (result) {
+         returnResult();
+      }
+   };
+   const returnResult = () => {
+      alertSwal("저장완료", "저장이 완료되었습니다.", "success");
+      setGridData();
+   };
+
+   // 모든 grid Data 내용을 가져옴
+   const getGridValues = async () => {
+      let majorData = await getGridDatas(majorGridRef);
+      let minorData = await getGridDatas(minorGridRef);
+
+      let data = {
+         major: JSON.stringify(majorData),
+         minor: JSON.stringify(minorData),
+         menuId: "",
+         insrtUserId: "jay8707",
+      };
+
+      return data;
+   };
+
+   //grid 추가버튼
+   const addMajorGridRow = () => {
+      let majorGrid = majorGridRef.current.getInstance();
+      let minorGrid = minorGridRef.current.getInstance();
+
+      majorGrid.appendRow({}, { focus: true });
+      let { rowKey } = majorGridRef.current.getInstance().getFocusedCell();
+      majorGrid.setValue(rowKey, "useYn", "Y", false);
+      majorGrid.setValue(rowKey, "status", "I", false);
+
+      minorGrid.clear();
+   };
+
+   //grid 삭제버튼
+   const delMajorGridRow = () => {
+      let majorGrid = majorGridRef.current.getInstance();
+      let minorGrid = minorGridRef.current.getInstance();
+      let minorCnt = minorGrid.getRowCount();
+
+      let flag = true;
+      if (minorCnt > 0) {
+         flag = false;
+         let title = "minor코드 미삭제";
+         let msg = "minor코드 삭제 후 major코드 삭제해 주세요";
+         alertSwal(title, msg, "warning");
+      } else {
+         let { rowKey } = majorGrid.getFocusedCell();
+         majorGrid.removeRow(rowKey, {});
+      }
+   };
+
+   //grid 추가버튼
+   const addMinorGridRow = () => {
+      let majorGrid = majorGridRef.current.getInstance();
+      let minorGrid = minorGridRef.current.getInstance();
+      let flag = true;
+      minorGrid.appendRow({}, { focus: true });
+
+      let inMajorCode = majorGrid.getValue(majorGrid.getFocusedCell().rowKey, "majorCode");
+
+      if (!inMajorCode) {
+         minorGrid.removeRow(minorGrid.getFocusedCell().rowKey);
+         flag = false;
+         let title = "major코드 미등록";
+         let msg = "major코드 먼저 저장 후에 추가해 주세요";
+         alertSwal(title, msg, "warning");
+      }
+
+      minorGrid.setValue(minorGrid.getFocusedCell().rowKey, "majorCode", inMajorCode, false);
+      minorGrid.setValue(minorGrid.getFocusedCell().rowKey, "status", "I", false);
+      minorGrid.setValue(minorGrid.getFocusedCell().rowKey, "useYn", "Y", false);
+      minorGrid.setValue(minorGrid.getFocusedCell().rowKey, "lev", "0", false);
+   };
+
+   //grid 삭제버튼
+   const delMinorGridRow = () => {
+      let minorGrid = minorGridRef.current.getInstance();
+      let { rowKey } = minorGrid.getFocusedCell();
+      minorGrid.removeRow(rowKey, {});
+   };
+
+   //grid 포커스변경시
+   const handleMajorFocusChange = async ({ rowKey }: any) => {
+      let majorGrid = majorGridRef.current.getInstance();
+      let majorRow = majorGrid.getRow(rowKey);
+      let majorCode = majorRow.majorCode;
+      if (majorCode) {
+         await SOL_MM0401_S02({ majorCode: majorCode });
+      }
+   };
+
+   //검색 창 클릭 또는 엔터시 조회
+   const handleCallSearch = () => {
+      setGridData();
+   };
+
+   //-------------------div--------------------------
+
+   //상단 버튼 div
    const buttonDiv = () => (
       <div className="flex justify-end space-x-2">
          <button type="button" onClick={search} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
@@ -189,151 +285,24 @@ const Mm0401 = ({ item, activeComp }: Props) => {
       </div>
    );
 
-   const search = () => {
-      init();
-   };
-
-   const save = async () => {
-      const data = getGridValues();
-      try {
-         const baseURL = process.env.REACT_APP_API_URL;
-         const result = await fetchPost(`${baseURL}/SOL_MM0401_U03`, data);
-         return result as any;
-      } catch (error) {
-         console.error("SOL_MM0401_U03 Error:", error);
-         throw error;
-      }
-   };
-
-   const getGridValues = () => {
-      let majorRows = majorGridRef.current.getInstance().getModifiedRows();
-      let minorRows = minorGridRef.current.getInstance().getModifiedRows();
-
-      let majorData = majorRows.createdRows
-         .map((e: any) => ({ ...e, status: "I" }))
-         .concat(majorRows.deletedRows.map((e: any) => ({ ...e, status: "D" })))
-         .concat(majorRows.updatedRows.map((e: any) => ({ ...e, status: "U" })));
-
-      let minorData = minorRows.createdRows
-         .map((e: any) => ({ ...e, status: "I" }))
-         .concat(minorRows.deletedRows.map((e: any) => ({ ...e, status: "D" })))
-         .concat(minorRows.updatedRows.map((e: any) => ({ ...e, status: "U" })));
-
-      let data = {
-         major: JSON.stringify(majorData),
-         minor: JSON.stringify(minorData),
-         menuId: "",
-         insrtUserId: "jay8707",
-      };
-
-      return data;
-   };
-
-   const addMajorGridRow = () => {
-      let majorGrid = majorGridRef.current.getInstance();
-      let minorGrid = minorGridRef.current.getInstance();
-
-      majorGrid.appendRow({}, { focus: true });
-      let { rowKey } = majorGridRef.current.getInstance().getFocusedCell();
-      majorGrid.setValue(rowKey, "useYn", "Y", false);
-      majorGrid.setValue(rowKey, "status", "I", false);
-
-      //minor코드 초기화
-      minorGrid.clear();
-   };
-   const delMajorGridRow = () => {
-      let majorGrid = majorGridRef.current.getInstance();
-      let minorGrid = minorGridRef.current.getInstance();
-      let minorCnt = minorGrid.getRowCount();
-
-      let flag = true;
-      if (minorCnt > 0) {
-         flag = false;
-         let msg = "minor코드 삭제 후 major코드 삭제해 주세요";
-      } else {
-         let { rowKey } = majorGrid.getFocusedCell();
-         majorGrid.removeRow(rowKey, {});
-      }
-   };
-
-
-  
-   //-------------------search--------------------------
+   //검색창 div
    const searchDiv = () => (
-      <div className="bg-gray-100 rounded-lg p-5 search">
+      <div className="bg-gray-100 rounded-lg p-5 search text-sm">
          <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
-            <div className="grid  grid-cols-3 gap-3 items-center">
-               <label className="col-span-1 text-right text-sm">그룹코드명</label>
-               <div className="col-span-2">
-                  <input
-                     ref={codeNameRef}
-                     type="text"
-                     className=" border rounded-md h-8 p-2
-                           focus:outline-orange-300"
-                  ></input>
-               </div>
-            </div>
-            <div className="grid  grid-cols-3 gap-3 items-center">
-               <label className="col-span-1 text-right text-sm">코드구분</label>
-               <div className="col-span-2">
-                  <select
-                     ref={codeDivRef}
-                     className="border rounded-md h-8 p-2
-                           focus:outline-orange-300"
-                  ></select>
-               </div>
-            </div>
-            <div className="grid  grid-cols-3 gap-3 items-center">
-               <label className="col-span-1 text-right text-sm">사용유무</label>
-               <div className="col-span-2">
-                  <select
-                     ref={confirmYnRef}
-                     className="border rounded-md h-8 p-2
-                           focus:outline-orange-300"
-                  ></select>
-               </div>
-            </div>
-            <div className="grid  grid-cols-3 gap-3 items-center">
-               <label className="col-span-1 text-right text-sm">코드명</label>
-               <div className="col-span-2">
-                  <input
-                     ref={minorCodeNameRef}
-                     type="text"
-                     className="border rounded-md h-8 p-2
-                              focus:outline-orange-300"
-                  ></input>
-               </div>
-            </div>
+            <InputComp1 ref={codeNameRef} handleCallSearch={handleCallSearch} title="그룹코드명"></InputComp1>
+            <SelectComp1 ref={codeDivRef} title="코드구분" handleCallSearch={handleCallSearch}></SelectComp1>
+            <SelectComp1 ref={confirmYnRef} title="사용유무" handleCallSearch={handleCallSearch}></SelectComp1>
+            <InputComp1 ref={minorCodeNameRef} handleCallSearch={handleCallSearch} title="코드명"></InputComp1>
          </div>
       </div>
    );
+
    //-------------------grid----------------------------
 
    const majorColumns = [
-      {
-         header: "major 코드",
-         name: "majorCode",
-         align: "center",
-         width: 100,
-      },
-      {
-         header: "그룹코드명",
-         name: "codeName",
-         align: "left",
-         editor: "text",
-      },
-      {
-         header: "코드 구분",
-         name: "codeDiv",
-         align: "center",
-         formatter: "listItemText",
-         editor: {
-            type: ChoicesEditor,
-            options: {
-               listItems: zz0001,
-            },
-         },
-      },
+      { header: "major 코드", name: "majorCode", align: "center", width: 100 },
+      { header: "그룹코드명", name: "codeName", align: "left", editor: "text" },
+      { header: "코드 구분", name: "codeDiv", align: "center", formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: zz0001 } } },
       {
          header: "사용여부",
          name: "useYn",
@@ -349,61 +318,19 @@ const Mm0401 = ({ item, activeComp }: Props) => {
             },
          },
       },
-      {
-         header: "상태",
-         name: "status",
-         hidden: true,
-      },
-      {
-         header: "",
-         name: "updtDt",
-         hidden: true,
-      },
+      { header: "상태", name: "status", hidden: true },
+      { header: "", name: "updtDt", hidden: true },
    ];
 
    const minorColumns = [
-      {
-         header: "minor코드",
-         name: "code",
-         align: "center",
-      },
-      {
-         header: "코드명",
-         name: "codeName",
-         editor: "text",
-      },
-      {
-         header: "상위 코드",
-         name: "paCode",
-         editor: "text",
-      },
-      {
-         header: "Lev",
-         name: "lev",
-         align: "center",
-         editor: "text",
-      },
-      {
-         header: "비고1",
-         name: "remark1",
-         editor: "text",
-      },
-      {
-         header: "비고2",
-         name: "remark2",
-         editor: "text",
-      },
-      {
-         header: "비고3",
-         name: "remark3",
-         editor: "text",
-      },
-      {
-         header: "정렬",
-         name: "sort",
-         align: "center",
-         editor: "text",
-      },
+      { header: "minor코드", name: "code", align: "center" },
+      { header: "코드명", name: "codeName", editor: "text" },
+      { header: "상위 코드", name: "paCode", editor: "text" },
+      { header: "Lev", name: "lev", align: "center", editor: "text" },
+      { header: "비고1", name: "remark1", editor: "text" },
+      { header: "비고2", name: "remark2", editor: "text" },
+      { header: "비고3", name: "remark3", editor: "text" },
+      { header: "정렬", name: "sort", align: "center", editor: "text" },
       {
          header: "사용여부",
          name: "useYn",
@@ -419,16 +346,8 @@ const Mm0401 = ({ item, activeComp }: Props) => {
             },
          },
       },
-      {
-         header: "major코드",
-         name: "majorCode",
-         hidden: true,
-      },
-      {
-         header: "상태",
-         name: "status",
-         hidden: true,
-      },
+      { header: "major코드", name: "majorCode", hidden: true },
+      { header: "상태", name: "status", hidden: true },
    ];
 
    const majorGrid = () => (
@@ -452,20 +371,7 @@ const Mm0401 = ({ item, activeComp }: Props) => {
             </div>
          </div>
 
-         <Grid
-            key={item.id}
-            ref={majorGridRef}
-            data={majors?.map((major) => ({
-               ...major,
-            }))}
-            columns={majorColumns as OptColumn[]}
-            bodyHeight={window.innerHeight - 450}
-            columnOptions={{ resizable: true }}
-            editingEvent={"click"}
-            heightResizable={true}
-            rowHeaders={["rowNum"]}
-            oneTimeBindingProps={["data", "columns"]}
-         ></Grid>
+         <TuiGrid01 columns={majorColumns} handleFocusChange={handleMajorFocusChange} gridRef={majorGridRef} />
       </div>
    );
 
@@ -479,44 +385,32 @@ const Mm0401 = ({ item, activeComp }: Props) => {
                <div className="">MINOR 코드</div>
             </div>
             <div className="flex space-x-1">
-               <button type="button" className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+               <button type="button" onClick={addMinorGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
                   <PlusIcon className="w-5 h-5" />
                   추가
                </button>
-               <button type="button" className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+               <button type="button" onClick={delMinorGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
                   <MinusIcon className="w-5 h-5" />
                   삭제
                </button>
             </div>
          </div>
-         <Grid
-            key={item.id}
-            ref={minorGridRef}
-            data={minors?.map((minor) => ({
-               ...minor,
-            }))}
-            columns={minorColumns as OptColumn[]}
-            bodyHeight={window.innerHeight - 450}
-            columnOptions={{ resizable: true }}
-            editingEvent={"click"}
-            heightResizable={true}
-            rowHeaders={["rowNum"]}
-            oneTimeBindingProps={["data", "columns"]}
-         ></Grid>
+
+         <TuiGrid01 columns={minorColumns} gridRef={minorGridRef} />
       </div>
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto ${activeComp.id}`}>
+      <div className={`space-y-5 overflow-y-auto `}>
          <div className="space-y-2">
             <div className="flex justify-between">
-               {breadcrumb()}
+               <Breadcrumb items={breadcrumbItem} />
                {buttonDiv()}
             </div>
             <div>{searchDiv()}</div>
          </div>
          <div className="w-full h-full flex space-x-5">
-            <div className="w-1/2 ">{majorGrid()} </div>
+            <div className="w-1/2 ">{majorGrid()}</div>
             <div className="w-1/2 ">{minorGrid()} </div>
          </div>
       </div>
