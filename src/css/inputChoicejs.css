@@ -1,80 +1,127 @@
-
-
-
-
-
-
-
-.search .choices, .input .choices {
+.topMenu .choices,
+.search .choices,
+.input .choices {
    width: 100%;
    height: 100%;
    margin: 0;
    padding: 0;
+   
 }
 
-.search .choices__inner, .input .choices__inner {
+.topMenu .choices__inner,
+.search .choices__inner,
+.input .choices__inner {
    height: 100%;
    background-color: white;
    border: 0;
    margin: 0;
-   padding: 0!important;
-   min-height: 35px!important;
+   padding: 0 !important;
+   min-height: 35px !important;
    border: 1px solid #e5e7eb;
    border-radius: 6px;
-
 }
 
-.search .choices__list--dropdown,.search .choices__list[aria-expanded], 
-.input .choices__list--dropdown,.input .choices__list[aria-expanded]{
+.topMenu .choices__list--dropdown,
+.topMenu .choices__list[aria-expanded],
+.search .choices__list--dropdown,
+.search .choices__list[aria-expanded],
+.input .choices__list--dropdown,
+.input .choices__list[aria-expanded] {
    margin-top: 0px !important;
    left: 0px;
-   z-index: 20;
+
 }
+
+.topMenu .choices__item--selectable,
 .search .choices__item--selectable,
-.input .choices__item--selectable{
+.input .choices__item--selectable {
    padding-right: 5px; /* 원하는 값으로 조정하세요. */
 }
 
-.search .choices__list, .input .choices__list {
-   padding: 6px!important;
+.topMenu .choices__list,
+.search .choices__list,
+.input .choices__list {
+   padding: 6px !important;
 }
-.search .choices[data-type*=select-one] .choices__input,
-.input .choices[data-type*=select-one] .choices__input
-{
+
+.topMenu .choices[data-type*="select-one"] .choices__input,
+.search .choices[data-type*="select-one"] .choices__input,
+.input .choices[data-type*="select-one"] .choices__input {
    background-color: transparent;
    border-color: black;
    color: black;
-
 }
 
+.topMenu .choices__list::-webkit-scrollbar,
 .search .choices__list::-webkit-scrollbar,
 .input .choices__list::-webkit-scrollbar {
-   width: 8px;  /* 스크롤바의 너비 */
+   width: 8px; /* 스크롤바의 너비 */
 }
 
-.search .choices__list::-webkit-scrollbar-thumb, 
-.input .choices__list::-webkit-scrollbar-thumb 
-{
+.topMenu .choices__list::-webkit-scrollbar-thumb,
+.search .choices__list::-webkit-scrollbar-thumb,
+.input .choices__list::-webkit-scrollbar-thumb {
    height: 30%; /* 스크롤바의 길이 */
-   background:#e4dfdf; /* 스크롤바의 색상 */
+   background: #e4dfdf; /* 스크롤바의 색상 */
    border-radius: 10px;
 }
 
+.topMenu .choices__list::-webkit-scrollbar-thumb:hover,
 .search .choices__list::-webkit-scrollbar-thumb:hover,
-.input .choices__list::-webkit-scrollbar-thumb:hover
- {
+.input .choices__list::-webkit-scrollbar-thumb:hover {
    background: #e4c194; /* 스크롤바 핸들 호버 색상 */
    border-radius: 5px; /* 호버 시 핸들의 둥근 모서리 */
    cursor: pointer;
 }
 
-.search .choices__list::-webkit-scrollbar-track, 
-.input .choices__list::-webkit-scrollbar-track 
-{
-   background:  transparent;  /*스크롤바 뒷 배경 색상*/
+.topMenu .choices__list::-webkit-scrollbar-track,
+.search .choices__list::-webkit-scrollbar-track,
+.input .choices__list::-webkit-scrollbar-track {
+   background: transparent; /*스크롤바 뒷 배경 색상*/
 }
 
-.search .choices__list--dropdown .choices__item--selectable,.search .choices__list[aria-expanded] .choices__item--selectable ,
-.input .choices__list--dropdown .choices__item--selectable,.input .choices__list[aria-expanded] .choices__item--selectable {
+.topMenu .choices__list--dropdown .choices__item--selectable,
+.search .choices__list--dropdown .choices__item--selectable,
+.search .choices__list[aria-expanded] .choices__item--selectable,
+.input .choices__list--dropdown .choices__item--selectable,
+.input .choices__list[aria-expanded] .choices__item--selectable {
    padding-right: 5px;
+   
+}
+
+.topMenu .choices__inner{
+   background-color: transparent;
+   border: 0px;
+
+}
+.topMenu .choices[data-type*=select-one]::after {
+   display: none;
+}
+
+.topMenu .choices__list--dropdown .choices__item--selectable,
+.topMenu .choices__list[aria-expanded] .choices__item--selectable {
+   /* padding-right: 5px  !important; */
+   padding-right: 20px  !important;
+}
+
+.topMenu .choices__placeholder{
+   padding-left: 20px;
+   opacity: 1;
+}
+
+.topMenu .choices__list--single .choices__item {
+   padding-left: 25px;
+}
+
+.topMenu .choices,.topMenu .search .choices, .input .choices {
+  
+    color: black;
+}
+
+.topMenu .choices__list[aria-expanded] {
+   z-index: 99 !important;
+}
+
+.search .choices__list[aria-expanded] {
+   z-index: 99 !important;
 }

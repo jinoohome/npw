@@ -1,5 +1,5 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../comp/Import";
-import { SOL_ZZ_CODE_REQ, SOL_ZZ_CODE_RES, SOL_ZZ_CODE_API } from "../ts/SOL_ZZ_CODE";
+import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
+import { SOL_ZZ_CODE_REQ, SOL_ZZ_CODE_RES, SOL_ZZ_CODE_API } from "../../ts/SOL_ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 
 interface Props {
@@ -9,6 +9,7 @@ interface Props {
 
 const Mm0201 = ({ item, activeComp }: Props) => {
    const gridRef = useRef<any>(null);
+   const gridContainerRef = useRef(null);
 
    const searchRef1 = useRef<any>(null);
    const searchRef2 = useRef<any>(null);
@@ -52,12 +53,13 @@ const Mm0201 = ({ item, activeComp }: Props) => {
 
    const [focusRow, setFocusRow] = useState<any>(0);
 
-   const breadcrumbItem = [{ name: "관리자" }, { name: "공통" }, { name: "기준정보등록" }];
+   const breadcrumbItem = [{ name: "관리자" }, { name: "거래처관리" }, { name: "거래처등록" }];
 
    // 첫 페이지 시작시 실행
    useEffect(() => {
       setChoiceUI();
       setGridData();
+      reSizeGrid({ ref: gridRef, containerRef: gridContainerRef, sec: 200 });
    }, []);
 
    //--------------------init---------------------------
@@ -101,10 +103,7 @@ const Mm0201 = ({ item, activeComp }: Props) => {
 
    // 탭 클릭시 Grid 리사이즈
    useEffect(() => {
-      if (gridRef.current) {
-         let gridInstance = gridRef.current.getInstance();
-         gridInstance.refreshLayout();
-      }
+      refreshGrid(gridRef);
    }, [activeComp]);
 
    //Grid 데이터 설정
@@ -180,7 +179,7 @@ const Mm0201 = ({ item, activeComp }: Props) => {
       }
    };
 
-   const SOL_MM0301_U01 = async (data:any) => {
+   const SOL_MM0301_U01 = async (data: any) => {
       try {
          const result = await fetchPost(`SOL_MM0301_U01`, data);
          return result;
@@ -421,8 +420,8 @@ const Mm0201 = ({ item, activeComp }: Props) => {
             </div>
             <div>{searchDiv()}</div>
          </div>
-         <div className="w-full h-full flex space-x-5">
-            <div className="w-1/3 ">{grid()}</div>
+         <div className="w-full h-full flex space-x-2 p-2">
+            <div className="w-1/3 " ref={gridContainerRef}>{grid()}</div>
             <div className="w-2/3 ">{inputDiv()} </div>
          </div>
       </div>

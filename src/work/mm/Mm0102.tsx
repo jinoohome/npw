@@ -1,8 +1,8 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../comp/Import";
-import { SOL_ZZ_CODE_REQ, SOL_ZZ_CODE_RES, SOL_ZZ_CODE_API } from "../ts/SOL_ZZ_CODE";
+import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
+import { SOL_ZZ_CODE_REQ, SOL_ZZ_CODE_RES, SOL_ZZ_CODE_API } from "../../ts/SOL_ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
-import ChoicesEditor from "../util/ChoicesEditor";
-const breadcrumbItem = [{ name: "관리자" }, { name: "공통" }, { name: "기준정보등록" }];
+import ChoicesEditor from "../../util/ChoicesEditor";
+const breadcrumbItem = [{ name: "관리자" }, { name: "메뉴" }, { name: "메뉴권한관리" }];
 interface Props {
    item: any;
    activeComp: any;
@@ -17,6 +17,10 @@ const Mm0102 = ({ item, activeComp }: Props) => {
    const gridRef2 = useRef<any>(null);
    const gridRef3 = useRef<any>(null);
 
+   const gridContainerRef1 = useRef(null); 
+   const gridContainerRef2 = useRef(null); 
+   const gridContainerRef3 = useRef(null); 
+
    const [gridDatas1, setGridDatas1] = useState<any[]>();
    const [gridDatas2, setGridDatas2] = useState<any[]>();
    const [gridDatas3, setGridDatas3] = useState<any[]>();
@@ -30,10 +34,14 @@ const Mm0102 = ({ item, activeComp }: Props) => {
    const [choice3, seChoice3] = useState<any[]>();
 
    const [tabIndex, setTabIndex] = useState(0);
+   
 
    useEffect(() => {
       setChoiceUI();
       setGridData();
+      reSizeGrid({ ref: gridRef1, containerRef: gridContainerRef1, sec: 200 });
+      reSizeGrid({ ref: gridRef2, containerRef: gridContainerRef2, sec: 200 });
+      reSizeGrid({ ref: gridRef3, containerRef: gridContainerRef3, sec: 200 });
    }, []);
 
    const setChoiceUI = () => {
@@ -529,8 +537,8 @@ const Mm0102 = ({ item, activeComp }: Props) => {
             </div>
             <div>{searchDiv()}</div>
          </div>
-         <div className="w-full h-full flex space-x-5">
-            <div className="w-1/2">{grid1()}</div>
+         <div className="w-full h-full flex space-x-2 p-2">
+            <div className="w-1/2" ref={gridContainerRef1}>{grid1()}</div>
             <div className="w-1/2">
                <div className="flex ">
                   <div
@@ -554,8 +562,8 @@ const Mm0102 = ({ item, activeComp }: Props) => {
                      사용자
                   </div>
                </div>
-               <div className={` ${tabIndex === 0 ? " " : "hidden"}`}>{grid2()}</div>
-               <div className={` ${tabIndex === 1 ? " " : "hidden"}`}>{grid3()}</div>
+               <div className={` ${tabIndex === 0 ? " " : "hidden"}`} ref={gridContainerRef2}>{grid2()}</div>
+               <div className={` ${tabIndex === 1 ? " " : "hidden"}`} ref={gridContainerRef3}>{grid3()}</div>
             </div>
             {/* <div className="w-2/3 ">{inputDiv()} </div>  */}
          </div>

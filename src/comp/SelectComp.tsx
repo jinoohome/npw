@@ -1,4 +1,5 @@
 import React, { forwardRef } from "react";
+import {  ChevronDownIcon} from "@heroicons/react/24/outline";
 
 interface Props1 {
    title: string;
@@ -41,4 +42,29 @@ const SelectComp2 = forwardRef<HTMLSelectElement, Props2>(({ title, target, setC
    );
 });
 
-export { SelectComp1, SelectComp2 };
+
+interface Props3 {
+    placeholder: string;
+    handleSelectChange: (value: string) => void; 
+}
+
+const SelectComp3 = forwardRef<HTMLSelectElement, Props3>(({ placeholder, handleSelectChange }, ref) => {
+  return (
+    <div>
+      <select
+        ref={ref}
+        onChange={(event) => handleSelectChange(event.target.value)}
+        defaultValue="" // 기본값 설정
+        className="border rounded-md h-3 p-2 w-full focus:outline-orange-300"
+      >
+        <option value="" disabled hidden>
+          {placeholder}
+        </option>
+        {/* 다른 옵션들 추가 가능 */}
+      </select>
+    </div>
+  );
+});
+ 
+
+export { SelectComp1, SelectComp2, SelectComp3 };

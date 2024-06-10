@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate  } from "react-router-dom";
 import { ChevronDownIcon, StopIcon, Bars3Icon } from "@heroicons/react/24/outline";
 import "../css/LeftScrollbar.css";
 import { SOL_ZZ_MENU_RES } from "../ts/SOL_ZZ_MENU";
+import { motion } from "framer-motion";
 
 interface LeftProps {
    leftMenus: SOL_ZZ_MENU_RES[];
@@ -30,20 +31,30 @@ const Left = ({ leftMenus, activeComp, leftMode, onLeftMenuClick, onLeftMode }: 
       onLeftMode(mode);
    };
 
+   const moveToHome = () => { 
+      window.location.href = '/Main';
+   };
+
    const renderLogo = () => {
       if (leftMode == "large") {
          return (
-            <div className="w-full h-[70px] flex items-center ">
-               <span className="w-2/3 text-xl text-orange-500 font-bold font-[SUITE-Regular] text-end">SOLCOMBINE</span>
+            <div className="w-full h-[70px] flex items-center" >
+               <span 
+                   onClick={() => moveToHome()}
+                  className="w-2/3 text-xl text-orange-500 font-bold font-[SUITE-Regular] text-end hover:text-orange-400 cursor-pointer">
+                     SOLCOMBINE
+               </span>
                <div className="w-1/3 flex justify-center">
-                  <Bars3Icon className="text-gray-400/80 w-6 h-6  cursor-pointer" onClick={() => handleLeftMode("small")}></Bars3Icon>
+                  <Bars3Icon className="text-gray-400/80 w-6 h-6 hover:text-gray-400 cursor-pointer" onClick={() => handleLeftMode("small")}></Bars3Icon>
                </div>
             </div>
          );
       } else {
          return (
-            <div className="w-full h-[70px] flex items-center ">
-               <span className="w-full text-center text-xl text-orange-500 font-bold font-[SUITE-Regular]">SOL</span>
+            <div className="w-full h-[70px] flex items-center" >
+               <span 
+                  onClick={() => moveToHome()}
+                  className="w-full text-center text-xl text-orange-500 font-bold font-[SUITE-Regular]  hover:text-orange-400 cursor-pointer">SOL</span>
             </div>
          );
       }
@@ -53,45 +64,66 @@ const Left = ({ leftMenus, activeComp, leftMode, onLeftMenuClick, onLeftMode }: 
       if (leftMode === "large" ) {
          // "large" 모드일 때의 메뉴 항목 렌더링
          return (
-            <ul className="list-none text-gray-400/80">
+            <motion.ul 
+               initial={{opacity: 0}}
+               animate={{opacity: 1}}
+               transition={{duration: 0.5, ease: "easeInOut"}}
+               className="list-none text-gray-400/80 ">
                {leftMenus.map((menu, index) => {
                   switch (menu.lev) {
                      case 0:
                         return (
-                           <li key={index} className="ps-5 py-2 bg-black mb-3">
+                           <li key={index} className="ps-5 py-2 bg-black mb-3  hover:text-gray-400 cursor-pointer">
                               {menu.menuName}
                            </li>
                         );
                      case 1:
                         return (
                            <li key={index}>
-                              <div className="flex justify-between m-4 mb-2 mt-5 cursor-pointer select-none" onClick={() => handleToggle(menu)}>
-                                 <div className={`flex ${menu.menuId === activeComp.paMenuId ? "text-white" : ""}`}>
-                                    <span dangerouslySetInnerHTML={{ __html: menu.icon }} />
-                                    <span className="menu-item ps-3" data-key={menu.menuId}>
-                                       {menu.menuName}
-                                    </span>
+                              <div className={`px-2 mb-1 mt-5 cursor-pointer select-none `} 
+                              onClick={() => handleToggle(menu)}>
+                                 <div className={`flex justify-between p-2 ${menu.menuId === activeComp.paMenuId ? "bg-sky-900/40 rounded-full" : ""}`}>
+                                    <div className={`flex ${menu.menuId === activeComp.paMenuId ? "text-white " : ""}`}>
+                                       <span dangerouslySetInnerHTML={{ __html: menu.icon }} />
+                                       <span className="menu-item ps-3  hover:text-gray-400" data-key={menu.menuId}>
+                                          {menu.menuName}
+                                       </span>
+                                    </div>
+                                    {!menu.prgmId && 
+                                       <motion.div
+                                       animate={{ rotate: expandedMenus[menu.menuId ?? ""] ? 180 : 0 }}
+                                       transition={{ duration: 0.2, ease: "easeOut" }}
+                                       >
+                                       <ChevronDownIcon className={`h-6 w-6 }`} />
+                                       </motion.div>   
+                                    }
+
                                  </div>
-                                 {!menu.prgmId && <ChevronDownIcon className={`h-6 w-6 ${expandedMenus[menu.menuId ?? ""] ? "rotate-180" : ""}`} />}
                               </div>
                            </li>
                         );
                      case 2:
                         return (
-                           <li key={index} className={`cursor-pointer p-1 mx-2 select-none ${expandedMenus[menu.paMenuId ?? ""] ? "hidden" : ""}`} onClick={() => handleClick(menu)}>
-                              <Link to={menu.prgmId ?? ""} className={`menu-link flex items-center space-x-2 ps-4 ${menu.menuId === activeComp.menuId ? "text-white" : ""}`}>
+                           <motion.li 
+                              key={index} 
+                              className={`cursor-pointer p-1 mx-2 select-none ${expandedMenus[menu.paMenuId ?? ""] ? "hidden" : ""}`} 
+                              animate={{  y: expandedMenus[menu.paMenuId ?? ""] ? -20 : 0, opacity: expandedMenus[menu.paMenuId ?? ""] ? 0 : 1}}
+                              transition={{ duration: 0.2, ease: "backInOut" }}
+                              onClick={() => handleClick(menu)}
+                              >
+                              <div className={`menu-link flex items-center space-x-2 ps-4 ${menu.menuId === activeComp.menuId ? "text-white" : ""}`}>
                                  <span>
                                     <StopIcon className="w-3 h-3" />
                                  </span>
-                                 <span>{menu.menuName}</span>
-                              </Link>
-                           </li>
+                                 <span className="hover:text-gray-400">{menu.menuName}</span>
+                              </div>
+                           </motion.li>
                         );
                      default:
                         return null;
                   }
                })}
-            </ul>
+            </motion.ul>
          );
       } else if(leftMode == 'small') {
          // "small" 모드일 때의 메뉴 항목 렌더링
@@ -105,7 +137,7 @@ const Left = ({ leftMenus, activeComp, leftMode, onLeftMenuClick, onLeftMode }: 
                               <div className="flex justify-between m-4 mb-16 mt-16 cursor-pointer select-none" onClick={() => handleToggle(menu)}>
                                  <div className={`flex ${menu.menuId === activeComp.paMenuId ? "text-white" : ""}`}>
                                     <span dangerouslySetInnerHTML={{ __html: menu.icon }} />
-                                    <span className="menu-item ps-3 hidden" data-key={menu.menuId}>
+                                    <span className="menu-item ps-3 hidden " data-key={menu.menuId}>
                                        {menu.menuName}
                                     </span>
                                  </div>
@@ -116,12 +148,12 @@ const Left = ({ leftMenus, activeComp, leftMode, onLeftMenuClick, onLeftMode }: 
                      case 2:
                         return (
                            <li key={index} className={`cursor-pointer p-1 mx-2 select-none hidden ${expandedMenus[menu.paMenuId ?? ""] ? "hidden" : ""}`} onClick={() => handleClick(menu)}>
-                              <Link to={menu.prgmId ?? ""} className={`menu-link flex items-center space-x-2 ps-4 ${menu.menuId === activeComp.menuId ? "text-white" : ""}`}>
+                              <div className={`menu-link flex items-center space-x-2 ps-4 ${menu.menuId === activeComp.menuId ? "text-white" : ""}`}>
                                  <span>
                                     <StopIcon className="w-3 h-3" />
                                  </span>
                                  <span>{menu.menuName}</span>
-                              </Link>
+                              </div>
                            </li>
                         );
                      default:
@@ -132,7 +164,11 @@ const Left = ({ leftMenus, activeComp, leftMode, onLeftMenuClick, onLeftMode }: 
          );
       } else if(leftMode == 'over') {
          return (
-            <ul className="list-none text-gray-400/80"  onMouseLeave={()=>{handleLeftMode('small')}}>
+            <motion.ul 
+            initial={{opacity: 0}}
+            animate={{opacity: 1}}
+            transition={{duration: 0.5, ease: "easeInOut"}}
+            className="list-none text-gray-400/80"  onMouseLeave={()=>{handleLeftMode('small')}}>
                {leftMenus.map((menu, index) => {
                   switch (menu.lev) {
                      case 0:
@@ -151,32 +187,44 @@ const Left = ({ leftMenus, activeComp, leftMode, onLeftMenuClick, onLeftMode }: 
                                        {menu.menuName}
                                     </span>
                                  </div>
-                                 {!menu.prgmId && <ChevronDownIcon className={`h-6 w-6 ${expandedMenus[menu.menuId ?? ""] ? "rotate-180" : ""}`} />}
+                                 {!menu.prgmId && 
+                                    <motion.div
+                                    animate={{ rotate: expandedMenus[menu.menuId ?? ""] ? 180 : 0 }}
+                                    transition={{ duration: 0.2, ease: "easeOut" }}
+                                    >
+                                    <ChevronDownIcon className={`h-6 w-6}`} />
+                                    </motion.div>   
+                                 }
                               </div>
                            </li>
                         );
                      case 2:
                         return (
-                           <li key={index} className={`cursor-pointer p-1 mx-2 select-none ${expandedMenus[menu.paMenuId ?? ""] ? "hidden" : ""}`} onClick={() => handleClick(menu)}>
-                              <Link to={menu.prgmId ?? ""} className={`menu-link flex items-center space-x-2 ps-4 ${menu.menuId === activeComp.menuId ? "text-white" : ""}`}>
+                          
+                           <motion.li key={index} 
+                              className={`cursor-pointer p-1 mx-2 select-none ${expandedMenus[menu.paMenuId ?? ""] ? "hidden" : ""}`} 
+                              animate={{  y: expandedMenus[menu.paMenuId ?? ""] ? -20 : 0, opacity: expandedMenus[menu.paMenuId ?? ""] ? 0 : 1}}
+                              transition={{ duration: 0.2, ease: "backInOut" }}
+                              onClick={() => handleClick(menu)}>
+                              <div className={`menu-link flex items-center space-x-2 ps-4 ${menu.menuId === activeComp.menuId ? "text-white" : ""}`}>
                                  <span>
                                     <StopIcon className="w-3 h-3" />
                                  </span>
                                  <span>{menu.menuName}</span>
-                              </Link>
-                           </li>
+                              </div>
+                           </motion.li>
                         );
                      default:
                         return null;
                   }
                })}
-            </ul>
+            </motion.ul>
          );
       }
    };
 
    return (
-      <div className="h-[98vh] bg-sky-950 overflow-y-scroll hide-scrollbar">
+      <div className="h-[98vh] bg-sky-950 overflow-y-scroll hide-scrollbar" >
          {renderLogo()}
          {renderMenuItems()}
       </div>

@@ -1,5 +1,6 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../comp/Import";
-import ChoicesEditor from "../util/ChoicesEditor";
+import { refresh } from "aos";
+import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid,  InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
+import ChoicesEditor from "../../util/ChoicesEditor";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 
 const Mm0101 = ({ item, activeComp }: Props) => {
    const gridRef = useRef<any>(null);
+   const gridContainerRef = useRef(null); 
 
    const [gridDatas, setGridDatas] = useState<any[]>();
 
@@ -17,7 +19,10 @@ const Mm0101 = ({ item, activeComp }: Props) => {
    // 첫 페이지 시작시 실행
    useEffect(() => {
       setGridData();
+      reSizeGrid({ ref: gridRef, containerRef: gridContainerRef, sec: 200 });
    }, []);
+
+
 
    const setGridData = async () => {
       try {
@@ -30,10 +35,7 @@ const Mm0101 = ({ item, activeComp }: Props) => {
 
    // 탭 클릭시 Grid 리사이즈
    useEffect(() => {
-      if (gridRef.current) {
-         let gridInstance = gridRef.current.getInstance();
-         gridInstance.refreshLayout();
-      }
+     refreshGrid(gridRef);
    }, [activeComp]);
 
    //Grid 데이터 설정
@@ -223,7 +225,7 @@ const Mm0101 = ({ item, activeComp }: Props) => {
    ];
 
    const grid = () => (
-      <div className="border rounded-md p-2 space-y-2">
+      <div className="border rounded-md p-2 space-y-2 w-full">
          <div className="flex justify-between items-center text-sm">
             <div className="flex items-center space-x-1 text-orange-500 ">
                <div>
@@ -255,8 +257,8 @@ const Mm0101 = ({ item, activeComp }: Props) => {
                {buttonDiv()}
             </div>
          </div>
-         <div className="w-full h-full flex space-x-5">
-            <div className="w-full ">{grid()}</div>
+         <div className="w-full h-full flex space-x-2 p-2">
+            <div className="w-full" ref={gridContainerRef}>{grid()}</div>
          </div>
       </div>
    );

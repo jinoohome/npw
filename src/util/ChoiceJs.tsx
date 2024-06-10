@@ -34,6 +34,32 @@ const initChoice = (
 };
 
 
+const initChoice2 = (
+  inputRef: React.RefObject<HTMLElement>,
+  setChoice: (choice: Choices) => void,
+  initialChoices?: ChoiceOption[],
+  placeholderValue?: string | null,
+): void => {
+  if (inputRef.current) {
+    let newChoices = new Choices(inputRef.current, {
+      removeItemButton: false,
+      shouldSort: false,
+      itemSelectText: "",
+      allowHTML: true,
+    });
+
+    setChoice(newChoices);
+
+    if (initialChoices && initialChoices.length > 0) {
+      newChoices.setChoices(initialChoices, "value", "label", false);
+    }
+  } else {
+    console.error("DOM 요소가 없습니다.", inputRef);
+  }
+};
+
+
+
 const updateChoices = (choiceInstance: any, originalData: any, valueKey: any, labelKey: any, defaultValue = "999") => {
   let data = Array.isArray(originalData) ? [...originalData] : [];
 
@@ -53,4 +79,4 @@ const updateChoices = (choiceInstance: any, originalData: any, valueKey: any, la
      ]);
   }
 };
-export { initChoice, updateChoices };
+export { initChoice, initChoice2, updateChoices };

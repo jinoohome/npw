@@ -39,15 +39,23 @@
    margin: 0;
    padding: 0!important;
    padding-left: 10px !important;
+   font-size: 10pt;
 }
 
-.tui-grid-cell-content-editor .choices__list--dropdown, .choices__list[aria-expanded] {
+.tui-grid-cell-content-editor .choices__list--dropdown,
+.tui-grid-cell-content-editor .choices__list[aria-expanded] {
    margin-top: 0px !important;
    left: -1px!important;
+   
 }
 
 .tui-grid-layer-editing{
    padding: 0!important;
+}
+
+.tui-grid-layer-editing .choices__list--dropdown .choices__item,
+.tui-grid-layer-editing .choices__list[aria-expanded] .choices__item{
+   font-size: 10pt!important;
 }
 
 /* Add your custom styles below this line */

@@ -1,23 +1,28 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../comp/Import";
-import { SOL_MM0401_S01_RES, SOL_MM0401_S01_API } from "../ts/SOL_MM0401_S01";
-import { SOL_MM0401_S02_REQ, SOL_MM0401_S02_RES, SOL_MM0401_S02_API } from "../ts/SOL_MM0401_S02";
-import { SOL_ZZ_CODE_REQ, SOL_ZZ_CODE_RES, SOL_ZZ_CODE_API } from "../ts/SOL_ZZ_CODE";
+import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, reSizeGrid, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
+import { SOL_MM0401_S01_RES, SOL_MM0401_S01_API } from "../../ts/SOL_MM0401_S01";
+import { SOL_MM0401_S02_REQ, SOL_MM0401_S02_RES, SOL_MM0401_S02_API } from "../../ts/SOL_MM0401_S02";
+import { SOL_ZZ_CODE_REQ, SOL_ZZ_CODE_RES, SOL_ZZ_CODE_API } from "../../ts/SOL_ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
-import ChoicesEditor from "../util/ChoicesEditor";
+import ChoicesEditor from "../../util/ChoicesEditor";
 
 interface Props {
    item: any;
    activeComp: any;
+   leftMode: any;
+   userInfo: any;
 }
 
-const Mm0401 = ({ item, activeComp }: Props) => {
+const Mm0401 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const codeNameRef = useRef<any>(null);
    const codeDivRef = useRef<any>(null);
    const confirmYnRef = useRef<any>(null);
    const minorCodeNameRef = useRef<any>(null);
    const majorGridRef = useRef<any>(null);
    const minorGridRef = useRef<any>(null);
+
+   const majorGridContainerRef = useRef(null);
+   const minorGridContainerRef = useRef(null);
 
    const [majors, setMajors] = useState<SOL_MM0401_S01_RES[]>();
    const [minors, setMinors] = useState<SOL_MM0401_S02_RES[]>();
@@ -32,6 +37,8 @@ const Mm0401 = ({ item, activeComp }: Props) => {
    useEffect(() => {
       setChoiceUI();
       setGridData();
+      reSizeGrid({ ref: majorGridRef, containerRef: majorGridContainerRef, sec: 200 });
+      reSizeGrid({ ref: minorGridRef, containerRef: minorGridContainerRef, sec: 200 });
    }, []);
 
    const setChoiceUI = () => {
@@ -60,15 +67,10 @@ const Mm0401 = ({ item, activeComp }: Props) => {
 
    // 탭 클릭시 Grid 리사이즈
    useEffect(() => {
-      if (majorGridRef.current) {
-         let gridInstance = majorGridRef.current.getInstance();
-         gridInstance.refreshLayout();
-      }
-      if (minorGridRef.current) {
-         let gridInstance = minorGridRef.current.getInstance();
-         gridInstance.refreshLayout();
-      }
-   }, [activeComp]);
+      refreshGrid(majorGridRef);
+      refreshGrid(minorGridRef);
+   
+   }, [activeComp, leftMode]);
 
    // Grid 데이터 설정
    useEffect(() => {
@@ -409,9 +411,9 @@ const Mm0401 = ({ item, activeComp }: Props) => {
             </div>
             <div>{searchDiv()}</div>
          </div>
-         <div className="w-full h-full flex space-x-5">
-            <div className="w-1/2 ">{majorGrid()}</div>
-            <div className="w-1/2 ">{minorGrid()} </div>
+         <div className="w-full h-full flex p-2 space-x-2">
+            <div className="w-1/3" ref={majorGridContainerRef}>{majorGrid()}</div>
+            <div className="w-2/3" ref={minorGridContainerRef}>{minorGrid()} </div>
          </div>
       </div>
    );

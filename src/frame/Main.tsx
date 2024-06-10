@@ -1,17 +1,20 @@
-import React, { useEffect, useState, useRef, Suspense, lazy, ReactElement } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Left from "./Left";
 import Top from "./Top";
 import Tab from "./Tab";
 import Work from "./Work";
 import Footer from "./Footer";
 import { fetchPost } from "../util/fetch";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { SOL_ZZ_MENU_RES, SOL_ZZ_MENU_API } from "../ts/SOL_ZZ_MENU";
-import loadable from '@loadable/component';
+import loadable from "@loadable/component";
+import { motion } from "framer-motion";
 
-const Main = () => {
+function Main() {
    const navigate = useNavigate();
+   const { state } = useLocation();
    const tabRef = useRef<HTMLDivElement>(null);
+
 
    const [allMenus, setAllMenus] = useState<SOL_ZZ_MENU_RES[]>([]);
    const [topMenus, setTopMenus] = useState<SOL_ZZ_MENU_RES[]>([]);
@@ -20,18 +23,26 @@ const Main = () => {
    const [components, setComponents] = useState<any[]>([]);
    const [activeComp, setActiveComp] = useState<any>("");
    const [prevComps, setPrevComps] = useState<any[]>([]);
+   const [loginInfo, setLoginInfo] = useState<any>();
+   const [userInfo, setUserInfor] = useState<any>();
    const [leftMode, setLeftMode] = useState<string>("large");
+   const [isInitialLoad, setIsInitialLoad] = useState(true);
+   const [loading, setLoading] = useState(false); // 로딩 상태 추가
+   const [searchMenus, setSearchMenus] = useState<SOL_ZZ_MENU_RES[]>([]);
 
    //--------------- change --------------------------
    useEffect(() => {
-      SOL_ZZ_MENU();
+      const loginId = JSON.parse(sessionStorage.getItem("loginInfo") || "{}")?.usrId;
+       init(loginId);
    }, []);
+
+
 
    useEffect(() => {
       const isReloaded = sessionStorage.getItem("isReloaded");
 
       if (isReloaded) {
-         navigate("/");
+         navigate("/Main");
       } else {
          sessionStorage.setItem("isReloaded", "true");
       }
@@ -48,31 +59,77 @@ const Main = () => {
    }, [topMenus]);
 
    useEffect(() => {
+      if (leftMenus.length > 0 && isInitialLoad) {
+         let firstMenu = leftMenus.filter((menu: any) => menu.lev === 2);
+         if (firstMenu.length > 0) {
+            handleLeftMenuClick(firstMenu[0]);
+            setIsInitialLoad(false);
+         }
+      }
+   }, [leftMenus, isInitialLoad]);
+
+   useEffect(() => {
       activeControllTab();
    }, [prevComps]);
 
 
+   useEffect(() => {
+      if(userInfo) {
+         let loginId = JSON.parse(sessionStorage.getItem("loginInfo") || "{}")?.usrId;
+         if(loginId === userInfo.usrId) {
+            setLoginInfo(userInfo);
+         }
+         
+      }
+   }, [userInfo]);
+
+
+   const init = async (usrId:string) => {
+ 
+      if (usrId) {
+         try {
+            let result = await Promise.all([SOL_ZZ_USER_INFO(usrId), SOL_ZZ_MENU(usrId)]);
+            setLoading(true);
+         } catch (error) { 
+            setLoading(true); 
+         }
+      }
+    };
 
    //--------------- click --------------------------
    const handleLefMode = (mode: string) => {
       setLeftMode(mode);
    };
 
+   const handleUserChange = (usrId: string) => {
+      setAllMenus([]);
+      setSearchMenus([]);
+      setTopMenus([]);
+      setLeftMenus([]);
+      setActiveMenu("");
+      setComponents([]);
+      setActiveComp("");
+      setPrevComps([]);
+      setUserInfor({});
+      setLoading(false);
+      init(usrId);
+   };
+
    const handleTopMenuClick = (topMenuItem: SOL_ZZ_MENU_RES) => {
       const selctMenus = allMenus.filter((menu: any) => menu.menuOrdr.includes(topMenuItem.menuOrdr));
       setLeftMenus(selctMenus);
       setActiveMenu(topMenuItem.menuOrdr);
+      
    };
 
    const handleLeftMenuClick = (menuItem: SOL_ZZ_MENU_RES) => {
       addComponent(menuItem);
       if (tabRef.current) {
          setTimeout(() => {
-            // Non-null assertion operator 사용
             const maxScrollLeft = tabRef.current!.scrollWidth - tabRef.current!.clientWidth;
             tabRef.current!.scrollLeft = maxScrollLeft;
-          }, 100); // 100ms 지연
-       }
+         }, 100); // 100ms 지연
+      }
    };
 
    const handleTabClick = (item: any) => {
@@ -88,18 +145,16 @@ const Main = () => {
    const handleAllTabCloseClick = () => {
       setComponents([]);
       setPrevComps([]);
-      setActiveComp('');
+      setActiveComp("");
    };
 
-
    //-------------util-------------------------
-
    const addComponent = (menuItem: SOL_ZZ_MENU_RES) => {
-      const componentName = capitalizeFirstLetter(menuItem.prgmId ?? "");
-      const Component = loadable(() => import(`../work/${componentName}`), {
-         // fallback: 옵션으로 로딩 중 표시할 컴포넌트를 지정할 수 있습니다.
+      const [folder, fileName] = (menuItem.prgmFullPath ?? "").split('/');
+      const componentName = capitalizeFirstLetter(fileName ?? "");
+      const Component = loadable(() => import(`../work/${folder}/${componentName}`), {
          fallback: <div>Loading...</div>,
-       });
+      });
       const newComponent = {
          id: `menu${components.length + 1}`,
          name: menuItem.menuName,
@@ -131,39 +186,58 @@ const Main = () => {
    };
 
    //--------------- api --------------------------
-   const SOL_ZZ_MENU = async () => {
-      const param = {
-         usrId: "sckcs",
+   const SOL_ZZ_MENU = async (usrId: string) => {
+      let param = {
+         usrId: usrId,
          menuDiv: "",
       };
 
-      const result = await SOL_ZZ_MENU_API(param);
+      let result = await SOL_ZZ_MENU_API(param);
 
+    
       setAllMenus(result);
-      const filterTopMenus = result.filter((x: any) => x.lev === 0);
+      let filterTopMenus = result.filter((x: any) => x.lev === 0);
       setTopMenus(filterTopMenus);
+     
+      let filterSearchMenus = result.filter((x: any) => x.lev === 0 || x.lev === 2);
+      setSearchMenus(filterSearchMenus);
+   };
+
+   const SOL_ZZ_USER_INFO = async (usrId: string) => {
+      if (usrId) {
+         let param = {
+            usrId: usrId,
+         };
+
+         try {
+            const data = JSON.stringify(param);
+            let result = await fetchPost(`SOL_ZZ_USER_INFO`, { data });
+            setUserInfor(result);
+         } catch (error) {
+            console.error("SOL_ZZ_USER_INFO Error:", error);
+            throw error;
+         }
+      }
    };
 
    return (
-      <div className="w-full h-full " >
+      <div className="w-full h-full ">
+         {loading && (
          <div className="flex w-full h-full ">
-            <div
-               className={`h-full
-                           ${leftMode === 'large' || leftMode === 'over' ? 'min-w-[230px] w-[13%] ' :'min-w-[50px] w-[3%]'}
-            `}
-            >
+            <motion.div animate={{ width: leftMode === "large" || leftMode === "over" ? "13%" : "3%", minWidth: leftMode === "large" || leftMode === "over" ? 230 : 50 }} transition={{ duration: 0.1, ease: "easeInOut" }} className={`h-full`}>
                <Left leftMenus={leftMenus} activeComp={activeComp} leftMode={leftMode} onLeftMenuClick={handleLeftMenuClick} onLeftMode={handleLefMode}></Left>
-            </div>
+            </motion.div>
 
-            <div className="w-full h-full">
-               <Top topMenus={topMenus} onTopMenuClick={handleTopMenuClick} activeMenu={activeMenu} leftMode={leftMode} onLeftMode={handleLefMode}></Top>
+            <motion.div animate={{ width: leftMode === "large" || leftMode === "over" ? "87%" : "97%" }} transition={{ duration: 0.1, ease: "easeInOut" }} className="w-full h-full">
+               <Top loginInfo={loginInfo} userInfo={userInfo} topMenus={topMenus}  searchMenus={searchMenus} onTopMenuClick={handleTopMenuClick} activeMenu={activeMenu} leftMode={leftMode} onLeftMode={handleLefMode} onUserChange={handleUserChange} onSearchMenuClick={handleLeftMenuClick} ></Top>
                <Tab components={components} onTabMenuClick={handleTabClick} onTabCloseClick={handleTabCloseClick} activeComp={activeComp} onAllTabCloseClick={handleAllTabCloseClick} tabRef={tabRef}></Tab>
-               <Work components={components} activeComp={activeComp} ></Work>
-            </div>
+               <Work components={components} activeComp={activeComp} leftMode={leftMode} userInfo={userInfo}></Work>
+            </motion.div>
          </div>
+         )}
          <Footer></Footer>
       </div>
    );
-};
+}
 
 export default Main;

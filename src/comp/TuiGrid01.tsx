@@ -1,4 +1,4 @@
-import React, { RefObject } from "react";
+import React, { RefObject, useRef } from "react";
 import "tui-grid/dist/tui-grid.css";
 import "tui-pagination/dist/tui-pagination.css";
 import Grid from "@toast-ui/react-grid";
@@ -11,40 +11,68 @@ interface Props {
    columns: any[];
    handleFocusChange?: (rowKey: any) => void;
    gridRef: RefObject<Grid>;
-   treeColumnName? : string;
+   treeColumnName?: string;
    perPage?: number;
    perPageYn?: boolean;
-   height? : number;
+   height?: number;
 }
 
-const refreshGrid = (ref:any) => {
-   if(ref.current){
+
+
+const refreshGrid = (ref: any) => {
+   if (ref.current) {
       let gridInstance = ref.current.getInstance();
       gridInstance.refreshLayout();
    }
-}
-
-
-
-const getGridDatas = (gridRef: any) => {
-      let grid = gridRef.current.getInstance();
-
-      if (grid.getRowCount() > 0) {
-         let focusRowKey1 = grid.getFocusedCell().rowKey || 0;
-         grid.focusAt(focusRowKey1, 0, true);
-      }
-
-      let rows = grid.getModifiedRows();
-      let datas = rows.createdRows
-         .map((e: any) => ({ ...e, status: "I" }))
-         .concat(rows.deletedRows.map((e: any) => ({ ...e, status: "D" })))
-         .concat(rows.updatedRows.map((e: any) => ({ ...e, status: "U" })));
-
-      return datas;
 };
 
-const TuiGrid01 = ({ columns, handleFocusChange, gridRef, treeColumnName, perPageYn=true, 
-   perPage = 50, height = window.innerHeight - 450 }: Props) => {
+interface reSizeProps {
+   ref: RefObject<Grid>;
+   containerRef?: any;
+   sec?: number;
+}
+
+const reSizeGrid = ({ ref, containerRef = null, sec = 0 }: reSizeProps) => {
+   const handleResize = () => {
+      setTimeout(() => {
+         if (ref.current) {
+            let gridInstance = ref.current.getInstance();
+            gridInstance.refreshLayout();
+         }
+      }, sec);
+   };
+
+   if (containerRef) {
+      const resizeObserver = new ResizeObserver(handleResize);
+      if (containerRef.current) {
+         resizeObserver.observe(containerRef.current);
+      }
+      return () => {
+         if (containerRef.current) {
+            resizeObserver.unobserve(containerRef.current);
+         }
+      };
+   }
+};
+
+const getGridDatas = (gridRef: any) => {
+   let grid = gridRef.current.getInstance();
+
+   if (grid.getRowCount() > 0) {
+      let focusRowKey1 = grid.getFocusedCell().rowKey || 0;
+      grid.focusAt(focusRowKey1, 0, true);
+   }
+
+   let rows = grid.getModifiedRows();
+   let datas = rows.createdRows
+      .map((e: any) => ({ ...e, status: "I" }))
+      .concat(rows.deletedRows.map((e: any) => ({ ...e, status: "D" })))
+      .concat(rows.updatedRows.map((e: any) => ({ ...e, status: "U" })));
+
+   return datas;
+};
+
+const TuiGrid01 = ({ columns, handleFocusChange, gridRef, treeColumnName, perPageYn = true, perPage = 50, height = window.innerHeight - 450 }: Props) => {
    // 고유한 key 생성을 위해 Math.random() 사용
    TuiGrid.applyTheme("default", {
       cell: {
@@ -86,7 +114,7 @@ const TuiGrid01 = ({ columns, handleFocusChange, gridRef, treeColumnName, perPag
             perPage: perPage,
          },
       }),
-      treeColumnOptions: { 
+      treeColumnOptions: {
          name: treeColumnName,
       },
    };
@@ -99,4 +127,4 @@ const TuiGrid01 = ({ columns, handleFocusChange, gridRef, treeColumnName, perPag
    return <Grid {...gridProps} />;
 };
 
-export { TuiGrid01, getGridDatas, refreshGrid };
+export { TuiGrid01, getGridDatas, refreshGrid, reSizeGrid };

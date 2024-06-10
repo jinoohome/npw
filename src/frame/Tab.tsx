@@ -23,6 +23,7 @@ const Tab = ({ components, onTabMenuClick, onTabCloseClick, activeComp, onAllTab
          <li
             key={index}
             className={`flex items-center gap-1 cursor-pointer drop-shadow-sm text-sm px-2 pt-2 pb-1 rounded-t-xl border-b-0
+                        hover:bg-orange-400 hover:text-white
                         ${item.id === activeComp.id ? "bg-orange-400 text-white" : "bg-white "}
          `}
          >
@@ -58,14 +59,14 @@ const Tab = ({ components, onTabMenuClick, onTabCloseClick, activeComp, onAllTab
             <div className="w-[10%] flex justify-around">
                <div className="flex gap-5">
                   <div>
-                     <ChevronLeftIcon  onClick={scrollLeft} className="w-6 h-6 cursor-pointer"></ChevronLeftIcon>
+                     <ChevronLeftIcon  onClick={scrollLeft} className="w-6 h-6 cursor-pointer hover:text-gray-500"></ChevronLeftIcon>
                   </div>
                   <div>
-                     <ChevronRightIcon onClick={scrollRight} className="w-6 h-6 cursor-pointer"></ChevronRightIcon>
+                     <ChevronRightIcon onClick={scrollRight} className="w-6 h-6 cursor-pointer hover:text-gray-500"></ChevronRightIcon>
                   </div>
                </div>
                <div>
-                  <XMarkIcon onClick={() => handleAllTabCloseClick()} className="w-6 h-6 text-red-500 cursor-pointer"></XMarkIcon>
+                  <XMarkIcon onClick={() => handleAllTabCloseClick()} className="w-6 h-6 text-red-500 cursor-pointer hover:text-red-400"></XMarkIcon>
                </div>
             </div>
          </div>

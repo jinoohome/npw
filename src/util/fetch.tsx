@@ -3,7 +3,6 @@ const fetchPost = async (url: string, data: any) => {
       const baseURL = process.env.REACT_APP_API_URL;
       const endpoint = `${baseURL}/${url}`;
 
-      console.log("fetchPost:", endpoint, data);
       const response = await fetch(endpoint, {
          method: "POST",
          headers: { "Content-Type": "application/json" },

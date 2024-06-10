@@ -33,11 +33,14 @@ interface Props2 {
 }
 
 const InputComp2 = forwardRef<HTMLInputElement, Props2>(({ title, target, setChangeGridData, readOnly = false }, ref) => {
+   
+   
    return (
       <div>
          <label>{title}</label>
          <div>
-            <input readOnly={readOnly} ref={ref} type="text" onChange={(event) => setChangeGridData(target, event.target.value)} className={`border rounded-md h-8 p-2 w-full ${readOnly ? "bg-gray-100" : ""} focus:outline-orange-300`}></input>
+            <input readOnly={readOnly} ref={ref} type="text" onChange={(event) => setChangeGridData(target, event.target.value)} 
+            className={`border rounded-md h-8 p-2 w-full ${readOnly ? "bg-gray-100" : ""} focus:outline-orange-300`}></input>
          </div>
       </div>
    );
