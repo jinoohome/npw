@@ -104,6 +104,8 @@ const TuiGrid01 = ({ columns, handleFocusChange, gridRef, treeColumnName, perPag
       editingEvent: "click", // EditingEvent 타입으로 캐스팅합니다.
       columns,
       bodyHeight: height,
+      scrollX: true,
+      scrollY: true,
       columnOptions: { resizable: true },
       heightResizable: true,
       rowHeaders: ["rowNum"],
