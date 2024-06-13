@@ -1,7 +1,7 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, reSizeGrid, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import { SOL_MM0401_S01_RES, SOL_MM0401_S01_API } from "../../ts/SOL_MM0401_S01";
 import { SOL_MM0401_S02_REQ, SOL_MM0401_S02_RES, SOL_MM0401_S02_API } from "../../ts/SOL_MM0401_S02";
-import { SOL_ZZ_CODE_REQ, SOL_ZZ_CODE_RES, SOL_ZZ_CODE_API } from "../../ts/SOL_ZZ_CODE";
+import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
@@ -26,7 +26,7 @@ const Mm0401 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    const [majors, setMajors] = useState<SOL_MM0401_S01_RES[]>();
    const [minors, setMinors] = useState<SOL_MM0401_S02_RES[]>();
-   const [zz0001, setZz0001] = useState<SOL_ZZ_CODE_RES[]>([]);
+   const [zz0001, setZz0001] = useState<ZZ_CODE_RES[]>([]);
 
    const [codeDivChoice, setCodeDivChoice] = useState<any>();
    const [confirmYnChoice, setConfirmYnChoice] = useState<any>();
@@ -120,8 +120,8 @@ const Mm0401 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    //---------------------- api -----------------------------
 
-   const SOL_ZZ_CODE = async (param: SOL_ZZ_CODE_REQ) => {
-      const result3 = await SOL_ZZ_CODE_API(param);
+   const SOL_ZZ_CODE = async (param: ZZ_CODE_REQ) => {
+      const result3 = await ZZ_CODE_API(param);
       let formattedResult = Array.isArray(result3)
          ? result3.map(({ code, codeName, ...rest }) => ({
               value: code,

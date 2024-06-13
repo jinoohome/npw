@@ -1,12 +1,12 @@
 import { fetchPost } from "../util/fetch"; //
 
-export interface SOL_ZZ_CODE_REQ {
+export interface ZZ_CODE_REQ {
    coCd: string;
    majorCode: string;
    div: string;
 }
 
-export interface SOL_ZZ_CODE_RES {
+export interface ZZ_CODE_RES {
    code: string;
    codeName: string;
    sort : number;
@@ -15,13 +15,13 @@ export interface SOL_ZZ_CODE_RES {
    label : string;
 }
 
-export const SOL_ZZ_CODE_API = async (param: SOL_ZZ_CODE_REQ) => {
+export const ZZ_CODE_API = async (param: ZZ_CODE_REQ) => {
 
    try {
-      const result = await fetchPost(`SOL_ZZ_CODE`, param);
+      const result = await fetchPost(`ZZ_CODE`, param);
       return result;
    } catch (error) {
-      console.error("SOL_ZZ_CODE:", error);
+      console.error("ZZ_CODE:", error);
       throw error;
    }
 };

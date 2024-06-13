@@ -16,7 +16,7 @@ const Login = () => {
          pw: password,
       };
 
-      let result = await SOL_ZZ_USER_LOGIN(data);
+      let result = await ZZ_USER_LOGIN(data);
 
       if (result.result === "SUCCESS") {
          sessionStorage.setItem('loginInfo', JSON.stringify(result));
@@ -28,12 +28,12 @@ const Login = () => {
 
    //---------------------- api -----------------------------
 
-   const SOL_ZZ_USER_LOGIN = async (data: any) => {
+   const ZZ_USER_LOGIN = async (data: any) => {
       try {
-         const result = await fetchPost(`SOL_ZZ_USER_LOGIN`, data);
+         const result = await fetchPost(`ZZ_USER_LOGIN`, data);
          return result as any;
       } catch (error) {
-         console.error("SOL_ZZ_USER_LOGIN Error:", error);
+         console.error("ZZ_USER_LOGIN Error:", error);
          throw error;
       }
    };

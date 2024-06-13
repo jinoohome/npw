@@ -2,25 +2,25 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate  } from "react-router-dom";
 import { ChevronDownIcon, StopIcon, Bars3Icon } from "@heroicons/react/24/outline";
 import "../css/LeftScrollbar.css";
-import { SOL_ZZ_MENU_RES } from "../ts/SOL_ZZ_MENU";
+import { ZZ_MENU_RES } from "../ts/ZZ_MENU";
 import { motion } from "framer-motion";
 
 interface LeftProps {
-   leftMenus: SOL_ZZ_MENU_RES[];
+   leftMenus: ZZ_MENU_RES [];
    activeComp: any;
    leftMode: string;
-   onLeftMenuClick: (menuItem: SOL_ZZ_MENU_RES) => void;
+   onLeftMenuClick: (menuItem: ZZ_MENU_RES ) => void;
    onLeftMode: (mode: string) => void;
 }
 
 const Left = ({ leftMenus, activeComp, leftMode, onLeftMenuClick, onLeftMode }: LeftProps) => {
    const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({});
 
-   const handleClick = (menu: SOL_ZZ_MENU_RES) => {
+   const handleClick = (menu: ZZ_MENU_RES ) => {
       onLeftMenuClick(menu);
    };
 
-   const handleToggle = (menu: SOL_ZZ_MENU_RES) => {
+   const handleToggle = (menu: ZZ_MENU_RES ) => {
       setExpandedMenus((prev) => ({
          ...prev,
          [menu.menuId]: !prev[menu.menuId],

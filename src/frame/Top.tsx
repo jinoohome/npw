@@ -1,19 +1,19 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, initChoice2, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid, InputComp1, InputComp2, SelectComp3 } from "../comp/Import";
-import { SOL_ZZ_MENU_RES } from "../ts/SOL_ZZ_MENU";
+import { ZZ_MENU_RES  } from "../ts/ZZ_MENU";
 import { Bars3Icon, UserIcon, ChevronDownIcon, RectangleStackIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 
 interface TopProps {
    loginInfo: any;
    userInfo: any;
-   topMenus: SOL_ZZ_MENU_RES[];
-   searchMenus: SOL_ZZ_MENU_RES[];
-   onTopMenuClick: (menuItem: SOL_ZZ_MENU_RES) => void;
+   topMenus: ZZ_MENU_RES [];
+   searchMenus: ZZ_MENU_RES [];
+   onTopMenuClick: (menuItem: ZZ_MENU_RES ) => void;
    activeMenu: string;
    leftMode: string;
    onLeftMode: (mode: string) => void;
    onUserChange: (value: string) => void;
-   onSearchMenuClick: (menuItem: SOL_ZZ_MENU_RES) => void;
+   onSearchMenuClick: (menuItem: ZZ_MENU_RES ) => void;
 }
 
 const Top = ({loginInfo, userInfo, topMenus, searchMenus, onTopMenuClick, activeMenu, leftMode, onLeftMode , onUserChange, onSearchMenuClick }: TopProps) => {
@@ -39,7 +39,7 @@ const Top = ({loginInfo, userInfo, topMenus, searchMenus, onTopMenuClick, active
    };
 
    const setChoiceData = async () => {
-      const users = await SOL_ZZ_USERS();
+      const users = await ZZ_USERS();
       setUsers(users);
    };
 
@@ -78,7 +78,7 @@ const Top = ({loginInfo, userInfo, topMenus, searchMenus, onTopMenuClick, active
 
     //---------------------- api -----------------------------
 
-   const SOL_ZZ_USERS = async () => {
+   const ZZ_USERS = async () => {
       try {
          const param = {
             usrId: "sckcs",
@@ -87,10 +87,10 @@ const Top = ({loginInfo, userInfo, topMenus, searchMenus, onTopMenuClick, active
          };
 
          const data = JSON.stringify(param);
-         const result = await fetchPost(`SOL_ZZ_USERS`, { data });
+         const result = await fetchPost(`ZZ_USERS`, { data });
          return result;
       } catch (error) {
-         console.error("SOL_ZZ_USERS Error:", error);
+         console.error("ZZ_USERS Error:", error);
          throw error;
       }
    };
@@ -101,14 +101,14 @@ const Top = ({loginInfo, userInfo, topMenus, searchMenus, onTopMenuClick, active
       <div className="topMenu">
          {loginInfo && userInfo && (
             <div className="bg-white h-[70px] shadow-lg flex justify-between border-b   ">
-               <div className="h-full flex gap-7 px-3 items-center">
+               <div className="h-full flex gap-7 px-3 items-center  ">
                   <Bars3Icon
                      className={`w-6 h-6 cursor-pointer 
                               ${leftMode === "large" ? "hidden" : ""} 
                            `}
                      onClick={() => handleLeftMode("large")}
                   ></Bars3Icon>
-                  {topMenus.map((e: SOL_ZZ_MENU_RES, i: number) => {
+                  {topMenus.map((e: ZZ_MENU_RES , i: number) => {
                      return (
                         <div key={e.menuId} className="h-full" onClick={() => onTopMenuClick(e)}>
                            <div

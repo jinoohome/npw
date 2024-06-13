@@ -1,5 +1,5 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
-import { SOL_ZZ_CODE_REQ, SOL_ZZ_CODE_RES, SOL_ZZ_CODE_API } from "../../ts/SOL_ZZ_CODE";
+import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 
 interface Props {
@@ -30,10 +30,10 @@ const Cd0201 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const [gridDatas, setGridDatas] = useState<any[]>();
-   const [cd0004, setCd0004] = useState<SOL_ZZ_CODE_RES[]>([]);
-   const [cd0005, setCd0005] = useState<SOL_ZZ_CODE_RES[]>([]);
+   const [cd0004, setCd0004] = useState<ZZ_CODE_RES[]>([]);
+   const [cd0005, setCd0005] = useState<ZZ_CODE_RES[]>([]);
    
-   const [zz0009, setZZ0009] = useState<SOL_ZZ_CODE_RES[]>([]);
+   const [zz0009, setZZ0009] = useState<ZZ_CODE_RES[]>([]);
 
    const [choice1, setChoice1] = useState<any>();
    const [choice2, setChoice2] = useState<any>();
@@ -150,8 +150,8 @@ const Cd0201 = ({ item, activeComp, userInfo }: Props) => {
 
    //---------------------- api -----------------------------
 
-   const SOL_ZZ_CODE = async (param: SOL_ZZ_CODE_REQ) => {
-      const result3 = await SOL_ZZ_CODE_API(param);
+   const SOL_ZZ_CODE = async (param: ZZ_CODE_REQ) => {
+      const result3 = await ZZ_CODE_API(param);
       let formattedResult = Array.isArray(result3)
          ? result3.map(({ code, codeName, ...rest }) => ({
               value: code,

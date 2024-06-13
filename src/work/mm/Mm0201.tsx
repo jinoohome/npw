@@ -1,5 +1,5 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
-import { SOL_ZZ_CODE_REQ, SOL_ZZ_CODE_RES, SOL_ZZ_CODE_API } from "../../ts/SOL_ZZ_CODE";
+import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 
 interface Props {
@@ -40,9 +40,9 @@ const Mm0201 = ({ item, activeComp }: Props) => {
    };
 
    const [gridDatas, setGridDatas] = useState<any[]>();
-   const [zz0005, setZz0005] = useState<SOL_ZZ_CODE_RES[]>([]);
-   const [cd0008, setCd0008] = useState<SOL_ZZ_CODE_RES[]>([]);
-   const [zz0009, setZZ0009] = useState<SOL_ZZ_CODE_RES[]>([]);
+   const [zz0005, setZz0005] = useState<ZZ_CODE_RES[]>([]);
+   const [cd0008, setCd0008] = useState<ZZ_CODE_RES[]>([]);
+   const [zz0009, setZZ0009] = useState<ZZ_CODE_RES[]>([]);
 
    const [choice1, setChoice1] = useState<any>();
    const [choice2, setChoice2] = useState<any>();
@@ -79,17 +79,17 @@ const Mm0201 = ({ item, activeComp }: Props) => {
 
    const setGridData = async () => {
       try {
-         let zz0005Data = await SOL_ZZ_CODE({ coCd: "999", majorCode: "ZZ0005", div: "999" });
+         let zz0005Data = await ZZ_CODE({ coCd: "999", majorCode: "ZZ0005", div: "999" });
          if (zz0005Data != null) {
             setZz0005(zz0005Data);
          }
 
-         let cd0008Data = await SOL_ZZ_CODE({ coCd: "999", majorCode: "CD0008", div: "" });
+         let cd0008Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0008", div: "" });
          if (cd0008Data != null) {
             setCd0008(cd0008Data);
          }
 
-         let zz0009Data = await SOL_ZZ_CODE({ coCd: "999", majorCode: "ZZ0009", div: "" });
+         let zz0009Data = await ZZ_CODE({ coCd: "999", majorCode: "ZZ0009", div: "" });
          if (zz0009Data != null) {
             setZZ0009(zz0009Data);
          }
@@ -148,8 +148,8 @@ const Mm0201 = ({ item, activeComp }: Props) => {
 
    //---------------------- api -----------------------------
 
-   const SOL_ZZ_CODE = async (param: SOL_ZZ_CODE_REQ) => {
-      const result3 = await SOL_ZZ_CODE_API(param);
+   const ZZ_CODE = async (param: ZZ_CODE_REQ) => {
+      const result3 = await ZZ_CODE_API(param);
       let formattedResult = Array.isArray(result3)
          ? result3.map(({ code, codeName, ...rest }) => ({
               value: code,
