@@ -1,5 +1,5 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
-import { SOL_ZZ_CODE_REQ, SOL_ZZ_CODE_RES, SOL_ZZ_CODE_API } from "../../ts/SOL_ZZ_CODE";
+import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
 const breadcrumbItem = [{ name: "관리자" }, { name: "메뉴" }, { name: "메뉴권한관리" }];

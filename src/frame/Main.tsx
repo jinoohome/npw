@@ -6,7 +6,7 @@ import Work from "./Work";
 import Footer from "./Footer";
 import { fetchPost } from "../util/fetch";
 import { useNavigate, useLocation } from "react-router-dom";
-import { SOL_ZZ_MENU_RES, SOL_ZZ_MENU_API } from "../ts/SOL_ZZ_MENU";
+import { ZZ_MENU_RES, ZZ_MENU_API } from "../ts/ZZ_MENU";
 import loadable from "@loadable/component";
 import { motion } from "framer-motion";
 
@@ -16,9 +16,9 @@ function Main() {
    const tabRef = useRef<HTMLDivElement>(null);
 
 
-   const [allMenus, setAllMenus] = useState<SOL_ZZ_MENU_RES[]>([]);
-   const [topMenus, setTopMenus] = useState<SOL_ZZ_MENU_RES[]>([]);
-   const [leftMenus, setLeftMenus] = useState<SOL_ZZ_MENU_RES[]>([]);
+   const [allMenus, setAllMenus] = useState<ZZ_MENU_RES[]>([]);
+   const [topMenus, setTopMenus] = useState<ZZ_MENU_RES[]>([]);
+   const [leftMenus, setLeftMenus] = useState<ZZ_MENU_RES[]>([]);
    const [activeMenu, setActiveMenu] = useState<string>("");
    const [components, setComponents] = useState<any[]>([]);
    const [activeComp, setActiveComp] = useState<any>("");
@@ -28,7 +28,7 @@ function Main() {
    const [leftMode, setLeftMode] = useState<string>("large");
    const [isInitialLoad, setIsInitialLoad] = useState(true);
    const [loading, setLoading] = useState(false); // 로딩 상태 추가
-   const [searchMenus, setSearchMenus] = useState<SOL_ZZ_MENU_RES[]>([]);
+   const [searchMenus, setSearchMenus] = useState<ZZ_MENU_RES[]>([]);
 
    //--------------- change --------------------------
    useEffect(() => {
@@ -53,6 +53,7 @@ function Main() {
    }, [navigate]);
 
    useEffect(() => {
+      console.log(topMenus.length)
       if (topMenus.length > 0) {
          handleTopMenuClick(topMenus[0]);
       }
@@ -88,7 +89,7 @@ function Main() {
  
       if (usrId) {
          try {
-            let result = await Promise.all([SOL_ZZ_USER_INFO(usrId), SOL_ZZ_MENU(usrId)]);
+            let result = await Promise.all([ZZ_USER_INFO(usrId), ZZ_MENU(usrId)]);
             setLoading(true);
          } catch (error) { 
             setLoading(true); 
@@ -115,14 +116,14 @@ function Main() {
       init(usrId);
    };
 
-   const handleTopMenuClick = (topMenuItem: SOL_ZZ_MENU_RES) => {
+   const handleTopMenuClick = (topMenuItem: ZZ_MENU_RES) => {
       const selctMenus = allMenus.filter((menu: any) => menu.menuOrdr.includes(topMenuItem.menuOrdr));
       setLeftMenus(selctMenus);
       setActiveMenu(topMenuItem.menuOrdr);
       
    };
 
-   const handleLeftMenuClick = (menuItem: SOL_ZZ_MENU_RES) => {
+   const handleLeftMenuClick = (menuItem: ZZ_MENU_RES) => {
       addComponent(menuItem);
       if (tabRef.current) {
          setTimeout(() => {
@@ -149,7 +150,7 @@ function Main() {
    };
 
    //-------------util-------------------------
-   const addComponent = (menuItem: SOL_ZZ_MENU_RES) => {
+   const addComponent = (menuItem: ZZ_MENU_RES) => {
       const [folder, fileName] = (menuItem.prgmFullPath ?? "").split('/');
       const componentName = capitalizeFirstLetter(fileName ?? "");
       const Component = loadable(() => import(`../work/${folder}/${componentName}`), {
@@ -186,13 +187,13 @@ function Main() {
    };
 
    //--------------- api --------------------------
-   const SOL_ZZ_MENU = async (usrId: string) => {
+   const ZZ_MENU = async (usrId: string) => {
       let param = {
          usrId: usrId,
          menuDiv: "",
       };
 
-      let result = await SOL_ZZ_MENU_API(param);
+      let result = await ZZ_MENU_API(param);
 
     
       setAllMenus(result);
@@ -203,7 +204,7 @@ function Main() {
       setSearchMenus(filterSearchMenus);
    };
 
-   const SOL_ZZ_USER_INFO = async (usrId: string) => {
+   const ZZ_USER_INFO = async (usrId: string) => {
       if (usrId) {
          let param = {
             usrId: usrId,
@@ -211,10 +212,10 @@ function Main() {
 
          try {
             const data = JSON.stringify(param);
-            let result = await fetchPost(`SOL_ZZ_USER_INFO`, { data });
+            let result = await fetchPost(`ZZ_USER_INFO`, { data });
             setUserInfor(result);
          } catch (error) {
-            console.error("SOL_ZZ_USER_INFO Error:", error);
+            console.error("ZZ_USER_INFO Error:", error);
             throw error;
          }
       }

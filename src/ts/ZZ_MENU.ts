@@ -1,12 +1,12 @@
 import { fetchPost } from "../util/fetch"; //
 
 
-export interface SOL_ZZ_MENU_REQ {
+export interface ZZ_MENU_REQ {
    usrId: string
    menuDiv: string,
 }
 
-export interface SOL_ZZ_MENU_RES {
+export interface ZZ_MENU_RES {
    status: string;
    menuId: string;
    menuDiv: string;
@@ -25,13 +25,13 @@ export interface SOL_ZZ_MENU_RES {
    zMenuOrdr: string;
  }
 
- export const SOL_ZZ_MENU_API = async (param:SOL_ZZ_MENU_REQ) => {
+ export const ZZ_MENU_API = async (param:ZZ_MENU_REQ) => {
 
    try {
-     const result = await fetchPost(`SOL_ZZ_MENU`, param);
+     const result = await fetchPost(`ZZ_MENU`, param);
      return result; 
    } catch (error) {
-     console.error("SOL_ZZ_MENU:", error);
+     console.error("ZZ_MENU:", error);
      throw error; 
    }
  };
