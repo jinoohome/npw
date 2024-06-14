@@ -6,9 +6,10 @@ import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from
 interface Props {
    item: any;
    activeComp: any;
+   userInfo : any;
 }
 
-const Zz0201 = ({ item, activeComp }: Props) => {
+const Zz0201 = ({ item, activeComp, userInfo }: Props) => {
    const gridRef = useRef<any>(null);
    const gridContainerRef = useRef(null); 
 
@@ -54,23 +55,23 @@ const Zz0201 = ({ item, activeComp }: Props) => {
    const ZZ_MENU = async () => {
       try {
          const param = {
-            usrId: "jay8707",
+            usrId: userInfo.usrId,
          };
 
          const result = await fetchPost(`ZZ_MENU`, param);
          setGridDatas(result);
          return result;
       } catch (error) {
-         console.error("SOL_MM0301_S01 Error:", error);
+         console.error("ZZ_MENU Error:", error);
          throw error;
       }
    };
-   const SOL_MM0101_U01 = async (data: any) => {
+   const ZZ0201_U01 = async (data: any) => {
       try {
-         const result = await fetchPost(`SOL_MM0101_U01`, data);
+         const result = await fetchPost(`ZZ0201_U01`, data);
          return result as any;
       } catch (error) {
-         console.error("SOL_MM0101_U01 Error:", error);
+         console.error("ZZ0201_U01 Error:", error);
          throw error;
       }
    };
@@ -107,15 +108,15 @@ const Zz0201 = ({ item, activeComp }: Props) => {
    const save = async () => {
       const data = await getGridValues();
       if (data) {
-         let result = await SOL_MM0101_U01(data);
+         let result = await ZZ0201_U01(data);
          if (result) {
-            returnResult();
+            await returnResult(result);
          }
       }
    };
 
-   const returnResult = () => {
-      alertSwal("저장완료", "저장이 완료되었습니다.", "success");
+   const returnResult = async (result:any) => {
+      alertSwal(result.msgText,result.msgCd, result.msgStatus);
       setGridData();
    };
 
@@ -125,8 +126,9 @@ const Zz0201 = ({ item, activeComp }: Props) => {
 
       let data = {
          data: JSON.stringify(gridDatas),
-         menuId: "",
-         insrtUserId: "jay8707",
+         menuId: activeComp.menuId,
+         insrtUserId: userInfo.usrId,
+         coCd: userInfo.coCd, //회사코드
       };
 
       return data;
