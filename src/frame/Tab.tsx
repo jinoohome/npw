@@ -1,5 +1,6 @@
-import React, { RefObject, useRef } from "react";
+import React, { useRef, RefObject, useEffect, useState } from "react";
 import { XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { useDraggable } from "react-use-draggable-scroll";
 
 interface TabProps {
    components: any;
@@ -7,13 +8,26 @@ interface TabProps {
    onTabCloseClick: (id: string) => void;
    activeComp: any;
    onAllTabCloseClick: () => void;
+   topMode: string;
    tabRef: RefObject<HTMLDivElement>; 
-   
 }
-const Tab = ({ components, onTabMenuClick, onTabCloseClick, activeComp, onAllTabCloseClick, tabRef}: TabProps) => {
+
+const Tab = ({ components, onTabMenuClick, onTabCloseClick, activeComp, onAllTabCloseClick, topMode, tabRef }: TabProps) => {
+   // MutableRefObject로 설정
+   const dragRef = useRef<HTMLDivElement>(null) as React.MutableRefObject<HTMLDivElement>;
+   const { events } = useDraggable(dragRef);
+   const [isScrollable, setIsScrollable] = useState(false);
+
+   useEffect(() => {
+      if (tabRef.current) {
+         setIsScrollable(tabRef.current.scrollWidth > tabRef.current.clientWidth);
+      }
+   }, [components, tabRef]);
+
    const handleTabCloseClick = (item: any) => {
       onTabCloseClick(item);
    };
+
    const handleAllTabCloseClick = () => {
       onAllTabCloseClick();
    };
@@ -23,7 +37,7 @@ const Tab = ({ components, onTabMenuClick, onTabCloseClick, activeComp, onAllTab
          <li
             key={index}
             className={`flex items-center gap-1 cursor-pointer drop-shadow-sm text-sm px-2 pt-2 pb-1 rounded-t-xl border-b-0
-                        hover:bg-orange-400 hover:text-white
+                        hover:bg-orange-400 hover:text-white select-none
                         ${item.id === activeComp.id ? "bg-orange-400 text-white" : "bg-white "}
          `}
          >
@@ -37,36 +51,35 @@ const Tab = ({ components, onTabMenuClick, onTabCloseClick, activeComp, onAllTab
 
    const scrollLeft = () => {
       if (tabRef.current) {
-         tabRef.current.scrollBy({ left: -100, behavior: 'smooth' }); // 왼쪽으로 스크롤
+         tabRef.current.scrollBy({ left: -100, behavior: 'smooth' });
       }
-    };
-  
-    const scrollRight = () => {
+   };
+
+   const scrollRight = () => {
       if (tabRef.current) {
-         tabRef.current.scrollBy({ left: 100, behavior: 'smooth' }); // 오른쪽으로 스크롤
+         tabRef.current.scrollBy({ left: 100, behavior: 'smooth' });
       }
-    };
-  
+   };
 
    return (
-      <div>
-         <div className="bg-gray-100 w-full h-[40px] border-b flex items-center ">
-            <div ref={tabRef} className="w-[90%] h-full overflow-hidden">
-               <ul  className="max-w-[1200px] h-full list-none flex gap-1 items-end px-2  whitespace-nowrap ">
+      <div className={`${topMode === 'mobileClose' || topMode === 'mobileOpen' ? 'hidden' : ''}`}>
+         <div className="bg-gray-100 w-full h-[40px] border-b flex items-center">
+            <div  ref={dragRef} {...events} className="w-[90%] h-full overflow-hidden" >
+               <ul className="max-w-[1200px] h-full list-none flex gap-1 items-end px-2 whitespace-nowrap">
                   {components.map(renderMenuItem)}
                </ul>
             </div>
             <div className="w-[10%] flex justify-around">
                <div className="flex gap-5">
                   <div>
-                     <ChevronLeftIcon  onClick={scrollLeft} className="w-6 h-6 cursor-pointer hover:text-gray-500"></ChevronLeftIcon>
+                     <ChevronLeftIcon onClick={scrollLeft} className="w-6 h-6 cursor-pointer hover:text-gray-500"></ChevronLeftIcon>
                   </div>
                   <div>
                      <ChevronRightIcon onClick={scrollRight} className="w-6 h-6 cursor-pointer hover:text-gray-500"></ChevronRightIcon>
                   </div>
                </div>
                <div>
-                  <XMarkIcon onClick={() => handleAllTabCloseClick()} className="w-6 h-6 text-red-500 cursor-pointer hover:text-red-400"></XMarkIcon>
+                  <XMarkIcon onClick={handleAllTabCloseClick} className="w-6 h-6 text-red-500 cursor-pointer hover:text-red-400"></XMarkIcon>
                </div>
             </div>
          </div>

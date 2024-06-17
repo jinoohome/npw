@@ -25,18 +25,37 @@ function Main() {
    const [prevComps, setPrevComps] = useState<any[]>([]);
    const [loginInfo, setLoginInfo] = useState<any>();
    const [userInfo, setUserInfor] = useState<any>();
-   const [leftMode, setLeftMode] = useState<string>("large");
+   const [topMode, setTopMode] = useState<string>("");
+   const [leftMode, setLeftMode] = useState<string>("");
    const [isInitialLoad, setIsInitialLoad] = useState(true);
    const [loading, setLoading] = useState(false); // 로딩 상태 추가
    const [searchMenus, setSearchMenus] = useState<ZZ_MENU_RES[]>([]);
 
+
+
    //--------------- change --------------------------
    useEffect(() => {
+     
       const loginId = JSON.parse(sessionStorage.getItem("loginInfo") || "{}")?.usrId;
        init(loginId);
+       const handleResize = () => {
+            
+    
+            if (window.innerWidth < 1024) {
+               setTopMode("mobileClose");
+               setLeftMode("mobileClose");
+            } else {
+               setTopMode("large");
+               setLeftMode("large");
+            }
+         
+       };
+       handleResize();
+       window.addEventListener('resize', handleResize);
+       return () => {
+         window.removeEventListener('resize', handleResize);
+       };
    }, []);
-
-
 
    useEffect(() => {
       const isReloaded = sessionStorage.getItem("isReloaded");
@@ -100,6 +119,9 @@ function Main() {
    //--------------- click --------------------------
    const handleLefMode = (mode: string) => {
       setLeftMode(mode);
+   };
+   const handleTopMode = (mode: string) => {
+      setTopMode(mode);
    };
 
    const handleUserChange = (usrId: string) => {
@@ -225,13 +247,13 @@ function Main() {
       <div className="w-full h-full ">
          {loading && (
          <div className="flex w-full h-full ">
-            <motion.div animate={{ width: leftMode === "large" || leftMode === "over" ? "13%" : "3%", minWidth: leftMode === "large" || leftMode === "over" ? 230 : 50 }} transition={{ duration: 0.1, ease: "easeInOut" }} className={`h-full`}>
-               <Left leftMenus={leftMenus} activeComp={activeComp} leftMode={leftMode} onLeftMenuClick={handleLeftMenuClick} onLeftMode={handleLefMode}></Left>
+            <motion.div animate={{ width: leftMode === "mobileClose" ? "0%" :  "auto" }} style={{ minWidth: leftMode === "large" || leftMode === "over" || leftMode === "mobileOpen" ? '230px' : '0px' }} transition={{ duration: 0.1, ease: "easeInOut" }} className={`h-full`}>
+               <Left leftMenus={leftMenus} activeComp={activeComp} leftMode={leftMode} onLeftMenuClick={handleLeftMenuClick} onLeftMode={handleLefMode} onTopMode={handleTopMode}></Left>
             </motion.div>
 
-            <motion.div animate={{ width: leftMode === "large" || leftMode === "over" ? "87%" : "97%" }} transition={{ duration: 0.1, ease: "easeInOut" }} className="w-full h-full">
-               <Top loginInfo={loginInfo} userInfo={userInfo} topMenus={topMenus}  searchMenus={searchMenus} onTopMenuClick={handleTopMenuClick} activeMenu={activeMenu} leftMode={leftMode} onLeftMode={handleLefMode} onUserChange={handleUserChange} onSearchMenuClick={handleLeftMenuClick} ></Top>
-               <Tab components={components} onTabMenuClick={handleTabClick} onTabCloseClick={handleTabCloseClick} activeComp={activeComp} onAllTabCloseClick={handleAllTabCloseClick} tabRef={tabRef}></Tab>
+            <motion.div animate={{ width: '100%'}} style={{ minWidth: leftMode === "large" || leftMode === "over" ? '794px' : '360px' }} transition={{ duration: 0.1, ease: "easeInOut" }} className="w-full h-full">
+               <Top loginInfo={loginInfo} userInfo={userInfo} topMenus={topMenus}  searchMenus={searchMenus} onTopMenuClick={handleTopMenuClick} activeMenu={activeMenu} topMode={topMode} onLeftMode={handleLefMode} onTopMode={handleTopMode} onUserChange={handleUserChange} onSearchMenuClick={handleLeftMenuClick} ></Top>
+               <Tab components={components} onTabMenuClick={handleTabClick} onTabCloseClick={handleTabCloseClick} activeComp={activeComp} onAllTabCloseClick={handleAllTabCloseClick} topMode={topMode}  tabRef={tabRef}></Tab>
                <Work components={components} activeComp={activeComp} leftMode={leftMode} userInfo={userInfo}></Work>
             </motion.div>
          </div>

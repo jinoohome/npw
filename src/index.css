@@ -47,3 +47,9 @@ code {
   font-weight: 400;
   font-style: normal;
 }
+
+ @font-face {
+  font-family: '농협체M';
+  src: url('./fonts/농협체M.ttf') format("truetype");
+  font-style: normal;
+}
