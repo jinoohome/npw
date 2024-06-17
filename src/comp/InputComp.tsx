@@ -12,7 +12,6 @@ const InputComp1 = forwardRef<HTMLInputElement, Props1>(({ title, handleCallSear
          <div className="col-span-2">
             <input
                ref={ref}
-               onChange={handleCallSearch}
                onKeyDown={(e) => {
                   e.key === "Enter" && handleCallSearch();
                }}

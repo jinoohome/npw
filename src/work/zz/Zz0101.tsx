@@ -1,6 +1,6 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, reSizeGrid, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
-import { SOL_MM0401_S01_RES, SOL_MM0401_S01_API } from "../../ts/SOL_MM0401_S01";
-import { SOL_MM0401_S02_REQ, SOL_MM0401_S02_RES, SOL_MM0401_S02_API } from "../../ts/SOL_MM0401_S02";
+import { ZZ0101_S01_RES, ZZ0101_S01_API } from "../../ts/ZZ0101_S01";
+import { ZZ0101_S02_REQ, ZZ0101_S02_RES, ZZ0101_S02_API } from "../../ts/ZZ0101_S02";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
@@ -10,9 +10,10 @@ interface Props {
    item: any;
    activeComp: any;
    leftMode: any;
+   userInfo : any;
 }
 
-const Zz0101 = ({ item, activeComp, leftMode }: Props) => {
+const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const codeNameRef = useRef<any>(null);
    const codeDivRef = useRef<any>(null);
    const confirmYnRef = useRef<any>(null);
@@ -23,8 +24,8 @@ const Zz0101 = ({ item, activeComp, leftMode }: Props) => {
    const majorGridContainerRef = useRef(null);
    const minorGridContainerRef = useRef(null);
 
-   const [majors, setMajors] = useState<SOL_MM0401_S01_RES[]>();
-   const [minors, setMinors] = useState<SOL_MM0401_S02_RES[]>();
+   const [majors, setMajors] = useState<ZZ0101_S01_RES[]>();
+   const [minors, setMinors] = useState<ZZ0101_S02_RES[]>();
    const [zz0001, setZz0001] = useState<ZZ_CODE_RES[]>([]);
 
    const [codeDivChoice, setCodeDivChoice] = useState<any>();
@@ -55,9 +56,9 @@ const Zz0101 = ({ item, activeComp, leftMode }: Props) => {
          if (zz0001Data != null) {
             setZz0001(zz0001Data);
          }
-         const majorResult = await SOL_MM0401_S01();
+         const majorResult = await ZZ0101_S01();
          if (majorResult?.length) {
-            await SOL_MM0401_S02({ majorCode: majorResult[0].majorCode });
+            await ZZ0101_S02({ majorCode: majorResult[0].majorCode });
          }
       } catch (error) {
          console.error("setGridData Error:", error);
@@ -132,7 +133,7 @@ const Zz0101 = ({ item, activeComp, leftMode }: Props) => {
       return formattedResult;
    };
 
-   const SOL_MM0401_S01 = async () => {
+   const ZZ0101_S01 = async () => {
       const param = {
          codeName: codeNameRef.current?.value,
          minorCodeName: minorCodeNameRef.current?.value,
@@ -141,23 +142,23 @@ const Zz0101 = ({ item, activeComp, leftMode }: Props) => {
       };
 
       const data = JSON.stringify(param);
-      const result = await fetchPost(`SOL_MM0401_S01`, { data });
+      const result = await fetchPost(`ZZ0101_S01`, { data });
       setMajors(result);
       return result;
    };
 
-   const SOL_MM0401_S02 = async (param: { majorCode: string }) => {
-      const result2 = await fetchPost(`SOL_MM0401_S02`, param);
+   const ZZ0101_S02 = async (param: { majorCode: string }) => {
+      const result2 = await fetchPost(`ZZ0101_S02`, param);
       setMinors(result2);
    };
 
-   const SOL_MM0401_U03 = async () => {
+   const ZZ0101_U03 = async () => {
       try {
          const data = await getGridValues();
-         const result = await fetchPost(`SOL_MM0401_U03`, data);
+         const result = await fetchPost(`ZZ0101_U03`, data);
          return result as any;
       } catch (error) {
-         console.error("SOL_MM0401_U03 Error:", error);
+         console.error("ZZ0101_U03 Error:", error);
          throw error;
       }
    };
@@ -169,7 +170,7 @@ const Zz0101 = ({ item, activeComp, leftMode }: Props) => {
    };
 
    const save = async () => {
-      let result = await SOL_MM0401_U03();
+      let result = await ZZ0101_U03();
       if (result) {
          returnResult();
       }
@@ -187,8 +188,8 @@ const Zz0101 = ({ item, activeComp, leftMode }: Props) => {
       let data = {
          major: JSON.stringify(majorData),
          minor: JSON.stringify(minorData),
-         menuId: "",
-         insrtUserId: "jay8707",
+         menuId: activeComp.menuId,
+         insrtUserId: userInfo.usrId,
       };
 
       return data;
@@ -257,17 +258,25 @@ const Zz0101 = ({ item, activeComp, leftMode }: Props) => {
 
    //grid 포커스변경시
    const handleMajorFocusChange = async ({ rowKey }: any) => {
+      if (rowKey === null) {
+         rowKey = 0;
+     }
+
       let majorGrid = majorGridRef.current.getInstance();
       let majorRow = majorGrid.getRow(rowKey);
       let majorCode = majorRow.majorCode;
       if (majorCode) {
-         await SOL_MM0401_S02({ majorCode: majorCode });
+         await ZZ0101_S02({ majorCode: majorCode });
       }
    };
 
    //검색 창 클릭 또는 엔터시 조회
-   const handleCallSearch = () => {
-      setGridData();
+   const handleCallSearch = async () => {
+      //setGridData();
+      const majorResult = await ZZ0101_S01();
+      if (majorResult?.length) {
+         await ZZ0101_S02({ majorCode: majorResult[0].majorCode });
+      }
    };
 
    //-------------------div--------------------------
@@ -289,7 +298,7 @@ const Zz0101 = ({ item, activeComp, leftMode }: Props) => {
    //검색창 div
    const searchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm">
-         <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
+         <div className="grid gap-y-3  justify-start w-[80%]  2xl:w-[60%]  xl:grid-cols-3 md:grid-cols-2">
             <InputComp1 ref={codeNameRef} handleCallSearch={handleCallSearch} title="그룹코드명"></InputComp1>
             <SelectComp1 ref={codeDivRef} title="코드구분" handleCallSearch={handleCallSearch}></SelectComp1>
             <SelectComp1 ref={confirmYnRef} title="사용유무" handleCallSearch={handleCallSearch}></SelectComp1>
@@ -410,7 +419,7 @@ const Zz0101 = ({ item, activeComp, leftMode }: Props) => {
             </div>
             <div>{searchDiv()}</div>
          </div>
-         <div className="w-full h-full flex p-2 space-x-2">
+         <div className="w-full h-full md:flex p-2 md:space-x-2 md:space-y-0 space-y-2">
             <div className="w-1/2" ref={majorGridContainerRef}>{majorGrid()}</div>
             <div className="w-1/2" ref={minorGridContainerRef}>{minorGrid()} </div>
          </div>

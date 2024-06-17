@@ -44,6 +44,8 @@ const Zz0201 = ({ item, activeComp, userInfo }: Props) => {
       if (gridRef.current && gridDatas) {
          let grid = gridRef.current.getInstance();
          grid.resetData(getTreeData(gridDatas));
+         grid.disableColumn("menuId");
+         grid.disableColumn("coCd");
          if (gridDatas.length > 0) {
             // grid.focusAt(focusRow, 0, true);
          }
@@ -60,6 +62,7 @@ const Zz0201 = ({ item, activeComp, userInfo }: Props) => {
 
          const result = await fetchPost(`ZZ_MENU`, param);
          setGridDatas(result);
+         
          return result;
       } catch (error) {
          console.error("ZZ_MENU Error:", error);
@@ -98,6 +101,10 @@ const Zz0201 = ({ item, activeComp, userInfo }: Props) => {
                   alertSwal("입력확인", "메뉴ID를 입력해주세요.", "warning"); // 사용자에게 알림
                   return false;
                }
+               if (!item.coCd) {
+                  alertSwal("입력확인", "사용처를 입력해주세요.", "warning"); // 사용자에게 알림
+                  return false;
+               }
             }
          }
       }
@@ -105,19 +112,23 @@ const Zz0201 = ({ item, activeComp, userInfo }: Props) => {
       return true;
    };
 
-   const save = async () => {
-      const data = await getGridValues();
-      if (data) {
-         let result = await ZZ0201_U01(data);
-         if (result) {
-            await returnResult(result);
-         }
+  const save = async () => {
+   const data = await getGridValues();
+
+   console.log(data);
+   if (data) {
+      let result = await ZZ0201_U01(data);
+      if (result) {
+         await returnResult(result);
       }
-   };
+   }
+};
 
    const returnResult = async (result:any) => {
       alertSwal(result.msgText,result.msgCd, result.msgStatus);
-      setGridData();
+      if (result.msgCd === "1") {
+         setGridData();
+      }
    };
 
    const getGridValues = async () => {
@@ -128,7 +139,6 @@ const Zz0201 = ({ item, activeComp, userInfo }: Props) => {
          data: JSON.stringify(gridDatas),
          menuId: activeComp.menuId,
          insrtUserId: userInfo.usrId,
-         coCd: userInfo.coCd, //회사코드
       };
 
       return data;
@@ -157,7 +167,14 @@ const Zz0201 = ({ item, activeComp, userInfo }: Props) => {
    const addGridRow = () => {
       let grid = gridRef.current.getInstance();
       grid.appendRow({}, { focus: true });
+      let focusRowKey = grid.getFocusedCell().rowKey
+      grid.enableRow(focusRowKey, true);
+
    };
+
+   const test1 = () => {
+
+   }
    //grid 삭제버튼
    const delGridRow = () => {
       if (gridRef.current) {
@@ -200,7 +217,23 @@ const Zz0201 = ({ item, activeComp, userInfo }: Props) => {
 
    //-------------------grid----------------------------
    const columns = [
-      { header: "메뉴명", name: "menuName", editor: "text", filter: { type: "select", showApplyBtn: true, showClearBtn: true } },
+      { header: "메뉴명", name: "menuName", editor: "text", width:350, filter: { type: "select", showApplyBtn: true, showClearBtn: true } },
+      {
+         header: "사용처",
+         name: "coCd",
+         align: "center", 
+         formatter: "listItemText",
+         editor: {
+            type: "select",
+            options: {
+               listItems: [
+                  { text: "공통", value: "990" },
+                  { text: "장례지원단", value: "100" },
+                  { text: "유지보수", value: "200" },
+               ],
+            },
+         },
+      },
       { header: "메뉴ID", name: "menuId", align: "center", editor: "text" },
       { header: "메뉴구분", name: "menuDiv", align: "center", editor: "text" },
       { header: "부모ID", name: "paMenuId", align: "center", editor: "text" },
@@ -259,7 +292,7 @@ const Zz0201 = ({ item, activeComp, userInfo }: Props) => {
                {buttonDiv()}
             </div>
          </div>
-         <div className="w-full h-full flex space-x-2 p-2">
+         <div className="w-full h-full md:flex p-2 md:space-x-2 md:space-y-0 space-y-2">
             <div className="w-full" ref={gridContainerRef}>{grid()}</div>
          </div>
       </div>

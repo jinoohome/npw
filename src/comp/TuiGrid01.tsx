@@ -59,8 +59,7 @@ const getGridDatas = (gridRef: any) => {
    let grid = gridRef.current.getInstance();
 
    if (grid.getRowCount() > 0) {
-      let focusRowKey1 = grid.getFocusedCell().rowKey || 0;
-      grid.focusAt(focusRowKey1, 0, true);
+      grid.blur();      
    }
 
    let rows = grid.getModifiedRows();

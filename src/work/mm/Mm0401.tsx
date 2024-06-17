@@ -1,6 +1,6 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, reSizeGrid, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
-import { SOL_MM0401_S01_RES, SOL_MM0401_S01_API } from "../../ts/SOL_MM0401_S01";
-import { SOL_MM0401_S02_REQ, SOL_MM0401_S02_RES, SOL_MM0401_S02_API } from "../../ts/SOL_MM0401_S02";
+import { ZZ0101_S01_RES, ZZ0101_S01_API } from "../../ts/ZZ0101_S01";
+import { ZZ0101_S02_REQ, ZZ0101_S02_RES, ZZ0101_S02_API } from "../../ts/ZZ0101_S02";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
@@ -23,8 +23,8 @@ const Mm0401 = ({ item, activeComp, leftMode }: Props) => {
    const majorGridContainerRef = useRef(null);
    const minorGridContainerRef = useRef(null);
 
-   const [majors, setMajors] = useState<SOL_MM0401_S01_RES[]>();
-   const [minors, setMinors] = useState<SOL_MM0401_S02_RES[]>();
+   const [majors, setMajors] = useState<ZZ0101_S01_RES[]>();
+   const [minors, setMinors] = useState<ZZ0101_S02_RES[]>();
    const [zz0001, setZz0001] = useState<ZZ_CODE_RES[]>([]);
 
    const [codeDivChoice, setCodeDivChoice] = useState<any>();
@@ -55,9 +55,9 @@ const Mm0401 = ({ item, activeComp, leftMode }: Props) => {
          if (zz0001Data != null) {
             setZz0001(zz0001Data);
          }
-         const majorResult = await SOL_MM0401_S01();
+         const majorResult = await ZZ0101_S01();
          if (majorResult?.length) {
-            await SOL_MM0401_S02({ majorCode: majorResult[0].majorCode });
+            await ZZ0101_S02({ majorCode: majorResult[0].majorCode });
          }
       } catch (error) {
          console.error("setGridData Error:", error);
@@ -132,7 +132,7 @@ const Mm0401 = ({ item, activeComp, leftMode }: Props) => {
       return formattedResult;
    };
 
-   const SOL_MM0401_S01 = async () => {
+   const ZZ0101_S01 = async () => {
       const param = {
          codeName: codeNameRef.current?.value,
          minorCodeName: minorCodeNameRef.current?.value,
@@ -141,23 +141,23 @@ const Mm0401 = ({ item, activeComp, leftMode }: Props) => {
       };
 
       const data = JSON.stringify(param);
-      const result = await fetchPost(`SOL_MM0401_S01`, { data });
+      const result = await fetchPost(`ZZ0101_S01`, { data });
       setMajors(result);
       return result;
    };
 
-   const SOL_MM0401_S02 = async (param: { majorCode: string }) => {
-      const result2 = await fetchPost(`SOL_MM0401_S02`, param);
+   const ZZ0101_S02 = async (param: { majorCode: string }) => {
+      const result2 = await fetchPost(`ZZ0101_S02`, param);
       setMinors(result2);
    };
 
-   const SOL_MM0401_U03 = async () => {
+   const ZZ0101_U03 = async () => {
       try {
          const data = await getGridValues();
-         const result = await fetchPost(`SOL_MM0401_U03`, data);
+         const result = await fetchPost(`ZZ0101_U03`, data);
          return result as any;
       } catch (error) {
-         console.error("SOL_MM0401_U03 Error:", error);
+         console.error("ZZ0101_U03 Error:", error);
          throw error;
       }
    };
@@ -169,7 +169,7 @@ const Mm0401 = ({ item, activeComp, leftMode }: Props) => {
    };
 
    const save = async () => {
-      let result = await SOL_MM0401_U03();
+      let result = await ZZ0101_U03();
       if (result) {
          returnResult();
       }
@@ -261,7 +261,7 @@ const Mm0401 = ({ item, activeComp, leftMode }: Props) => {
       let majorRow = majorGrid.getRow(rowKey);
       let majorCode = majorRow.majorCode;
       if (majorCode) {
-         await SOL_MM0401_S02({ majorCode: majorCode });
+         await ZZ0101_S02({ majorCode: majorCode });
       }
    };
 
