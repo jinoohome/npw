@@ -5,44 +5,51 @@ import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from
 interface Props {
    item: any;
    activeComp: any;
+   userInfo : any;
 }
 
-const Mm0201 = ({ item, activeComp }: Props) => {
+const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
    const gridRef = useRef<any>(null);
    const gridContainerRef = useRef(null);
 
    const searchRef1 = useRef<any>(null);
    const searchRef2 = useRef<any>(null);
    const searchRef3 = useRef<any>(null);
+   const searchRef4 = useRef<any>(null);
+   const searchRef5 = useRef<any>(null);
+   const searchRef6 = useRef<any>(null);
+
+   
 
    const refs = {
       coCd: useRef<any>(null),
-      paCoCd: useRef<any>(null),
-      bpType: useRef<any>(null),
-      bpRgstNoFile: useRef<any>(null),
-      bpFullNm: useRef<any>(null),
-      bpNm: useRef<any>(null),
-      indType: useRef<any>(null),
-      cndType: useRef<any>(null),
-      empCnt: useRef<any>(null),
-      idCnt: useRef<any>(null),
-      repreNm: useRef<any>(null),
-      bpRgstNo: useRef<any>(null),
-      telNo: useRef<any>(null),
-      telNo2: useRef<any>(null),
-      bankCd: useRef<any>(null),
-      bankAcctNo: useRef<any>(null),
-      bankHolder: useRef<any>(null),
-      payAmt: useRef<any>(null),
-      zipCd: useRef<any>(null),
-      addr1: useRef<any>(null),
-      addr2: useRef<any>(null),
-   };
+      itemCd: useRef<any>(null),
+      itemNm: useRef<any>(null),
+      spec: useRef<any>(null),
+      itemGrp: useRef<any>(null),
+      itemDiv: useRef<any>(null),
+      salePrice: useRef<any>(null),
+      costPrice: useRef<any>(null),
+      taxYn: useRef<any>(null),
+      pkgItemYn: useRef<any>(null),
+      subsYn: useRef<any>(null),
+      deduYn: useRef<any>(null),
+      useYn: useRef<any>(null),
+      delYn: useRef<any>(null),
+      insrtUserId: useRef<any>(null),
+      insrtDt: useRef<any>(null),
+      updtUserId: useRef<any>(null),
+      updtDt: useRef<any>(null)
+    };
+    
 
    const [gridDatas, setGridDatas] = useState<any[]>();
-   const [zz0005, setZz0005] = useState<ZZ_CODE_RES[]>([]);
-   const [cd0008, setCd0008] = useState<ZZ_CODE_RES[]>([]);
-   const [zz0009, setZZ0009] = useState<ZZ_CODE_RES[]>([]);
+   const [cd0004, setCd0004] = useState<ZZ_CODE_RES[]>([]);
+   const [cd0005, setCd0005] = useState<ZZ_CODE_RES[]>([]);
+   const [cd0004Input, setCd0004Input] = useState<ZZ_CODE_RES[]>([]);
+   const [cd0005Input, setCd0005Input] = useState<ZZ_CODE_RES[]>([]);
+   const [coCds, setCoCds] = useState<ZZ_CODE_RES[]>([]);
+ 
 
    const [choice1, setChoice1] = useState<any>();
    const [choice2, setChoice2] = useState<any>();
@@ -50,10 +57,17 @@ const Mm0201 = ({ item, activeComp }: Props) => {
    const [choice4, setChoice4] = useState<any>();
    const [choice5, setChoice5] = useState<any>();
    const [choice6, setChoice6] = useState<any>();
+   const [choice7, setChoice7] = useState<any>();
+   const [choice8, setChoice8] = useState<any>();
+   const [choice9, setChoice9] = useState<any>();
+   const [choice10, setChoice10] = useState<any>();
+   const [choice11, setChoice11] = useState<any>();
+   const [choice12, setChoice12] = useState<any>();
+   const [choice13, setChoice13] = useState<any>();
 
    const [focusRow, setFocusRow] = useState<any>(0);
 
-   const breadcrumbItem = [{ name: "관리자" }, { name: "거래처관리" }, { name: "거래처등록" }];
+   const breadcrumbItem = [{ name: "기준정보" }, { name: "품목" }, { name: "품목등록" }];
 
    // 첫 페이지 시작시 실행
    useEffect(() => {
@@ -66,38 +80,82 @@ const Mm0201 = ({ item, activeComp }: Props) => {
 
    const setChoiceUI = () => {
       initChoice(searchRef2, setChoice1);
-      initChoice(searchRef3, setChoice2, [
+      initChoice(searchRef3, setChoice2);
+      initChoice(searchRef4, setChoice3, [
          { value: "999", label: "전체", selected: true },
          { value: "Y", label: "사용" },
          { value: "N", label: "미사용" },
       ]);
-      initChoice(refs.paCoCd, setChoice3);
-      initChoice(refs.bpType, setChoice4);
-      initChoice(refs.empCnt, setChoice5);
-      initChoice(refs.bankCd, setChoice6);
-   };
+      initChoice(searchRef5, setChoice4, [
+         { value: "999", label: "전체", selected: true },
+         { value: "Y", label: "사용" },
+         { value: "N", label: "미사용" },
+      ]);
+      initChoice(searchRef6, setChoice5, [
+         { value: "999", label: "전체"},
+         { value: "Y", label: "사용" , selected: true },
+         { value: "N", label: "미사용" },
+      ]);
 
+      initChoice(refs.coCd, setChoice6);
+      initChoice(refs.itemGrp, setChoice7);
+      initChoice(refs.itemDiv, setChoice8);
+      initChoice(refs.taxYn, setChoice9, [
+         { value: "Y", label: "사용" },
+         { value: "N", label: "미사용" },
+      ]);
+      initChoice(refs.pkgItemYn, setChoice10, [
+         { value: "Y", label: "사용" },
+         { value: "N", label: "미사용" },
+      ]);
+      initChoice(refs.subsYn, setChoice11, [
+         { value: "Y", label: "사용" },
+         { value: "N", label: "미사용" },
+      ]);
+      initChoice(refs.deduYn, setChoice12, [
+         { value: "Y", label: "사용" },
+         { value: "N", label: "미사용" },
+      ]);
+      initChoice(refs.useYn, setChoice13, [
+         { value: "Y", label: "사용" },
+         { value: "N", label: "미사용" },
+      ]);
+  
+   };
    const setGridData = async () => {
       try {
-         let zz0005Data = await ZZ_CODE({ coCd: "999", majorCode: "ZZ0005", div: "999" });
-         if (zz0005Data != null) {
-            setZz0005(zz0005Data);
-         }
+          let cd0004Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0004", div: "999" });
+          if (cd0004Data != null) {
+              setCd0004(cd0004Data);
+  
+              let cd0004IntupData = cd0004Data.filter(item => !(item.value === "999" && item.text === "전체"));
+              cd0004IntupData.unshift({ value: "", text: "" });
+  
+              setCd0004Input(cd0004IntupData);   
+          }
+  
+          let cd0005Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0005", div: "999" });
+          if (cd0005Data != null) {
+              setCd0005(cd0005Data);
+  
+              let cd0005IntupData = cd0005Data.filter(item => !(item.value === "999" && item.text === "전체"));
+              cd0005IntupData.unshift({ value: "", text: "" });
+  
+              setCd0005Input(cd0005IntupData);   
+          }
 
-         let cd0008Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0008", div: "" });
-         if (cd0008Data != null) {
-            setCd0008(cd0008Data);
-         }
-
-         let zz0009Data = await ZZ_CODE({ coCd: "999", majorCode: "ZZ0009", div: "" });
-         if (zz0009Data != null) {
-            setZZ0009(zz0009Data);
-         }
-         await SOL_MM0301_S01();
+          let coCdData = await ZZ_B_BIZ();
+          if (coCdData != null) {
+              setCoCds(coCdData);
+          }
+  
+         
+          await MM0201_S01();
       } catch (error) {
-         console.error("setGridData Error:", error);
+          console.error("setGridData Error:", error);
       }
-   };
+  };
+  
 
    //------------------useEffect--------------------------
 
@@ -115,26 +173,42 @@ const Mm0201 = ({ item, activeComp }: Props) => {
             grid.focusAt(focusRow, 0, true);
          }
       }
-      updateChoices(choice3, gridDatas, "coCd", "bpNm", "");
+      //updateChoices(choice3, gridDatas, "coCd", "bpNm", "");
    }, [gridDatas]);
 
    //inputChoicejs 데이터 설정
-   useEffect(() => {
-      updateChoices(choice1, zz0005, "value", "text");
+   // useEffect(() => {
+   //    updateChoices(choice1, zz0005, "value", "text");
 
-      let zz0005Data = zz0005.filter((item) => item.value !== "999");
-      updateChoices(choice4, zz0005Data, "value", "text", "");
-   }, [zz0005]);
+   //    let zz0005Data = zz0005.filter((item) => item.value !== "999");
+   //    updateChoices(choice4, zz0005Data, "value", "text", "");
+   // }, [zz0005]);
 
-   //inputChoicejs 데이터 설정
+   // //inputChoicejs 데이터 설정
    useEffect(() => {
-      updateChoices(choice5, cd0008, "value", "text");
-   }, [cd0008]);
+      updateChoices(choice1, cd0004, "value", "text");
+   }, [cd0004]);
 
-   //inputChoicejs 데이터 설정
    useEffect(() => {
-      updateChoices(choice6, zz0009, "value", "text");
-   }, [zz0009]);
+      updateChoices(choice7, cd0004Input, "value", "text");
+   }, [cd0004Input]);
+
+   useEffect(() => {
+      updateChoices(choice2, cd0005, "value", "text");
+   }, [cd0005]);
+
+   useEffect(() => {
+      updateChoices(choice8, cd0005Input, "value", "text");
+   }, [cd0005Input]);
+  
+   useEffect(() => {
+      updateChoices(choice6, coCds, "value", "text");
+   }, [coCds]);
+
+   // //inputChoicejs 데이터 설정
+   // useEffect(() => {
+   //    updateChoices(choice6, zz0009, "value", "text");
+   // }, [zz0009]);
 
    // Grid 내부 Choicejs 데이터 설정
    // useEffect(() => {
@@ -160,31 +234,60 @@ const Mm0201 = ({ item, activeComp }: Props) => {
          : [];
       return formattedResult;
    };
-
-   const SOL_MM0301_S01 = async () => {
+   var ZZ_B_BIZ = async () => {
       try {
          const param = {
-            bpNm: searchRef1.current?.value || "999",
-            bpType: searchRef2.current?.value || "999",
-            useYn: searchRef3.current?.value || "999",
+            coCd: userInfo.coCd,
          };
 
          const data = JSON.stringify(param);
-         const result = await fetchPost(`SOL_MM0301_S01`, { data });
+         const result = await fetchPost(`ZZ_B_BIZ`, { data });
+
+         let formattedResult = Array.isArray(result)
+         ? result.map(({ coCd, bpNm, ...rest }) => ({
+              value: coCd,
+              text: bpNm,
+              label: bpNm,
+              ...rest,
+           }))
+         : [];
+     
+         return formattedResult;
+      } catch (error) {
+         console.error("ZZ_B_BIZ Error:", error);
+         throw error;
+      }
+   }
+
+   const MM0201_S01 = async () => {
+      try {
+         const param = {
+            coCd: userInfo.coCd,
+            itemNm: searchRef1.current?.value   || "999",
+            itemGrp: searchRef2.current?.value  || "999",
+            itemDiv: searchRef3.current?.value  || "999",
+            subsYn: searchRef4.current?.value   || "999",
+            deduYn: searchRef5.current?.value   || "999",
+            useYn: searchRef6.current?.value    || "999",
+       
+         };
+
+         const data = JSON.stringify(param);
+         const result = await fetchPost(`MM0201_S01`, { data });
          setGridDatas(result);
          return result;
       } catch (error) {
-         console.error("SOL_MM0301_S01 Error:", error);
+         console.error("MM0201_S01 Error:", error);
          throw error;
       }
    };
 
-   const SOL_MM0301_U01 = async (data: any) => {
+   const MM0201_U01 = async (data: any) => {
       try {
-         const result = await fetchPost(`SOL_MM0301_U01`, data);
+         const result = await fetchPost(`MM0201_U01`, data);
          return result;
       } catch (error) {
-         console.error("SOL_MM0301_U01 Error:", error);
+         console.error("MM0201_U01 Error:", error);
          throw error;
       }
    };
@@ -196,41 +299,43 @@ const Mm0201 = ({ item, activeComp }: Props) => {
    };
 
    const save = async () => {
+      let grid = gridRef.current.getInstance();
+      let { rowKey } = grid.getFocusedCell();
+      setFocusRow(rowKey);
       const data = await getGridValues();
+
       if (data) {
-         let result = await SOL_MM0301_U01(data);
+         let result = await MM0201_U01(data);
          if (result) {
-            returnResult();
+            returnResult(result);
          }
       }
    };
-   const returnResult = () => {
-      let grid = gridRef.current.getInstance();
-      let focusMajorRowKey = grid.getFocusedCell().rowKey || 0;
-      setFocusRow(focusMajorRowKey);
-      alertSwal("저장완료", "저장이 완료되었습니다.", "success");
+   const returnResult = async (result:any) => {
+      alertSwal(result.msgText,result.msgCd, result.msgStatus);
       setGridData();
-      grid.focusAt(focusMajorRowKey, 0, true);
    };
 
    // 모든 grid Data 내용을 가져옴
    const getGridValues = async () => {
       let datas = await getGridDatas(gridRef);
-
-      let data = {
-         data: JSON.stringify(datas),
-         menuId: "",
-         insrtUserId: "jay8707",
-      };
-
-      return data;
+    
+      if(datas){
+         let data = {
+            data: JSON.stringify(datas),
+            menuId: activeComp.menuId,
+            insrtUserId: userInfo.usrId,
+         };
+   
+         return data;
+      }
    };
 
    //grid 추가버튼
    const addMajorGridRow = () => {
       let grid = gridRef.current.getInstance();
 
-      grid.appendRow({ paCoCd: "", bpType: "", bankCd: "", useYn: "Y" }, { at: 0 });
+      grid.appendRow({ coCd: userInfo.coCd  ,itemGrp: "", itemDiv: "", taxYn: "N", pkgItemYn: "N", subsYn: "N", deduYn: "N", useYn: "Y", isNew: true }, { at: 0 });
       grid.getPagination().movePageTo(0);
       grid.focusAt(0, 1, true);
    };
@@ -239,7 +344,12 @@ const Mm0201 = ({ item, activeComp }: Props) => {
    const delMajorGridRow = () => {
       let grid = gridRef.current.getInstance();
       let { rowKey } = grid.getFocusedCell();
+      let focusRowKey = grid.getRow(rowKey) ? 0 : rowKey;
+
       grid.removeRow(rowKey, {});
+      grid.focusAt(focusRowKey, 1, true);
+
+      
    };
 
    //grid 포커스변경시
@@ -251,26 +361,44 @@ const Mm0201 = ({ item, activeComp }: Props) => {
          if (rowData) {
             Object.entries(rowData).forEach(([key, value]) => {
                const ref = refs[key as keyof typeof refs]; // Add index signature to allow indexing with a string
-               if (ref) {
-                  if (key === "paCoCd") {
-                     setTimeout(function () {
-                        choice3?.setChoiceByValue(value);
-                     }, 100);
-                  } else if (key === "bpType") {
-                     setTimeout(function () {
-                        choice4?.setChoiceByValue(value);
-                     }, 100);
-                  } else if (key === "empCnt") {
-                     setTimeout(function () {
-                        choice5?.setChoiceByValue(value);
-                     }, 100);
-                  } else if (key === "bankCd") {
+               if (ref && ref.current) {
+               
+                  if (key === "coCd") {
                      setTimeout(function () {
                         choice6?.setChoiceByValue(value);
+                     }, 100);
+                  } else if (key === "itemGrp") {
+                     setTimeout(function () {
+                        choice7?.setChoiceByValue(value);
+                     }, 100);
+                  } else if (key === "itemDiv") {
+                     setTimeout(function () {
+                        choice8?.setChoiceByValue(value);
+                     }, 100);
+                  } else if (key === "taxYn") {
+                     setTimeout(function () {
+                        choice9?.setChoiceByValue(value);
+                     }, 100);
+                  } else if (key === "pkgItemYn") {
+                     setTimeout(function () {
+                        choice10?.setChoiceByValue(value);
+                     }, 100);
+                  } else if (key === "subsYn") {
+                     setTimeout(function () {
+                        choice11?.setChoiceByValue(value);
+                     }, 100);
+                  } else if (key === "deduYn") {
+                     setTimeout(function () {
+                        choice12?.setChoiceByValue(value);
+                     }, 100);
+                  } else if (key === "useYn") {
+                     setTimeout(function () {
+                        choice13?.setChoiceByValue(value);
                      }, 100);
                   } else {
                      ref.current.value = value;
                   }
+                 
                }
             });
          }
@@ -308,9 +436,12 @@ const Mm0201 = ({ item, activeComp }: Props) => {
    const searchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
          <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
-            <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch} title="회사약명"></InputComp1>
-            <SelectComp1 ref={searchRef2} title="회사구분" handleCallSearch={handleCallSearch}></SelectComp1>
-            <SelectComp1 ref={searchRef3} title="사용유무" handleCallSearch={handleCallSearch}></SelectComp1>
+            <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch} title="품목명"></InputComp1>
+            <SelectComp1 ref={searchRef2} title="품목그룹" handleCallSearch={handleCallSearch}></SelectComp1>
+            <SelectComp1 ref={searchRef3} title="품목구분" handleCallSearch={handleCallSearch}></SelectComp1>
+            <SelectComp1 ref={searchRef4} title="대체유무" handleCallSearch={handleCallSearch}></SelectComp1>
+            <SelectComp1 ref={searchRef5} title="공제유무" handleCallSearch={handleCallSearch}></SelectComp1>
+            <SelectComp1 ref={searchRef6} title="사용유무" handleCallSearch={handleCallSearch}></SelectComp1>
          </div>
       </div>
    );
@@ -322,39 +453,37 @@ const Mm0201 = ({ item, activeComp }: Props) => {
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
-               <div className="">회사 등록</div>
+               <div className="">품목 정보</div>
             </div>
          </div>
 
          <div className="p-5 space-y-5">
             <div className="grid grid-cols-4  gap-12  justify-around items-center ">
-               <InputComp2 ref={refs.coCd} title="회사코드" target="coCd" setChangeGridData={setChangeGridData} readOnly={true} />
-               <SelectComp2 ref={refs.paCoCd} title="그룹사코드" target="paCoCd" setChangeGridData={setChangeGridData} />
-               <SelectComp2 ref={refs.bpType} title="회사구분" target="bpType" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.bpRgstNoFile} title="사업자등록증" target="bpRgstNoFile" setChangeGridData={setChangeGridData} />
-            </div>
-
-            <div className="grid grid-cols-2  gap-12  justify-around items-center">
-               <InputComp2 ref={refs.bpFullNm} title="회사전명" target="bpFullNm" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.bpNm} title="회사약명" target="bpNm" setChangeGridData={setChangeGridData} />
+               <SelectComp2 ref={refs.coCd} title="회사코드" target="coCd" setChangeGridData={setChangeGridData}  />
+               <InputComp2 ref={refs.itemCd} title="품목코드" target="itemCd" setChangeGridData={setChangeGridData} readOnly={true} />
+               <InputComp2 ref={refs.itemNm} title="품목명" target="itemNm" setChangeGridData={setChangeGridData}  />
+               <InputComp2 ref={refs.spec} title="규격" target="spec" setChangeGridData={setChangeGridData} />
+               
             </div>
 
             <div className="grid grid-cols-4  gap-12  justify-around items-center">
-               <InputComp2 ref={refs.indType} title="업종" target="indType" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.cndType} title="업태" target="cndType" setChangeGridData={setChangeGridData} />
-               <SelectComp2 ref={refs.empCnt} title="임직원수" target="empCnt" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.idCnt} title="계정수" target="idCnt" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.repreNm} title="대표자명" target="repreNm" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.bpRgstNo} title="사업자등록번호" target="bpRgstNo" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.telNo} title="전화번호1" target="telNo" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.telNo2} title="전화번호2" target="telNo2" setChangeGridData={setChangeGridData} />
-               <SelectComp2 ref={refs.bankCd} title="은행" target="bankCd" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.bankAcctNo} title="은행계좌번호" target="bankAcctNo" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.bankHolder} title="예금주" target="bankHolder" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.payAmt} title="결제금액" target="payAmt" setChangeGridData={setChangeGridData} readOnly={true} />
-               <InputComp2 ref={refs.zipCd} title="우편번호" target="zipCd" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.addr1} title="주소" target="addr1" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.addr2} title="상세주소" target="addr2" setChangeGridData={setChangeGridData} />
+               <SelectComp2 ref={refs.itemGrp} title="품목그룹" target="itemGrp" setChangeGridData={setChangeGridData} />
+               <SelectComp2 ref={refs.itemDiv} title="품목구분" target="itemDiv" setChangeGridData={setChangeGridData} />
+               <InputComp2 ref={refs.salePrice} title="판매단가" target="salePrice" setChangeGridData={setChangeGridData} />
+               <InputComp2 ref={refs.costPrice} title="발주단가" target="costPrice" setChangeGridData={setChangeGridData} />
+            </div>
+
+            <div className="grid grid-cols-4  gap-12  justify-around items-center">
+               <SelectComp2 ref={refs.taxYn} title="과세여부" target="taxYn" setChangeGridData={setChangeGridData} />
+               <SelectComp2 ref={refs.pkgItemYn} title="패키지품목추가" target="pkgItemYn" setChangeGridData={setChangeGridData} />
+               <SelectComp2 ref={refs.subsYn} title="대체유무" target="subsYn" setChangeGridData={setChangeGridData} />
+               <SelectComp2 ref={refs.deduYn} title="공제유무" target="deduYn" setChangeGridData={setChangeGridData} />
+             
+            </div>
+            <div className="grid grid-cols-4  gap-12  justify-around items-center">
+               <SelectComp2 ref={refs.useYn} title="사용유무" target="useYn" setChangeGridData={setChangeGridData} />
+              
+             
             </div>
          </div>
       </div>
@@ -362,29 +491,27 @@ const Mm0201 = ({ item, activeComp }: Props) => {
 
    //-------------------grid----------------------------
    const columns = [
-      { header: "회사코드", name: "coCd", width: 100, align: "center" },
-      { header: "그룹사코드", name: "paCoCd", hidden: true },
-      { header: "회사명", name: "bpFullNm", hidden: true },
-      { header: "회사약명", name: "bpNm", editor: "text" },
-      { header: "회사구분", name: "bpType", hidden: true },
-      { header: "", name: "repreNm", hidden: true },
-      { header: "", name: "bpRgstNo", hidden: true },
-      { header: "", name: "indType", hidden: true },
-      { header: "", name: "cndType", hidden: true },
-      { header: "우편번호", name: "zipCd", hidden: true },
-      { header: "주소1", name: "addr1", hidden: true },
-      { header: "주소2", name: "addr2", hidden: true },
-      { header: "연락처", name: "telNo", hidden: true },
-      { header: "연락처2", name: "telNo2", hidden: true },
-      { header: "", name: "bankCd", hidden: true },
-      { header: "", name: "bankAcctNo", hidden: true },
-      { header: "", name: "bankHolder", hidden: true },
-      { header: "", name: "payAmt", hidden: true },
-      { header: "", name: "empCnt", hidden: true },
-      { header: "", name: "idCnt", hidden: true },
-      { header: "", name: "saveFileNm", hidden: true },
+   
+      { header: "회사코드", name: "coCd", width: 80 },
+      { header: "품목코드", name: "itemCd", width: 100 },
+      { header: "품목명", name: "itemNm", validation: { required: true} },
+      { header: "규격", name: "spec", hidden: true },
+      { header: "품목그룹", name: "itemGrp", hidden: true },
+      { header: "품목구분", name: "itemDiv", hidden: true },
+      { header: "판매단가", name: "salePrice", hidden: true },
+      { header: "발주단가", name: "costPrice", hidden: true },
+      { header: "과세여부", name: "taxYn", hidden: true },
+      { header: "패키지품목추가", name: "pkgItemYn", hidden: true },
+      { header: "대체유무", name: "subsYn", hidden: true },
+      { header: "공제유무", name: "deduYn", hidden: true },
       { header: "사용여부", name: "useYn", hidden: true },
-   ];
+      // { header: "등록자", name: "insrtUserId", hidden: true },
+      // { header: "등록일시", name: "insrtDt", hidden: true },
+      // { header: "수정자", name: "updtUserId", hidden: true },
+      // { header: "수정일시", name: "updtDt", hidden: true }
+    ];
+    
+    
 
    const grid = () => (
       <div className="border rounded-md p-2 space-y-2">
@@ -393,7 +520,7 @@ const Mm0201 = ({ item, activeComp }: Props) => {
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
-               <div className="">거래처 정보</div>
+               <div className="">품목 리스트</div>
             </div>
             <div className="flex space-x-1">
                <button type="button" onClick={addMajorGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
@@ -407,7 +534,7 @@ const Mm0201 = ({ item, activeComp }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={handleFocusChange} />
+         <TuiGrid01 gridRef={gridRef} columns={columns}  handleFocusChange={handleFocusChange}/>
       </div>
    );
 

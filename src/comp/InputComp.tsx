@@ -29,9 +29,10 @@ interface Props2 {
    target: string;
    setChangeGridData: (target: string, value: string) => void;
    readOnly?: boolean;
+   errorMsg?: string;
 }
 
-const InputComp2 = forwardRef<HTMLInputElement, Props2>(({ title, target, setChangeGridData, readOnly = false }, ref) => {
+const InputComp2 = forwardRef<HTMLInputElement, Props2>(({ title, target, setChangeGridData, readOnly = false, errorMsg }, ref) => {
    
    
    return (
@@ -41,6 +42,7 @@ const InputComp2 = forwardRef<HTMLInputElement, Props2>(({ title, target, setCha
             <input readOnly={readOnly} ref={ref} type="text" onChange={(event) => setChangeGridData(target, event.target.value)} 
             className={`border rounded-md h-8 p-2 w-full ${readOnly ? "bg-gray-100" : ""} focus:outline-orange-300`}></input>
          </div>
+          <label>{errorMsg}</label> 
       </div>
    );
 });

@@ -38,9 +38,7 @@ function Main() {
      
       const loginId = JSON.parse(sessionStorage.getItem("loginInfo") || "{}")?.usrId;
        init(loginId);
-       const handleResize = () => {
-            
-    
+       const handleResize = () => { 
             if (window.innerWidth < 1024) {
                setTopMode("mobileClose");
                setLeftMode("mobileClose");
@@ -48,7 +46,6 @@ function Main() {
                setTopMode("large");
                setLeftMode("large");
             }
-         
        };
        handleResize();
        window.addEventListener('resize', handleResize);
@@ -72,7 +69,6 @@ function Main() {
    }, [navigate]);
 
    useEffect(() => {
-      console.log(topMenus.length)
       if (topMenus.length > 0) {
          handleTopMenuClick(topMenus[0]);
       }
@@ -108,7 +104,7 @@ function Main() {
  
       if (usrId) {
          try {
-            let result = await Promise.all([ZZ_USER_INFO(usrId), ZZ_MENU(usrId)]);
+            await Promise.all([ZZ_USER_INFO(usrId), ZZ_MENU(usrId)]);
             setLoading(true);
          } catch (error) { 
             setLoading(true); 
@@ -124,7 +120,7 @@ function Main() {
       setTopMode(mode);
    };
 
-   const handleUserChange = (usrId: string) => {
+   const resetState = () => {
       setAllMenus([]);
       setSearchMenus([]);
       setTopMenus([]);
@@ -135,6 +131,10 @@ function Main() {
       setPrevComps([]);
       setUserInfor({});
       setLoading(false);
+    };
+
+   const handleUserChange = (usrId: string) => {
+      resetState();
       init(usrId);
    };
 
