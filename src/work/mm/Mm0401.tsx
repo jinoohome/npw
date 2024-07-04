@@ -313,7 +313,10 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
                      setTimeout(function () {
                         choice4?.setChoiceByValue(value);
                      }, 100);                  
-               
+                  }  else if (key === "useYn") {
+                     setTimeout(function () {
+                        choice5?.setChoiceByValue(value);
+                     }, 100);  
                   } else {
                      ref.current.value = value;
                   }
@@ -393,16 +396,16 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
 
    //-------------------grid----------------------------
    const columns = [
-      { header: "배송지코드", name: "dlvyCd", hidden: false },
+      { header: "배송지코드", name: "dlvyCd", width: 100, hidden: false },
       { header: "배송지명", name: "dlvyNm", hidden: false },
       { header: "배송지구분", name: "dlvyDiv", hidden: true },
       { header: "시/도", name: "siDo", hidden: true },
-      { header: "시/군/구", name: "siGunGu", hidden: false },
+      { header: "시/군/구", name: "siGunGu", hidden: true },
       { header: "전화번호", name: "telNo", hidden: true },
       { header: "우편번호", name: "zipCd", hidden: true },
       { header: "주소", name: "addr1", hidden: true },
       { header: "상세주소", name: "addr2", hidden: true },
-      { header: "사용여부", name: "useYn", align: 'center', hidden: false },
+      { header: "사용여부", name: "useYn", align: 'center', hidden: true },
       { header: "", name: "isNew", hidden: true },   
    ];
 
