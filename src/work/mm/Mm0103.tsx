@@ -10,7 +10,7 @@ interface Props {
    userInfo : any;
 }
 
-const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
+const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const gridRef = useRef<any>(null);
    const gridContainerRef = useRef(null);
 
@@ -24,7 +24,7 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       paBpCd: useRef<any>(null),
       bpType: useRef<any>(null),
       bpDiv: useRef<any>(null),
-      bpRate: useRef<any>(null),
+      prsnNm: useRef<any>(null),
       bpFullNm: useRef<any>(null),
       bpNm: useRef<any>(null),
       indType: useRef<any>(null),
@@ -39,6 +39,9 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       zipCd: useRef<any>(null),
       addr1: useRef<any>(null),
       addr2: useRef<any>(null),
+      jiBon: useRef<any>(null),
+      siGun: useRef<any>(null),
+      erpCode: useRef<any>(null),
    };
 
    const [gridDatas, setGridDatas] = useState<any[]>();
@@ -325,7 +328,7 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const addGridRow = () => {
       let grid = gridRef.current.getInstance();
 
-      grid.appendRow({ coCd: "", paBpCd: "", bpType: "", bankCd: "", useYn: "Y" }, { at: 0 });
+      grid.appendRow({ coCd: "", bpDiv: "", paBpCd: "", bpType: "", bankCd: "", useYn: "Y" }, { at: 0 });
       grid.getPagination().movePageTo(0);
       grid.focusAt(0, 1, true);
    };
@@ -449,9 +452,12 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                <InputComp2 ref={refs.cndType} title="업태" target="cndType" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.repreNm} title="대표자명" target="repreNm" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.bpRgstNo} title="사업자등록번호" target="bpRgstNo" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.bpRate} title="수수료비율" target="bpRate" setChangeGridData={setChangeGridData} />
+               <InputComp2 ref={refs.prsnNm} title="담당자명" target="prsnNm" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.telNo} title="전화번호1" target="telNo" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.telNo2} title="전화번호2" target="telNo2" setChangeGridData={setChangeGridData} /> 
+               <InputComp2 ref={refs.jiBon} title="지본" target="jiBon" setChangeGridData={setChangeGridData} /> 
+               <InputComp2 ref={refs.siGun} title="시군지부" target="siGun" setChangeGridData={setChangeGridData} /> 
+               <InputComp2 ref={refs.erpCode} title="ERP코드(업로드용)" target="erpCode" setChangeGridData={setChangeGridData} /> 
             </div>
 
             <div className="grid grid-cols-3  gap-12  justify-around items-center">
@@ -483,14 +489,17 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "", name: "indType", hidden: true },
       { header: "", name: "cndType", hidden: true },
       { header: "우편번호", name: "zipCd", hidden: true },
+      { header: "지본", name: "jiBon", hidden: true },
+      { header: "시군지부", name: "siGun", hidden: true },
       { header: "주소1", name: "addr1", hidden: true },
       { header: "주소2", name: "addr2", hidden: true },
-      { header: "수수료비율", name: "bpRate", hidden: true },
+      { header: "담당자명", name: "prsnNm", hidden: true },
       { header: "연락처", name: "telNo", hidden: true },
       { header: "연락처2", name: "telNo2", hidden: true },
       { header: "", name: "bankCd", hidden: true },
       { header: "", name: "bankAcctNo", hidden: true },
       { header: "", name: "bankHolder", hidden: true },
+      { header: "", name: "erpCode", hidden: true },
       { header: "사용여부", name: "useYn", hidden: true },
    ];
 
@@ -536,4 +545,4 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    );
 };
 
-export default Mm0101;
+export default Mm0103;

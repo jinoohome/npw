@@ -9,7 +9,7 @@ interface Props {
    userInfo : any;
 }
 
-const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
+const Mm0104 = ({ item, activeComp, userInfo }: Props) => {
    const gridRef = useRef<any>(null);
    const gridContainerRef = useRef(null); 
 
@@ -95,7 +95,7 @@ const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
       try {
          const param = {
             //coCd: userInfo.coCd,
-            coCd: "100",
+            coCd: "200",
             bpNm: searchRef1.current?.value || "999",
             bpType: searchRef2.current?.value || "999",
             useYn: searchRef3.current?.value || "999",
@@ -161,8 +161,10 @@ const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
       { header: "사업부서", name: "coCd", hidden: true },
       { header: "회사코드", name: "bpCd", width: 100, align: "center" },
       { header: "그룹사코드", name: "paCoCd", hidden: true },
-      { header: "회사명", name: "bpFullNm", width: 200 },
+      { header: "회사전명", name: "bpFullNm", width: 200 },
       { header: "회사약명", name: "bpNm", width: 200 },
+      { header: "지본", name: "jiBon", align: "center", width: 120 },
+      { header: "시군지부", name: "siGun", align: "center", width: 120 },
       { header: "회사구분", name: "bpType", align: "center", width: 120 },
       { header: "회사종류", name: "bpDiv", align: "center", width: 120 },
       { header: "대표자", name: "repreNm", width: 120 },
@@ -172,6 +174,7 @@ const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
       { header: "우편번호", name: "zipCd", align:"center" , width: 80},
       { header: "주소1", name: "addr1" , width: 200},
       { header: "주소2", name: "addr2" , width: 200},
+      { header: "담당자", name: "prsnNm", width: 120 },
       { header: "연락처", name: "telNo" , width: 120},
       { header: "연락처2", name: "telNo2" , width: 120},
       { header: "", name: "bankCd", hidden: true },
@@ -216,4 +219,4 @@ const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
    );
 };
 
-export default Mm0102;
+export default Mm0104;
