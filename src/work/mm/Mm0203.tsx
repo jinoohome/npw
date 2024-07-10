@@ -8,7 +8,7 @@ interface Props {
    userInfo: any;
 }
 
-const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
+const Mm0203 = ({ item, activeComp, userInfo }: Props) => {
    const gridRef = useRef<any>(null);
    const gridContainerRef = useRef(null);
 
@@ -17,7 +17,7 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
    const searchRef3 = useRef<any>(null);
    const searchRef4 = useRef<any>(null);
    const searchRef5 = useRef<any>(null);
-   const searchRef6 = useRef<any>(null);
+   
 
    const [searchChoices, setSearchChoices] = useState<{ [key: string]: any }>({});
    const [inputChoices, setInputChoices] = useState<{ [key: string]: any }>({});
@@ -31,6 +31,7 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
       itemCd: useRef<any>(null),
       itemNm: useRef<any>(null),
       spec: useRef<any>(null),
+      workCd: useRef<any>(null),
       itemGrp: useRef<any>(null),
       itemDiv: useRef<any>(null),
       salePrice: useRef<any>(null),
@@ -52,6 +53,8 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
    const [cd0004Input, setCd0004Input] = useState<ZZ_CODE_RES[]>([]);
    const [cd0005Input, setCd0005Input] = useState<ZZ_CODE_RES[]>([]);
    const [coCds, setCoCds] = useState<ZZ_CODE_RES[]>([]);
+   const [workCds, setWorkCds] = useState<any>([]);
+   const [workCdsSearch, setWorkCdsSearch] = useState<any>([]);
    const [focusRow, setFocusRow] = useState<any>(0);
 
    // 첫 페이지 시작시 실행
@@ -65,19 +68,10 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
 
    const setChoiceUI = () => {
       // Search Choices
-      initChoice(searchRef2, (choice) => setSearchChoices((prev) => ({ ...prev, itemGrp: choice })));
-      initChoice(searchRef3, (choice) => setSearchChoices((prev) => ({ ...prev, itemDiv: choice })));
-      initChoice(searchRef4, (choice) => setSearchChoices((prev) => ({ ...prev, subsYn: choice })), [
-         { value: "999", label: "전체", selected: true },
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(searchRef5, (choice) => setSearchChoices((prev) => ({ ...prev, deduYn: choice })), [
-         { value: "999", label: "전체", selected: true },
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(searchRef6, (choice) => setSearchChoices((prev) => ({ ...prev, useYn: choice })), [
+      initChoice(searchRef2, (choice) => setSearchChoices((prev) => ({ ...prev, workCd: choice })));
+      initChoice(searchRef3, (choice) => setSearchChoices((prev) => ({ ...prev, itemGrp: choice })));
+      initChoice(searchRef4, (choice) => setSearchChoices((prev) => ({ ...prev, itemDiv: choice })));
+      initChoice(searchRef5, (choice) => setSearchChoices((prev) => ({ ...prev, useYn: choice })), [
          { value: "999", label: "전체" },
          { value: "Y", label: "사용", selected: true },
          { value: "N", label: "미사용" },
@@ -85,25 +79,10 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
 
       // Input Choices
       initChoice(refs.coCd, (choice) => setInputChoices((prev) => ({ ...prev, coCd: choice })));
+      initChoice(refs.workCd, (choice) => setInputChoices((prev) => ({ ...prev, workCd: choice })));
       initChoice(refs.itemGrp, (choice) => setInputChoices((prev) => ({ ...prev, itemGrp: choice })));
       initChoice(refs.itemDiv, (choice) => setInputChoices((prev) => ({ ...prev, itemDiv: choice })));
-      initChoice(refs.taxYn, (choice) => setInputChoices((prev) => ({ ...prev, taxYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.pkgItemYn, (choice) => setInputChoices((prev) => ({ ...prev, pkgItemYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.subsYn, (choice) => setInputChoices((prev) => ({ ...prev, subsYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.deduYn, (choice) => setInputChoices((prev) => ({ ...prev, deduYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.useYn, (choice) => setInputChoices((prev) => ({ ...prev, useYn: choice })), [
+          initChoice(refs.useYn, (choice) => setInputChoices((prev) => ({ ...prev, useYn: choice })), [
          { value: "Y", label: "사용" },
          { value: "N", label: "미사용" },
       ]);
@@ -136,7 +115,20 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
             setCoCds(coCdData);
          }
 
-         await MM0201_S01();
+         let workCdData = await ZZ_WORKS();
+         if (workCdData != null) {
+            
+            workCdData.unshift({ value: "", text: "" });
+            setWorkCds(workCdData);
+            
+            
+            let workCdSearch = workCdData.slice();
+            workCdSearch = workCdSearch.filter((item) => !(item.value === "" && item.text === ""));
+            workCdSearch.unshift({ value: "999", text: "전체" });
+            setWorkCdsSearch(workCdSearch);
+         }
+
+         await MM0203_S01();
       } catch (error) {
          console.error("setGridData Error:", error);
       }
@@ -190,6 +182,14 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
    useEffect(() => {
       updateChoices(inputChoices.coCd, coCds, "value", "text");
    }, [coCds]);
+
+   useEffect(() => {
+      updateChoices(inputChoices.workCd, workCds, "value", "text");
+   }, [workCds]);
+
+   useEffect(() => {
+      updateChoices(searchChoices.workCd, workCdsSearch, "value", "text");
+   }, [workCdsSearch]);
 
    // //inputChoicejs 데이터 설정
    // useEffect(() => {
@@ -245,24 +245,23 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
       }
    };
 
-   const MM0201_S01 = async () => {
+   const MM0203_S01 = async () => {
       try {
          const param = {
             coCd: userInfo.coCd,
             itemNm: searchRef1.current?.value || "999",
-            itemGrp: searchRef2.current?.value || "999",
-            itemDiv: searchRef3.current?.value || "999",
-            subsYn: searchRef4.current?.value || "999",
-            deduYn: searchRef5.current?.value || "999",
-            useYn: searchRef6.current?.value || "999",
+            workCd: searchRef2.current?.value || "999",
+            itemGrp: searchRef3.current?.value || "999",
+            itemDiv: searchRef4.current?.value || "999",
+            useYn: searchRef5.current?.value || "999",
          };
 
          const data = JSON.stringify(param);
-         const result = await fetchPost(`MM0201_S01`, { data });
+         const result = await fetchPost(`MM0203_S01`, { data });
          setGridDatas(result);
          return result;
       } catch (error) {
-         console.error("MM0201_S01 Error:", error);
+         console.error("MM0203_S01 Error:", error);
          throw error;
       }
    };
@@ -273,6 +272,35 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
          return result;
       } catch (error) {
          console.error("MM0201_U01 Error:", error);
+         throw error;
+      }
+   };
+
+   const ZZ_WORKS = async () => {
+      try {
+         const param = {
+            coCd:  userInfo.coCd,
+            workCd:  "999",
+            workNm:  "999",
+            useYn:  "Y",
+         };
+
+         const data = JSON.stringify(param);
+         const result = await fetchPost(`ZZ_WORKS`, { data });   
+
+         let formattedResult = Array.isArray(result)
+            ? result.map(({ workCd, workNm, ...rest }) => ({
+                 value: workCd,
+                 text: workNm,
+                 label: workNm,
+                 ...rest,
+              })
+            )
+            : [];
+     
+         return formattedResult;
+      } catch (error) {
+         console.error("ZZ_WORKS Error:", error);
          throw error;
       }
    };
@@ -410,8 +438,7 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
       const grid = gridRef.current.getInstance();
       let { rowKey } = grid.getFocusedCell();
 
-    
-      console.log(rowKey, columnName, value);
+      
       
       grid.setValue(rowKey, columnName, value, false);
    };
@@ -442,11 +469,10 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
          <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
             <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch} title="품목명"></InputComp1>
-            <SelectComp1 ref={searchRef2} title="품목그룹" handleCallSearch={handleCallSearch}></SelectComp1>
-            <SelectComp1 ref={searchRef3} title="품목구분" handleCallSearch={handleCallSearch}></SelectComp1>
-            <SelectComp1 ref={searchRef4} title="대체유무" handleCallSearch={handleCallSearch}></SelectComp1>
-            <SelectComp1 ref={searchRef5} title="공제유무" handleCallSearch={handleCallSearch}></SelectComp1>
-            <SelectComp1 ref={searchRef6} title="사용유무" handleCallSearch={handleCallSearch}></SelectComp1>
+            <SelectComp1 ref={searchRef2} title="작업그룹" handleCallSearch={handleCallSearch}></SelectComp1>
+            <SelectComp1 ref={searchRef3} title="품목그룹" handleCallSearch={handleCallSearch}></SelectComp1>
+            <SelectComp1 ref={searchRef4} title="품목구분" handleCallSearch={handleCallSearch}></SelectComp1>
+            <SelectComp1 ref={searchRef5} title="사용유무" handleCallSearch={handleCallSearch}></SelectComp1>
          </div>
       </div>
    );
@@ -467,23 +493,20 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
                <SelectComp2 ref={refs.coCd} title="회사코드" target="coCd" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.itemCd} title="품목코드" target="itemCd" setChangeGridData={setChangeGridData} readOnly={true} />
                <InputComp2 ref={refs.itemNm} title="품목명" target="itemNm" setChangeGridData={setChangeGridData} errorMsg={errorMsgs.itemNm} />
-               <InputComp2 ref={refs.spec} title="규격" target="spec" setChangeGridData={setChangeGridData} />
+               <InputComp2 ref={refs.spec} title="단위" target="spec" setChangeGridData={setChangeGridData} />
             </div>
 
             <div className="grid grid-cols-4  gap-12  justify-around items-center">
+               <SelectComp2 ref={refs.workCd} title="작업그룹" target="workCd" setChangeGridData={setChangeGridData} />
                <SelectComp2 ref={refs.itemGrp} title="품목그룹" target="itemGrp" setChangeGridData={setChangeGridData} />
                <SelectComp2 ref={refs.itemDiv} title="품목구분" target="itemDiv" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.salePrice} title="판매단가" target="salePrice" setChangeGridData={setChangeGridData}  type="number"/>
-               <InputComp2 ref={refs.costPrice} title="발주단가" target="costPrice" setChangeGridData={setChangeGridData} type="number"/>
+               <InputComp2 ref={refs.salePrice} title="기준단가" target="salePrice" setChangeGridData={setChangeGridData}  type="number"/>
+              
             </div>
 
+     
             <div className="grid grid-cols-4  gap-12  justify-around items-center">
-               <SelectComp2 ref={refs.taxYn} title="과세여부" target="taxYn" setChangeGridData={setChangeGridData} />
-               <SelectComp2 ref={refs.pkgItemYn} title="패키지품목추가" target="pkgItemYn" setChangeGridData={setChangeGridData} />
-               <SelectComp2 ref={refs.subsYn} title="대체유무" target="subsYn" setChangeGridData={setChangeGridData} />
-               <SelectComp2 ref={refs.deduYn} title="공제유무" target="deduYn" setChangeGridData={setChangeGridData} />
-            </div>
-            <div className="grid grid-cols-4  gap-12  justify-around items-center">
+            <InputComp2 ref={refs.costPrice} title="발주단가" target="costPrice" setChangeGridData={setChangeGridData} type="number"/>
                <SelectComp2 ref={refs.useYn} title="사용유무" target="useYn" setChangeGridData={setChangeGridData} />
             </div>
          </div>
@@ -496,6 +519,7 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "품목코드", name: "itemCd", width: 100 },
       { header: "품목명", name: "itemNm"},
       { header: "규격", name: "spec", hidden: true },
+      { header: "작업그룹", name: "workCd", hidden: true },
       { header: "품목그룹", name: "itemGrp", hidden: true },
       { header: "품목구분", name: "itemDiv", hidden: true },
       { header: "판매단가", name: "salePrice", hidden: true },
@@ -511,6 +535,7 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
       // { header: "수정자", name: "updtUserId", hidden: true },
       // { header: "수정일시", name: "updtDt", hidden: true }
    ];
+
 
    const grid = () => (
       <div className="border rounded-md p-2 space-y-2">
@@ -555,5 +580,4 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
       </div>
    );
 };
-
-export default Mm0201;
+export default Mm0203;

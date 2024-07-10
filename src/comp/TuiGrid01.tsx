@@ -15,6 +15,7 @@ interface Props {
    perPage?: number;
    perPageYn?: boolean;
    height?: number;
+   summary? : any;
 }
 
 
@@ -71,7 +72,7 @@ const getGridDatas = (gridRef: any) => {
    return datas;
 };
 
-const TuiGrid01 = ({ columns, handleFocusChange, gridRef, treeColumnName, perPageYn = true, perPage = 50, height = window.innerHeight - 450 }: Props) => {
+const TuiGrid01 = ({ columns, handleFocusChange, gridRef, treeColumnName, perPageYn = true, perPage = 50, height = window.innerHeight - 450, summary }: Props) => {
    // 고유한 key 생성을 위해 Math.random() 사용
    TuiGrid.applyTheme("default", {
       cell: {
@@ -118,6 +119,7 @@ const TuiGrid01 = ({ columns, handleFocusChange, gridRef, treeColumnName, perPag
       treeColumnOptions: {
          name: treeColumnName,
       },
+      summary : summary
    };
 
    if (handleFocusChange) {

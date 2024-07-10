@@ -1,4 +1,5 @@
 import React, { forwardRef } from "react";
+import { commas } from "./Import";
 
 interface Props1 {
    title: string;
@@ -30,19 +31,36 @@ interface Props2 {
    setChangeGridData: (target: string, value: string) => void;
    readOnly?: boolean;
    errorMsg?: string;
+   type?: string;
 }
 
-const InputComp2 = forwardRef<HTMLInputElement, Props2>(({ title, target, setChangeGridData, readOnly = false, errorMsg }, ref) => {
+const InputComp2 = forwardRef<HTMLInputElement, Props2>(({ title, target, setChangeGridData, readOnly = false, errorMsg, type }, ref) => {
    
+
+   const handleChange = (event: any) => {
+      let value = event.target.value;
+      if (type === "number") {
+         value = value.replace(/[^0-9]/g, '');
+         setChangeGridData(target, value);
+         value = commas(Number(value));
+         event.target.value = value;
+      } else {
+         setChangeGridData(target, value);
+      }
+   };
+
    
    return (
       <div>
          <label>{title}</label>
          <div>
-            <input readOnly={readOnly} ref={ref} type="text" onChange={(event) => setChangeGridData(target, event.target.value)} 
-            className={`border rounded-md h-8 p-2 w-full ${readOnly ? "bg-gray-100" : ""} focus:outline-orange-300`}></input>
+            <input readOnly={readOnly} ref={ref}   type="text"  data-type={type === 'number'? 'number' : 'text'} onChange={handleChange} 
+            className={`border rounded-md h-8 p-2 w-full 
+                        ${readOnly ? "bg-gray-100" : ""} 
+                        ${type === "number" ? "text-right" : ""}
+                        focus:outline-orange-300`}></input>
          </div>
-          <label>{errorMsg}</label> 
+          <label className="text-rose-500">{errorMsg}</label> 
       </div>
    );
 });

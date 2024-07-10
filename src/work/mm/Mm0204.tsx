@@ -8,7 +8,7 @@ interface Props {
    userInfo: any;
 }
 
-const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
+const Mm0204 = ({ item, activeComp, userInfo }: Props) => {
    const gridRef = useRef<any>(null);
    const gridContainerRef = useRef(null);
 
@@ -24,13 +24,14 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
 
    const [gridDatas, setGridDatas] = useState<any[]>();
-   const breadcrumbItem = [{ name: "기준정보" }, { name: "품목" }, { name: "품목등록" }];
+   const breadcrumbItem = [{ name: "기준정보" }, { name: "품목" }, { name: "품목 등록" }];
 
    const refs = {
       coCd: useRef<any>(null),
       itemCd: useRef<any>(null),
       itemNm: useRef<any>(null),
       spec: useRef<any>(null),
+      workCd: useRef<any>(null),
       itemGrp: useRef<any>(null),
       itemDiv: useRef<any>(null),
       salePrice: useRef<any>(null),
@@ -52,6 +53,8 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
    const [cd0004Input, setCd0004Input] = useState<ZZ_CODE_RES[]>([]);
    const [cd0005Input, setCd0005Input] = useState<ZZ_CODE_RES[]>([]);
    const [coCds, setCoCds] = useState<ZZ_CODE_RES[]>([]);
+   const [workCds, setWorkCds] = useState<any>([]);
+   const [workCdsSearch, setWorkCdsSearch] = useState<any>([]);
    const [focusRow, setFocusRow] = useState<any>(0);
 
    // 첫 페이지 시작시 실행
@@ -65,19 +68,10 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
 
    const setChoiceUI = () => {
       // Search Choices
-      initChoice(searchRef2, (choice) => setSearchChoices((prev) => ({ ...prev, itemGrp: choice })));
-      initChoice(searchRef3, (choice) => setSearchChoices((prev) => ({ ...prev, itemDiv: choice })));
-      initChoice(searchRef4, (choice) => setSearchChoices((prev) => ({ ...prev, subsYn: choice })), [
-         { value: "999", label: "전체", selected: true },
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(searchRef5, (choice) => setSearchChoices((prev) => ({ ...prev, deduYn: choice })), [
-         { value: "999", label: "전체", selected: true },
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(searchRef6, (choice) => setSearchChoices((prev) => ({ ...prev, useYn: choice })), [
+      initChoice(searchRef2, (choice) => setSearchChoices((prev) => ({ ...prev, workCd: choice })));
+      initChoice(searchRef3, (choice) => setSearchChoices((prev) => ({ ...prev, itemGrp: choice })));
+      initChoice(searchRef4, (choice) => setSearchChoices((prev) => ({ ...prev, itemDiv: choice })));
+      initChoice(searchRef5, (choice) => setSearchChoices((prev) => ({ ...prev, useYn: choice })), [
          { value: "999", label: "전체" },
          { value: "Y", label: "사용", selected: true },
          { value: "N", label: "미사용" },
@@ -85,29 +79,15 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
 
       // Input Choices
       initChoice(refs.coCd, (choice) => setInputChoices((prev) => ({ ...prev, coCd: choice })));
+      initChoice(refs.workCd, (choice) => setInputChoices((prev) => ({ ...prev, workCd: choice })));
       initChoice(refs.itemGrp, (choice) => setInputChoices((prev) => ({ ...prev, itemGrp: choice })));
       initChoice(refs.itemDiv, (choice) => setInputChoices((prev) => ({ ...prev, itemDiv: choice })));
-      initChoice(refs.taxYn, (choice) => setInputChoices((prev) => ({ ...prev, taxYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.pkgItemYn, (choice) => setInputChoices((prev) => ({ ...prev, pkgItemYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.subsYn, (choice) => setInputChoices((prev) => ({ ...prev, subsYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.deduYn, (choice) => setInputChoices((prev) => ({ ...prev, deduYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.useYn, (choice) => setInputChoices((prev) => ({ ...prev, useYn: choice })), [
+          initChoice(refs.useYn, (choice) => setInputChoices((prev) => ({ ...prev, useYn: choice })), [
          { value: "Y", label: "사용" },
          { value: "N", label: "미사용" },
       ]);
    };
+
 
    const setGridData = async () => {
       try {
@@ -136,7 +116,22 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
             setCoCds(coCdData);
          }
 
-         await MM0201_S01();
+         
+         let workCdData = await ZZ_WORKS();
+         if (workCdData != null) {
+            
+            workCdData.unshift({ value: "", text: "" });
+            setWorkCds(workCdData);
+            
+            
+            let workCdSearch = workCdData.slice();
+            workCdSearch = workCdSearch.filter((item) => !(item.value === "" && item.text === ""));
+            workCdSearch.unshift({ value: "999", text: "전체" });
+            setWorkCdsSearch(workCdSearch);
+         }
+
+
+         await MM0204_S01();
       } catch (error) {
          console.error("setGridData Error:", error);
       }
@@ -190,6 +185,14 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
    useEffect(() => {
       updateChoices(inputChoices.coCd, coCds, "value", "text");
    }, [coCds]);
+
+   useEffect(() => {
+      updateChoices(inputChoices.workCd, workCds, "value", "text");
+   }, [workCds]);
+
+   useEffect(() => {
+      updateChoices(searchChoices.workCd, workCdsSearch, "value", "text");
+   }, [workCdsSearch]);
 
    // //inputChoicejs 데이터 설정
    // useEffect(() => {
@@ -245,24 +248,23 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
       }
    };
 
-   const MM0201_S01 = async () => {
+   const MM0204_S01 = async () => {
       try {
          const param = {
             coCd: userInfo.coCd,
             itemNm: searchRef1.current?.value || "999",
-            itemGrp: searchRef2.current?.value || "999",
-            itemDiv: searchRef3.current?.value || "999",
-            subsYn: searchRef4.current?.value || "999",
-            deduYn: searchRef5.current?.value || "999",
-            useYn: searchRef6.current?.value || "999",
+            workCd: searchRef2.current?.value || "999",
+            itemGrp: searchRef3.current?.value || "999",
+            itemDiv: searchRef4.current?.value || "999",
+            useYn: searchRef5.current?.value || "999",
          };
 
          const data = JSON.stringify(param);
-         const result = await fetchPost(`MM0201_S01`, { data });
+         const result = await fetchPost(`MM0204_S01`, { data });
          setGridDatas(result);
          return result;
       } catch (error) {
-         console.error("MM0201_S01 Error:", error);
+         console.error("MM0204_S01 Error:", error);
          throw error;
       }
    };
@@ -273,6 +275,35 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
          return result;
       } catch (error) {
          console.error("MM0201_U01 Error:", error);
+         throw error;
+      }
+   };
+
+   const ZZ_WORKS = async () => {
+      try {
+         const param = {
+            coCd:  userInfo.coCd,
+            workCd:  "999",
+            workNm:  "999",
+            useYn:  "Y",
+         };
+
+         const data = JSON.stringify(param);
+         const result = await fetchPost(`ZZ_WORKS`, { data });   
+
+         let formattedResult = Array.isArray(result)
+            ? result.map(({ workCd, workNm, ...rest }) => ({
+                 value: workCd,
+                 text: workNm,
+                 label: workNm,
+                 ...rest,
+              })
+            )
+            : [];
+     
+         return formattedResult;
+      } catch (error) {
+         console.error("ZZ_WORKS Error:", error);
          throw error;
       }
    };
@@ -406,15 +437,6 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
       }
    };
 
-   const setChangeGridData = (columnName: string, value: any) => {
-      const grid = gridRef.current.getInstance();
-      let { rowKey } = grid.getFocusedCell();
-
-    
-      console.log(rowKey, columnName, value);
-      
-      grid.setValue(rowKey, columnName, value, false);
-   };
 
    //검색 창 클릭 또는 엔터시 조회
    const handleCallSearch = () => {
@@ -430,10 +452,10 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
             <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
             조회
          </button>
-         <button type="button" onClick={save} className="bg-blue-500 text-white  rounded-lg px-2 py-1 flex items-center shadow">
+         {/* <button type="button" onClick={save} className="bg-blue-500 text-white  rounded-lg px-2 py-1 flex items-center shadow">
             <ServerIcon className="w-5 h-5 mr-1" />
             저장
-         </button>
+         </button> */}
       </div>
    );
 
@@ -442,75 +464,63 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
          <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
             <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch} title="품목명"></InputComp1>
-            <SelectComp1 ref={searchRef2} title="품목그룹" handleCallSearch={handleCallSearch}></SelectComp1>
-            <SelectComp1 ref={searchRef3} title="품목구분" handleCallSearch={handleCallSearch}></SelectComp1>
-            <SelectComp1 ref={searchRef4} title="대체유무" handleCallSearch={handleCallSearch}></SelectComp1>
-            <SelectComp1 ref={searchRef5} title="공제유무" handleCallSearch={handleCallSearch}></SelectComp1>
-            <SelectComp1 ref={searchRef6} title="사용유무" handleCallSearch={handleCallSearch}></SelectComp1>
+            <SelectComp1 ref={searchRef2} title="작업그룹" handleCallSearch={handleCallSearch}></SelectComp1>
+            <SelectComp1 ref={searchRef3} title="품목그룹" handleCallSearch={handleCallSearch}></SelectComp1>
+            <SelectComp1 ref={searchRef4} title="품목구분" handleCallSearch={handleCallSearch}></SelectComp1>
+            <SelectComp1 ref={searchRef5} title="사용유무" handleCallSearch={handleCallSearch}></SelectComp1>
          </div>
       </div>
    );
    //input div
-   const inputDiv = () => (
-      <div className="border rounded-md p-2 space-y-2 input text-sm">
-         <div className="flex justify-between items-center  border-b">
-            <div className="flex items-center space-x-1 text-orange-500 p-2 ">
-               <div>
-                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
-               </div>
-               <div className="">품목 정보</div>
-            </div>
-         </div>
-
-         <div className="p-5 space-y-5">
-            <div className="grid grid-cols-4  gap-12  justify-around items-center ">
-               <SelectComp2 ref={refs.coCd} title="회사코드" target="coCd" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.itemCd} title="품목코드" target="itemCd" setChangeGridData={setChangeGridData} readOnly={true} />
-               <InputComp2 ref={refs.itemNm} title="품목명" target="itemNm" setChangeGridData={setChangeGridData} errorMsg={errorMsgs.itemNm} />
-               <InputComp2 ref={refs.spec} title="규격" target="spec" setChangeGridData={setChangeGridData} />
-            </div>
-
-            <div className="grid grid-cols-4  gap-12  justify-around items-center">
-               <SelectComp2 ref={refs.itemGrp} title="품목그룹" target="itemGrp" setChangeGridData={setChangeGridData} />
-               <SelectComp2 ref={refs.itemDiv} title="품목구분" target="itemDiv" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.salePrice} title="판매단가" target="salePrice" setChangeGridData={setChangeGridData}  type="number"/>
-               <InputComp2 ref={refs.costPrice} title="발주단가" target="costPrice" setChangeGridData={setChangeGridData} type="number"/>
-            </div>
-
-            <div className="grid grid-cols-4  gap-12  justify-around items-center">
-               <SelectComp2 ref={refs.taxYn} title="과세여부" target="taxYn" setChangeGridData={setChangeGridData} />
-               <SelectComp2 ref={refs.pkgItemYn} title="패키지품목추가" target="pkgItemYn" setChangeGridData={setChangeGridData} />
-               <SelectComp2 ref={refs.subsYn} title="대체유무" target="subsYn" setChangeGridData={setChangeGridData} />
-               <SelectComp2 ref={refs.deduYn} title="공제유무" target="deduYn" setChangeGridData={setChangeGridData} />
-            </div>
-            <div className="grid grid-cols-4  gap-12  justify-around items-center">
-               <SelectComp2 ref={refs.useYn} title="사용유무" target="useYn" setChangeGridData={setChangeGridData} />
-            </div>
-         </div>
-      </div>
-   );
+   
 
    //-------------------grid----------------------------
    const columns = [
-      { header: "회사코드", name: "coCd", width: 80 },
-      { header: "품목코드", name: "itemCd", width: 100 },
-      { header: "품목명", name: "itemNm"},
-      { header: "규격", name: "spec", hidden: true },
-      { header: "품목그룹", name: "itemGrp", hidden: true },
-      { header: "품목구분", name: "itemDiv", hidden: true },
-      { header: "판매단가", name: "salePrice", hidden: true },
-      { header: "발주단가", name: "costPrice", hidden: true },
-      { header: "과세여부", name: "taxYn", hidden: true },
-      { header: "패키지품목추가", name: "pkgItemYn", hidden: true },
-      { header: "대체유무", name: "subsYn", hidden: true },
-      { header: "공제유무", name: "deduYn", hidden: true },
-      { header: "사용여부", name: "useYn", hidden: true },
+      { header: "회사코드", name: "coCd", width: 80, align: "center", hidden: true},
+      { header: "회사", name: "bpNm", width: 100, sortable: true},
+      { header: "작업코드", name: "workCd", width: 100, align: "center", sortable: true},
+      { header: "작업", name: "workNm", width: 100, align: "center", sortable: true},
+      { header: "품목코드", name: "itemCd", width: 100, align: "center", sortable: true},
+      { header: "품목명", name: "itemNm", width: 200, sortable: true},
+      { header: "규격", name: "spec", width:100, sortable: true},
+      { header: "품목그룹코드", name: "itemGrp", align: "center", width:120, sortable: true},
+      { header: "품목그룹", name: "itemGrpNm", sortable: true},
+      { header: "품목구분코드", name: "itemDiv", align: "center", width:120,  sortable: true},
+      { header: "품목구분", name: "itemDivNm", sortable: true},
+      { header: "판매단가", name: "salePrice", align: "right", width: 100, sortable: true, 	
+         formatter: function(e: any) {
+            if(e.value){return commas(e.value);}
+         }
+      },
+      { header: "발주단가", name: "costPrice", align: "right", width: 100, sortable: true,
+         formatter: function(e: any) {
+         if(e.value){return commas(e.value);}
+      }
+      },
+      { header: "사용여부", name: "useYn", align: "center", width: 80, sortable: true},
 
       // { header: "등록자", name: "insrtUserId", hidden: true },
       // { header: "등록일시", name: "insrtDt", hidden: true },
       // { header: "수정자", name: "updtUserId", hidden: true },
       // { header: "수정일시", name: "updtDt", hidden: true }
    ];
+
+   
+   const summary = {
+      height: 40,
+      position: 'top', 
+      columnContent: {
+         bpNm: {
+              template: (e:any) => {
+                  return  `총 ${e.cnt}개`;
+              
+              }
+          },
+        
+      }
+
+
+   }
 
    const grid = () => (
       <div className="border rounded-md p-2 space-y-2">
@@ -521,19 +531,10 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
                </div>
                <div className="">품목 리스트</div>
             </div>
-            <div className="flex space-x-1">
-               <button type="button" onClick={addMajorGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
-                  <PlusIcon className="w-5 h-5" />
-                  추가
-               </button>
-               <button type="button" onClick={delMajorGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
-                  <MinusIcon className="w-5 h-5" />
-                  삭제
-               </button>
-            </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={handleFocusChange} />
+         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={handleFocusChange} 
+                  height = {window.innerHeight - 500} perPageYn={false} summary={summary}/>
       </div>
    );
 
@@ -547,13 +548,13 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
             <div>{searchDiv()}</div>
          </div>
          <div className="w-full h-full flex space-x-2 p-2">
-            <div className="w-1/3 " ref={gridContainerRef}>
+            <div className="w-full" ref={gridContainerRef}>
                {grid()}
             </div>
-            <div className="w-2/3 ">{inputDiv()} </div>
+           
          </div>
       </div>
    );
 };
 
-export default Mm0201;
+export default Mm0204;
