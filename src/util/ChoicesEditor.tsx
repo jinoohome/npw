@@ -8,10 +8,12 @@ interface CustomSelectEditorProps {
       editor: {
          options: {
             listItems: Array<{ text: string; value: string }>;
+            onChange?: (value: string) => void; 
          };
       };
    };
    value: string;
+   
 }
 
 class CustomSelectEditor {
@@ -19,19 +21,22 @@ class CustomSelectEditor {
    value: string;
    choices: Choices | null;
    listItems: Array<{ text: string; value: string }>;
+   onChange?: (value: string) => void; 
 
    constructor(props: CustomSelectEditorProps) {
       this.el = document.createElement("select");
       this.el.className = "custom-select-editor";
-      const { columnInfo, value } = props;
+      const { columnInfo, value } = props; 
       this.listItems = columnInfo.editor.options.listItems;
       this.value = value;
       this.choices = null;
+      this.onChange = columnInfo.editor.options.onChange; 
    }
 
    getElement(): HTMLElement {
       return this.el;
    }
+
    getValue(): string {
       const value = this.choices ? this.choices.getValue() : this.el.value;
       if (Array.isArray(value)) {
@@ -70,6 +75,16 @@ class CustomSelectEditor {
          },
          true
       );
+
+      this.el.addEventListener("change", this.handleChange);
+   }
+
+   handleChange = (event: Event) => {
+      const target = event.target as HTMLSelectElement;
+      const value = target.value;
+      if (this.onChange) {
+         this.onChange(value);
+      }
    }
 }
 
