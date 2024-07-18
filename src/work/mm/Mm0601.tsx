@@ -2,7 +2,7 @@ import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoi
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
-const breadcrumbItem = [{ name: "관리자" }, { name: "메뉴" }, { name: "메뉴권한관리" }];
+const breadcrumbItem = [{ name: "관리자" }, { name: "메뉴" }, { name: "고객사별 기준정보 등록" }];
 interface Props {
    item: any;
    activeComp: any;
@@ -429,9 +429,16 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
 
    //---------------------- grid -----------------------------
 
+
+   const handleChoiceChange = (value: string) => {
+    
+   };
+
+
+
    const columns1 = [
       { header: "시스템그룹", name: "sysGrp", align: "center", hidden: "false" },
-      { header: "사용처", name: "coCd", align: "center", formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: [] } } },
+      { header: "사용처", name: "coCd", align: "center", formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: []} } },
       { header: "그룹ID", name: "gId", align: "center", hidden: "false" },
       { header: "그룹명", name: "gName", align: "center", editor: "text" },
       {
@@ -477,9 +484,9 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    );
 
    const columns2 = [
-      { header: "회사코드", name: "coCd", align: "center", hidden: "false" },
-      { header: "그룹ID", name: "gId", align: "center", hidden: "false" },
-      { header: "메뉴ID", name: "menuId", align: "center", formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: [] } } },
+      { header: "회사코드", name: "coCd", align: "center", },
+      { header: "그룹ID", name: "gId", align: "center",  },
+      { header: "메뉴ID", name: "menuId", align: "center", formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: [], onChange: handleChoiceChange  } } },
       {
          header: "권한",
          name: "auth",
