@@ -144,7 +144,7 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
       if (data) {
          let result = await MM0301_U01(data);
          if (result) {
-            await returnResult();
+            await returnResult(result);
          }
       }else{
 
@@ -154,9 +154,9 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
     
     
    };
-   const returnResult = async() => {
+   const returnResult = async(result: any) => {
      
-      alertSwal("저장완료", "저장이 완료되었습니다.", "success");
+      alertSwal(result.msgText, result.msgCd, result.msgStatus);
       await setGridData();
    
    };

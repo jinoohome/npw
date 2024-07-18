@@ -172,11 +172,11 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const save = async () => {
       let result = await ZZ0101_U03();
       if (result) {
-         returnResult();
+         returnResult(result);
       }
    };
-   const returnResult = () => {
-      alertSwal("저장완료", "저장이 완료되었습니다.", "success");
+   const returnResult = (result : any) => {
+      alertSwal(result.msgText, result.msgCd, result.msgStatus);
       setGridData();
    };
 

@@ -10,6 +10,8 @@ import ChoicesEditor from "../util/ChoicesEditor";
 interface Props {
    columns: any[];
    handleFocusChange?: (rowKey: any) => void;
+   handleAfterChange?: (ev: any) => void; // 추가된 이벤트 핸들러
+   handleClick?: (ev: any) => void; // 추가된 이벤트 핸들러
    gridRef: RefObject<Grid>;
    treeColumnName?: string;
    perPage?: number;
@@ -72,7 +74,7 @@ const getGridDatas = (gridRef: any) => {
    return datas;
 };
 
-const TuiGrid01 = ({ columns, handleFocusChange, gridRef, treeColumnName, perPageYn = true, perPage = 50, height = window.innerHeight - 450, summary }: Props) => {
+const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick,  gridRef, treeColumnName, perPageYn = true, perPage = 50, height = window.innerHeight - 450, summary }: Props) => {
    // 고유한 key 생성을 위해 Math.random() 사용
    TuiGrid.applyTheme("default", {
       cell: {
@@ -126,6 +128,17 @@ const TuiGrid01 = ({ columns, handleFocusChange, gridRef, treeColumnName, perPag
       // handleFocusChange가 제공되었을 경우에만 설정합니다.
       gridProps.onFocusChange = handleFocusChange;
    }
+
+   if (handleAfterChange) {
+      // handleAfterChange가 제공되었을 경우에만 설정합니다.
+      gridProps.onAfterChange = handleAfterChange;
+   }
+
+   if (handleClick) {
+      // handleClick이 제공되었을 경우에만 설정합니다.
+      gridProps.onClick = handleClick;
+   }
+
 
    return <Grid {...gridProps} />;
 };

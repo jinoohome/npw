@@ -315,13 +315,13 @@ const Zz0202 = ({ item, activeComp, userInfo }: Props) => {
       if (data) {
          let result = await ZZ0202_U04();
          if (result) {
-            await returnResult();
+            await returnResult(result);
          }
       }
    };
 
-   const returnResult = () => {
-      alertSwal("저장완료", "저장이 완료되었습니다.", "success");
+   const returnResult = (result : any) => {
+      alertSwal(result.msgText, result.msgCd, result.msgStatus);
       setGridData();
    };
 

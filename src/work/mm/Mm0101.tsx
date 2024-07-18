@@ -295,15 +295,15 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       if (data) {
          let result = await MM0101_U01(data);
          if (result) {
-            returnResult();
+            returnResult(result);
          }
       }
    };
-   const returnResult = () => {
+   const returnResult = (result: any) => {
       let grid = gridRef.current.getInstance();
       let focusMajorRowKey = grid.getFocusedCell().rowKey || 0;
       setFocusRow(focusMajorRowKey);
-      alertSwal("저장완료", "저장이 완료되었습니다.", "success");
+      alertSwal(result.msgText, result.msgCd, result.msgStatus);
       setGridData();
       grid.focusAt(focusMajorRowKey, 0, true);
    };
@@ -325,7 +325,7 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const addGridRow = () => {
       let grid = gridRef.current.getInstance();
 
-      grid.appendRow({ coCd: "", paBpCd: "", bpType: "", bankCd: "", useYn: "Y" }, { at: 0 });
+      grid.appendRow({ coCd: "", paBpCd: "", bpType: "", bpDiv: "", bankCd: "", useYn: "Y" }, { at: 0 });
       grid.getPagination().movePageTo(0);
       grid.focusAt(0, 1, true);
    };

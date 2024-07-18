@@ -204,7 +204,7 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
          console.error("ZZ_B_BIZ Error:", error);
          throw error;
       }
-   }
+   };
 
    const ZZ0301_S01 = async () => {
       try {
@@ -351,7 +351,7 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
       if (data) {
          let result = await ZZ0301_U01(data);
          if (result) {
-            await returnResult();
+            await returnResult(result);
          }
       }else{
 
@@ -361,9 +361,9 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
     
     
    };
-   const returnResult = async() => {
+   const returnResult = async(result: any) => {
      
-      alertSwal("저장완료", "저장이 완료되었습니다.", "success");
+      alertSwal(result.msgText, result.msgCd, result.msgStatus);
       await setGridData();
    
    };
