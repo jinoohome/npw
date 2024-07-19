@@ -28,6 +28,7 @@ const Mm0403 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    const [zz0019, setZz0019] = useState<ZZ_CODE_RES[]>([]);
    const [poBp, setPoBp] = useState<any>([]);
+   
 
    const [focusRow, setFocusRow] = useState<any>(0);
 
@@ -48,16 +49,16 @@ const Mm0403 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          }
 
          let poBp = await ZZ_B_PO_BP('999');
-            console.log(poBp);
-            if (poBp != null) {
-               poBp.unshift({ value: "", text: "" });
-               setPoBp(poBp);
-            }
+           
+         if (poBp != null) {
+            poBp.unshift({ value: "", text: "" });
+            setPoBp(poBp);
+         }
 
          const grid1Result = await MM0403_S01();
          if (grid1Result?.length) {
             let result = await MM0403_S02({ siGunGu: grid1Result[0].code });
-console.log(result[0].dlvyDiv);
+
             
          }
       } catch (error) {
@@ -117,10 +118,12 @@ console.log(result[0].dlvyDiv);
       if (poBp) {
          let gridInstance = GridRef2.current.getInstance();
          let column = gridInstance.getColumn("dlvyCd");
+         
          column.editor.options.listItems = poBp;
          gridInstance.refreshLayout();
       }
    }, [poBp]);
+
 
    //---------------------- api -----------------------------
 
@@ -268,39 +271,45 @@ console.log(result[0].dlvyDiv);
       if (code) {
          await MM0403_S02({ siGunGu: code });
       }
+
+
+
+      
    };
+   // const handleMajorFocusChange2 = async (ev: any) => {
+     
+   //    const { rowKey, columnName } = ev;
+   //    const rowData = ev.instance.getRow(rowKey);
+   //    if(columnName === 'dlvyCd') {
+   //       let filter = poBp.filter((item: any) => item.value === rowData.dlvyCd);
+   //      // let poBp = await ZZ_B_PO_BP(rowData.dlvyDiv);
+   //       if (filter != null) {
+   //          filter.unshift({ value: "", text: "" });
+   //          setFilterPoBp(filter);
+     
+   //       }
+   //    }
+   // };
 
    const  handleClick = async (ev: any) => {      
-      alert('test')
-      setPoBp([]);
-      const { rowKey, columnName } = ev;
-      const rowData = ev.instance.getRow(rowKey);
-      if(columnName === 'dlvyCd') {
-         console.log(rowData.dlvyDiv);
-         let poBp = await ZZ_B_PO_BP(rowData.dlvyDiv);
-         if (poBp != null) {
-            poBp.unshift({ value: "", text: "" });
-            setPoBp(poBp);
-     
+      let gridInstance = GridRef2.current.getInstance();
+      let { rowKey, columnName } = ev;
+      let rowData = ev.instance.getRow(rowKey);
+
+      if (columnName === 'dlvyCd') {
+         let filter = poBp.filter((item: any) => item.bpDiv === rowData.dlvyDiv);
+         if (filter != null) {
+            filter.unshift({ value: "", text: "" });
+            let column = gridInstance.getColumn("dlvyCd");
+            column.editor.options.listItems = filter;
+            gridInstance.refreshLayout();
+
+            gridInstance.finishEditing();
+            gridInstance.startEditing(rowKey, columnName);
          }
       }
    };
 
-   const handleAfterChange = (ev: any) => {
-      // ev.changes.forEach(async (change: any) => {
-      //    if (change.columnName === 'dlvyDiv') {
-      //       const rowKey = change.rowKey;
-      //       const rowData = ev.instance.getRow(rowKey);
-      //       const dlvyDivValue = rowData.dlvyDiv;
-            
-      //       let poBp = await ZZ_B_PO_BP(dlvyDivValue);
-      //    if (poBp != null) {
-      //       poBp.unshift({ value: "", text: "" });
-      //       setPoBp(poBp);
-      //    }
-      //    }
-      // });
-   };
 
    //검색 창 클릭 또는 엔터시 조회
    const handleCallSearch = async () => {
@@ -354,7 +363,12 @@ console.log(result[0].dlvyDiv);
       { header: "시/군/구", name: "siGunGu", align: "center" , editor: "text" },
       { header: "시/군/구", name: "siGunGu2", align: "center" , editor: "text" },
       { header: "발주구분", name: "dlvyDiv", align: "center", formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: zz0019 } }},
-      { header: "발주지점", name: "dlvyCd", align: "center", formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: poBp } } },
+      { header: "발주지점", name: "dlvyCd", align: "center",   formatter: "listItemText", editor: { type: ChoicesEditor, options: 
+         { 
+            listItems: poBp,
+            instance: new ChoicesEditor({ columnInfo: { editor: { options: { listItems: poBp } } }, value: "" }) 
+         } } },
+      //  { header: "발주지점", name: "dlvyCd", align: "center",   formatter: "listItemText", editor: { type: 'select'}},
       //{ header: "발주지점", name: "dlvyCd" },
       { header: "상태", name: "status", hidden: true },
    ];
@@ -395,7 +409,7 @@ console.log(result[0].dlvyDiv);
             </div>
          </div>
 
-         <TuiGrid01 columns={grid2Columns} handleAfterChange={handleAfterChange} handleClick={handleClick} gridRef={GridRef2} />
+         <TuiGrid01 columns={grid2Columns} handleClick={handleClick} gridRef={GridRef2} />
       </div>
    );
 
