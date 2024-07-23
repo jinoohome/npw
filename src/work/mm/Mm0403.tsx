@@ -360,8 +360,7 @@ const Mm0403 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const grid2Columns = [
       { header: "", name: "coCd", hidden: true },
       { header: "시/군/구", name: "siGunGu", align: "center" , hidden: true },
-      { header: "시/군/구", name: "siGunGu", align: "center" , editor: "text" },
-      { header: "시/군/구", name: "siGunGu2", align: "center" , editor: "text" },
+      { header: "시/군/구", name: "siGunGu", align: "center" , hidden: true },
       { header: "발주구분", name: "dlvyDiv", align: "center", formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: zz0019 } }},
       { header: "발주지점", name: "dlvyCd", align: "center",   formatter: "listItemText", editor: { type: ChoicesEditor, options: 
          { 
