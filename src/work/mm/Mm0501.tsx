@@ -3,6 +3,7 @@ import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
+import DatePickerEditor from "../../util/DatePickerEditor";
 
 interface Props {
    item: any;
@@ -356,8 +357,8 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             type: 'datePicker',
             options: {
                   language: 'ko',
-                  format: 'yyyy-MM-dd HH:mm',
-                  timepicker: true
+                  format: 'yyyy-MM-dd',
+                  timepicker: false
             }
         }},
       { header: "재고수량", name: "onhandQty", editor: "text"},
@@ -449,4 +450,7 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    );
 };
 
+
+
 export default Mm0501;
+

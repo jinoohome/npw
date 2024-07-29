@@ -18,6 +18,7 @@ interface Props {
    perPageYn?: boolean;
    height?: number;
    summary? : any;
+   rowHeaders?: any;
 }
 
 
@@ -74,7 +75,35 @@ const getGridDatas = (gridRef: any) => {
    return datas;
 };
 
-const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick,  gridRef, treeColumnName, perPageYn = true, perPage = 50, height = window.innerHeight - 450, summary }: Props) => {
+const getGridCheckedDatas = (gridRef: any) => {
+   let grid = gridRef.current.getInstance();
+
+   if (grid.getRowCount() > 0) {
+       grid.blur();
+   }
+
+   const allRows = grid.getData();
+   const checkedRows = grid.getCheckedRows();
+   const checkedRowKeys = new Set(checkedRows.map((row: any) => row.rowKey));
+
+   const datas = allRows.map((row: any) => {
+       if (checkedRowKeys.has(row.rowKey)) {
+           if (row.rowKey < 0) {
+               return { ...row, status: "I" };
+           } else {
+               return { ...row, status: "U" };
+           }
+       } else {
+           return { ...row, status: "D" };
+       }
+   });
+
+   console.log(datas)
+
+   return datas;
+};
+
+const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick,  gridRef, treeColumnName, perPageYn = true, perPage = 50, height = window.innerHeight - 450, summary ,rowHeaders=["rowNum"] }: Props) => {
    // 고유한 key 생성을 위해 Math.random() 사용
    TuiGrid.applyTheme("default", {
       cell: {
@@ -110,7 +139,7 @@ const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick,
       scrollY: true,
       columnOptions: { resizable: true },
       heightResizable: true,
-      rowHeaders: ["rowNum"],
+      rowHeaders: rowHeaders,
       oneTimeBindingProps: ["data", "columns"],
       ...(perPageYn && {
          pageOptions: {
@@ -143,4 +172,4 @@ const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick,
    return <Grid {...gridProps} />;
 };
 
-export { TuiGrid01, getGridDatas, refreshGrid, reSizeGrid };
+export { TuiGrid01, getGridDatas, getGridCheckedDatas, refreshGrid, reSizeGrid };

@@ -4,6 +4,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'tui-grid/dist/tui-grid.css';
+import 'tui-date-picker/dist/tui-date-picker.css';
 
 
 const root = ReactDOM.createRoot(

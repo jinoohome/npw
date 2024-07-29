@@ -1,4 +1,4 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
+import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, getGridCheckedDatas } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 
@@ -141,15 +141,17 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
       setFocusRow(rowKey);
     
       const data = await getGridValues();
-      if (data) {
-         let result = await MM0301_U01(data);
-         if (result) {
-            await returnResult(result);
-         }
-      }else{
 
-         grid.focusAt(rowKey, 0, true);
-      }
+      console.log(data) 
+      // if (data) {
+      //    let result = await MM0301_U01(data);
+      //    if (result) {
+      //       await returnResult(result);
+      //    }
+      // }else{
+
+      //    grid.focusAt(rowKey, 0, true);
+      // }
 
     
     
@@ -163,8 +165,8 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
 
    // 모든 grid Data 내용을 가져옴
    const getGridValues = async () => {
-      let datas = await getGridDatas(gridRef);
-    
+     // let datas = await getGridDatas(gridRef);
+     let datas = await getGridCheckedDatas(gridRef); 
       if(datas){
          let data = {
             data: JSON.stringify(datas),
@@ -314,7 +316,7 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={handleFocusChange} />
+         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={handleFocusChange} rowHeaders={['checkbox','rowNum']}  />
       </div>
    );
 
