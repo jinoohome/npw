@@ -76,29 +76,38 @@ const getGridDatas = (gridRef: any) => {
 };
 
 const getGridCheckedDatas = (gridRef: any) => {
-   let grid = gridRef.current.getInstance();
+   const grid = gridRef.current.getInstance();
 
    if (grid.getRowCount() > 0) {
        grid.blur();
    }
 
    const allRows = grid.getData();
-   const checkedRows = grid.getCheckedRows();
-   const checkedRowKeys = new Set(checkedRows.map((row: any) => row.rowKey));
 
-   const datas = allRows.map((row: any) => {
-       if (checkedRowKeys.has(row.rowKey)) {
-           if (row.rowKey < 0) {
-               return { ...row, status: "I" };
-           } else {
-               return { ...row, status: "U" };
-           }
-       } else {
-           return { ...row, status: "D" };
-       }
+
+   const rows = grid.getModifiedRows();
+   const prevDatas = [
+      ...rows.createdRows.map((e: any) => ({ ...e, status: "I" })),
+      ...rows.deletedRows.map((e: any) => ({ ...e, status: "D" })),
+      ...rows.updatedRows.map((e: any) => ({ ...e, status: "U" }))
+   ];
+
+   const uncheckedRows = allRows.filter((row: any) => !row.checked);
+
+   //기존에 있던 데이터중에 체크가 해제된 데이터는 status를 D로 변경
+   const datas = prevDatas.map((data: any) => {
+      const uncheckedRow = uncheckedRows.find((row: any) => row.rowKey === data.rowKey);
+      return uncheckedRow ? { ...data, status: "D" } : data;
    });
 
-   console.log(datas)
+   //체크가 해제된 데이터중에 기존에 없던 데이터는 추가 (status는 D로 설졍)
+   uncheckedRows.forEach((row: any) => {
+      if (!datas.some((data: any) => data.rowKey === row.rowKey)) {
+         datas.push({ ...row, status: "D" });
+      }
+   });
+
+   console.log('datas', datas);
 
    return datas;
 };

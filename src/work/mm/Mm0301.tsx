@@ -79,7 +79,8 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
    useEffect(() => {
       if (gridRef.current && gridDatas) {
          let grid = gridRef.current.getInstance();
-         grid.resetData(gridDatas);
+         const updatedGridDatas = gridDatas.map(data => ({ ...data, _attributes: { ...data._attributes, checked: true }}));
+         grid.resetData(updatedGridDatas);
          if (gridDatas.length > 0) {
             grid.focusAt(focusRow, 0, true);
          }
@@ -142,16 +143,16 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
     
       const data = await getGridValues();
 
-      console.log(data) 
-      // if (data) {
-      //    let result = await MM0301_U01(data);
-      //    if (result) {
-      //       await returnResult(result);
-      //    }
-      // }else{
+    
+      if (data) {
+         let result = await MM0301_U01(data);
+         if (result) {
+            await returnResult(result);
+         }
+      }else{
 
-      //    grid.focusAt(rowKey, 0, true);
-      // }
+         grid.focusAt(rowKey, 0, true);
+      }
 
     
     
