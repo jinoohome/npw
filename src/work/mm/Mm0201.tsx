@@ -254,6 +254,7 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
             itemDiv: searchRef3.current?.value || "999",
             subsYn: searchRef4.current?.value || "999",
             deduYn: searchRef5.current?.value || "999",
+            pkgItemYn:  "999",
             useYn: searchRef6.current?.value || "999",
          };
 

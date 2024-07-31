@@ -359,8 +359,40 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
    const searchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
          <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
-            <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch} title="배송지명"></InputComp1>
-            <SelectComp1 ref={searchRef2} title="사용유무" handleCallSearch={handleCallSearch}></SelectComp1>
+            <SelectComp1  title="사용유무" handleCallSearch={handleCallSearch}></SelectComp1>
+            <InputComp1  handleCallSearch={handleCallSearch} title="배송지명"></InputComp1>
+            <div>
+               <div className="grid  grid-cols-3 gap-3 items-center h-full">
+                  <label className="col-span-1 text-right">확정여부</label>
+                  <div className="col-span-2 flex ms-2 bg-white border rounded-md h-full space-x-3">
+                     <div className="flex items-center">
+                        <input
+                        
+                           type="radio"
+                           value="Y"
+                        
+                           className="form-radio text-indigo-600 transition duration-150 ease-in-out"
+                        />
+                        <label htmlFor="" className="ml-2 block text-gray-700">
+                           확정
+                        </label>
+                     </div>
+                     <div className="flex items-center">
+                        <input
+                     
+                           type="radio"
+                           value="N"
+                        
+                           className="form-radio text-indigo-600 transition duration-150 ease-in-out"
+                        />
+                        <label htmlFor="" className="ml-2 block text-gray-700">
+                           미확정
+                        </label>
+                     </div>
+                  </div>
+               </div>
+            </div>
+           
          </div>
       </div>
    );

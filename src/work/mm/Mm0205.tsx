@@ -1,10 +1,9 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, reSizeGrid, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
+import { React, useEffect, useState, useRef, commas, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, reSizeGrid, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, CommonModal } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { XMarkIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
-import { Button, Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
-
+import Modal from 'react-modal';
 
 interface Props {
    item: any;
@@ -14,15 +13,14 @@ interface Props {
 }
 
 const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
-
    const GridRef1 = useRef<any>(null);
    const GridRef2 = useRef<any>(null);
    const GridRef3 = useRef<any>(null);
 
    const gridGridContainerRef = useRef(null);
    const grid2GridContainerRef = useRef(null);
+   const grid3GridContainerRef = useRef(null);
 
-   //검색창 ref
    const searchRef1 = useRef<any>(null);
    const searchRef2 = useRef<any>(null);
    const searchRef3 = useRef<any>(null);
@@ -31,6 +29,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    
    const [gridDatas1, setGridDatas] = useState<any[]>();
    const [gridDatas2, setGridDatas2] = useState<any[]>();
+   const [gridDatas3, setGridDatas3] = useState<any[]>();
    
    const [focusRow, setFocusRow] = useState<any>(0);
    
@@ -47,12 +46,13 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const [cd0004, setCd0004] = useState<ZZ_CODE_RES[]>([]);
    const [cd0005, setCd0005] = useState<ZZ_CODE_RES[]>([]);
 
-   // 첫 페이지 시작시 실행
    useEffect(() => {
       setChoiceUI();
       setGridData();
       reSizeGrid({ ref: GridRef1, containerRef: gridGridContainerRef, sec: 200 });
       reSizeGrid({ ref: GridRef2, containerRef: grid2GridContainerRef, sec: 200 });
+      
+  
    }, []);
 
    const setChoiceUI = () => {
@@ -76,26 +76,26 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          let cd0004Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0004", div: "999" });
          if (cd0004Data != null) {
             setCd0004(cd0004Data);
-          
          }
 
          let cd0005Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0005", div: "999" });
          if (cd0005Data != null) {
             setCd0005(cd0005Data);
          }
+
+        
+
       } catch (error) {
          console.error("setGridData Error:", error);
       }
    };
 
-   // 탭 클릭시 Grid 리사이즈
    useEffect(() => {
       refreshGrid(GridRef1);
       refreshGrid(GridRef2);
    
    }, [activeComp, leftMode]);
 
-   // Grid 데이터 설정
    useEffect(() => {
       if (GridRef1.current && gridDatas1) {
          let grid1 = GridRef1.current.getInstance();
@@ -111,7 +111,6 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       }
    }, [gridDatas1]);
 
-   // Grid 데이터 설정
    useEffect(() => {
       if (GridRef2.current && gridDatas2) {
          let grid2 = GridRef2.current.getInstance();
@@ -126,15 +125,26 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    }, [gridDatas2]);
 
    useEffect(() => {
-      console.log('cd0004',cd0004)
+      if (GridRef3.current && gridDatas3) {
+         let grid3 = GridRef3.current.getInstance();
+         grid3.resetData(gridDatas3);
+
+         let focusRowKey = grid3.getFocusedCell().rowKey || 0;
+
+         if (gridDatas3.length > 0) {
+            grid3.focusAt(focusRowKey, 0, true);
+         }
+         
+      }
+   }, [gridDatas3]);
+
+   useEffect(() => {
       updateChoices(searchChoices.itemGrp, cd0004, "value", "text");
    }, [cd0004]);
-
 
    useEffect(() => {
       updateChoices(searchChoices.itemDiv, cd0005, "value", "text");
    }, [cd0005]);
-   //---------------------- api -----------------------------
 
    const ZZ_CODE = async (param: ZZ_CODE_REQ) => {
       const result3 = await ZZ_CODE_API(param);
@@ -170,7 +180,6 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const MM0205_U03 = async () => {
       try {
          const data = await getGridValues();
-         console.log(data);
          const result = await fetchPost(`MM0205_U03`, data);
          return result as any;
       } catch (error) {
@@ -179,7 +188,29 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       }
    };
 
-   //-------------------event--------------------------
+   const MM0201_S01 = async () => {
+      try {
+         const param = {
+            coCd: userInfo.coCd,
+            itemNm: searchRef3.current?.value || "999",
+            itemGrp: searchRef4.current?.value || "999",
+            itemDiv: searchRef5.current?.value || "999",
+            pkgItemYn: "999",
+            subsYn:  "999",
+            deduYn:  "999",
+            useYn: 'Y',
+         };
+
+         const data = JSON.stringify(param);
+         const result = await fetchPost(`MM0202_S01`, { data });
+         setGridDatas3(result);
+
+         return result;
+      } catch (error) {
+         console.error("MM0201_S01 Error:", error);
+         throw error;
+      }
+   };
 
    const search = () => {
       setGridData();
@@ -196,7 +227,6 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       setGridData();
    };
 
-   // 모든 grid Data 내용을 가져옴
    const getGridValues = async () => {
       let grid1Data = await getGridDatas(GridRef1);
       let grid2Data = await getGridDatas(GridRef2);
@@ -211,7 +241,6 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       return data;
    };
 
-   //grid 추가버튼
    const addMajorGridRow = () => {
       let grid1 = GridRef1.current.getInstance();
       let grid2 = GridRef2.current.getInstance();
@@ -225,46 +254,22 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       grid2.clear();
    };
 
-   //grid 삭제버튼
    const delMajorGridRow = () => {
       let grid1 = GridRef1.current.getInstance();     
       let { rowKey } = grid1.getFocusedCell();
       grid1.removeRow(rowKey, {});
    };
 
-   //grid 추가버튼
    const addMinorGridRow = () => {
-
-      openModal()
-      // let grid1 = GridRef1.current.getInstance();
-      // let grid2 = GridRef2.current.getInstance();
-      // let flag = true;
-      // grid2.appendRow({}, { focus: true });
-
-      // let inPkgItemCd = grid1.getValue(grid1.getFocusedCell().rowKey, "pkgItemCd");
-
-      // if (!inPkgItemCd) {
-      //    grid2.removeRow(grid2.getFocusedCell().rowKey);
-      //    flag = false;
-      //    let title = "패키지코드 미등록";
-      //    let msg = "패키지코드 먼저 저장 후에 추가해 주세요";
-      //    alertSwal(title, msg, "warning");
-      // }
-
-      // grid2.setValue(grid2.getFocusedCell().rowKey, "coCd", userInfo.coCd, false);
-      // grid2.setValue(grid2.getFocusedCell().rowKey, "pkgItemCd", inPkgItemCd, false);
-      // grid2.setValue(grid2.getFocusedCell().rowKey, "status", "I", false);
-      // grid2.setValue(grid2.getFocusedCell().rowKey, "useYn", "Y", false);
+      openModal();
    };
 
-   //grid 삭제버튼
    const delMinorGridRow = () => {
       let grid2 = GridRef2.current.getInstance();
       let { rowKey } = grid2.getFocusedCell();
       grid2.removeRow(rowKey, {});
    };
 
-   //grid 포커스변경시
    const handleMajorFocusChange = async ({ rowKey }: any) => {
       if (rowKey === null) {
          rowKey = 0;
@@ -278,33 +283,93 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       }
    };
 
-   //검색 창 클릭 또는 엔터시 조회
    const handleCallSearch = async () => {
-      //setGridData();
       const grid1Result = await MM0205_S01();
       if (grid1Result?.length) {
          await MM0205_S02({ pkgItemCd: grid1Result[0].pkgItemCd });
       }
    };
 
-   const openModal = () => {
+   const handleCallSearchModal = async () => {
+       await MM0201_S01();
+      
+   };
+
+   const handleDblClick = (ev: any) => {
+      const { rowKey } = ev;
+  
+      const grid3 = GridRef3.current.getInstance();
+      const rowData3 = grid3.getRow(rowKey);
+  
+      const grid1 = GridRef1.current.getInstance();
+      const rowData1 = grid1.getRow(grid1.getFocusedCell().rowKey);
+  
+      const grid2 = GridRef2.current.getInstance();
+      const existingItemCds = new Set(grid2.getData().map((row: any) => row.itemCd));
+  
+      // grid2의 모든 행에서 sort 값을 가져와 그 중 최대 값을 찾음
+      const maxSort = Math.max(...grid2.getData().map((row: any) => row.sort || 0), 0);
+  
+      if (!existingItemCds.has(rowData3.itemCd)) {  // itemCd 중복 확인
+          const newRow = {
+              coCd: rowData1.coCd,
+              pkgItemCd: rowData1.pkgItemCd,
+              itemCd: rowData3.itemCd,
+              itemNm: rowData3.itemNm,
+              sort: maxSort + 1,
+              useYn: "Y",
+              status: "I"
+          };
+  
+          grid2.appendRow(newRow, { focus: true });
+      }
+  
+      setIsOpen(false);
+  };
+  
+  
+
+   const openModal = async() => {
       setIsOpen(true);
+      await MM0201_S01();
+      refreshGrid(GridRef3);
     };
   
     const closeModal = () => {
       setIsOpen(false);
     };
 
-    const modalSearch = () => {
+    const modalSearch = () => { }
 
-
-    }
-
-    const addItems = () => {  
-    }
-   //-------------------div--------------------------
-
-   //상단 버튼 div
+    const addItems = () => {
+      const grid3 = GridRef3.current.getInstance();
+      const checkedRows = grid3.getCheckedRows();
+  
+      const grid2 = GridRef2.current.getInstance();
+      const existingItemCds = new Set(grid2.getData().map((row: any) => row.itemCd));
+  
+      // grid2의 모든 행에서 sort 값을 가져와 그 중 최대 값을 찾음
+      let maxSort = Math.max(...grid2.getData().map((row: any) => row.sort || 0), 0);
+  
+      checkedRows.forEach((row: any) => {
+          if (!existingItemCds.has(row.itemCd)) {  // itemCd 중복 확인
+              const newRow = {
+                  coCd: row.coCd,
+                  pkgItemCd: grid2.getFocusedCell().rowKey,
+                  itemCd: row.itemCd,
+                  itemNm: row.itemNm,
+                  sort: ++maxSort,  // 각 행에 대해 sort 값을 1씩 증가시킴
+                  useYn: "Y",
+                  status: "I"
+              };
+  
+              grid2.appendRow(newRow, { focus: true });
+          }
+      });
+  
+      closeModal();
+  };
+   
    const buttonDiv = () => (
       <div className="flex justify-end space-x-2">
          <button type="button" onClick={search} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
@@ -318,7 +383,6 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       </div>
    );
 
-   //검색창 div
    const searchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm">
          <div className="grid gap-y-3  justify-start w-[80%]  2xl:w-[60%]  xl:grid-cols-3 md:grid-cols-2">
@@ -332,60 +396,26 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
          <div className="w-full flex justify-between">
             <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
-               <InputComp1  ref={searchRef3} handleCallSearch={handleCallSearch} title="품목명"></InputComp1>
-               <SelectComp1 ref={searchRef4} title="품목그룹" handleCallSearch={handleCallSearch}></SelectComp1>
-               <SelectComp1 ref={searchRef5} title="품목구분" handleCallSearch={handleCallSearch}></SelectComp1>
-               {/* <SelectComp1 title="대체유무" handleCallSearch={handleCallSearch}></SelectComp1>
-               <SelectComp1  title="공제유무" handleCallSearch={handleCallSearch}></SelectComp1>
-               <SelectComp1  title="사용유무" handleCallSearch={handleCallSearch}></SelectComp1> */}
+               <InputComp1 ref={searchRef3} handleCallSearch={handleCallSearchModal} title="품목명"></InputComp1>
+               <SelectComp1 ref={searchRef4} title="품목그룹" handleCallSearch={handleCallSearchModal}></SelectComp1>
+               <SelectComp1 ref={searchRef5} title="품목구분" handleCallSearch={handleCallSearchModal}></SelectComp1>
             </div>
             <div className="w-[40%] flex justify-end">
-               <button type="button" onClick={modalSearch} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+               <button type="button" onClick={handleCallSearchModal} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
                   <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
                   조회
                </button>
-
             </div>
-
          </div>
       </div>
    );
 
-
-   const Modal = () => (
-      <Dialog open={isOpen} as="div" className="relative z-50 focus:outline-none" onClose={closeModal}>
-         <div className="fixed inset-0 z-10 w-screen overflow-y-auto  bg-gray-500 bg-opacity-75 transition-opacity">
-            <div className="flex min-h-full items-center justify-center p-4">
-               <DialogPanel
-                  transition
-                  className="w-full max-w-7xl rounded-xl bg-white shadow-lg p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
-               >
-                  <DialogTitle as="h4" className="text-sm font-medium ">
-                     <div className="flex justify-between">
-                        <div>품목등록</div>
-                        <div>  
-                           <Button  className="" onClick={closeModal}
-                           > <XMarkIcon className="w-5 h-5" />
-                           </Button>
-                        </div>
-                     </div>
-                  </DialogTitle>
-
-            
-                  <div className="mt-4">
-                     <div className="space-y-2">
-                        {modalSearchDiv()}
-                        <Grid3 />
-                     </div>
-                  </div>
-                 
-               </DialogPanel>
-            </div>
-         </div>
-      </Dialog>
+   const ModalDiv = () => (
+      <CommonModal isOpen={isOpen} onClose={closeModal} title="품목등록">
+         {modalSearchDiv()}
+         {Grid3()}
+      </CommonModal>
    );  
-
-   //-------------------grid----------------------------
 
    const grid1Columns = [
       { header: "", name: "coCd", hidden: true },
@@ -451,29 +481,23 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "상태", name: "status", hidden: true },
    ];
 
-
    const grid3Columns = [
-      { header: "회사코드", name: "coCd", width: 80 },
-      { header: "품목코드", name: "itemCd", width: 100 },
-      { header: "품목명", name: "itemNm"},
-      { header: "규격", name: "spec", hidden: true },
-      { header: "품목그룹", name: "itemGrp", hidden: true },
-      { header: "품목구분", name: "itemDiv", hidden: true },
-      { header: "판매단가", name: "salePrice", hidden: true },
-      { header: "발주단가", name: "costPrice", hidden: true },
-      { header: "과세여부", name: "taxYn", hidden: true },
+      { header: "회사코드", name: "coCd", hidden: true },
+      { header: "품목코드", name: "itemCd", width: 100, align: "center" },
+      { header: "품목명", name: "itemNm", width: 300 },
+      { header: "규격", name: "spec", width: 200 },
+      { header: "품목그룹", name: "itemGrpNm", width: 100 },
+      { header: "품목구분", name: "itemDivNm", width: 100 },
+      { header: "판매단가", name: "salePrice", width: 100, align: "right",   
+         formatter: function(e: any) {if(e.value){return commas(e.value);} }  },
+      { header: "발주단가", name: "costPrice", width: 100, align: "right",  
+         formatter: function(e: any) {if(e.value){return commas(e.value);} }  },
+      { header: "과세여부", name: "taxYn", width: 100, align: "center" },
       { header: "패키지품목추가", name: "pkgItemYn", hidden: true },
-      { header: "대체유무", name: "subsYn", hidden: true },
-      { header: "공제유무", name: "deduYn", hidden: true },
+      { header: "대체유무", name: "subsYn", width : 100, align: "center" },
+      { header: "공제유무", name: "deduYn", width : 100, align: "center" },
       { header: "사용여부", name: "useYn", hidden: true },
-
-      // { header: "등록자", name: "insrtUserId", hidden: true },
-      // { header: "등록일시", name: "insrtDt", hidden: true },
-      // { header: "수정자", name: "updtUserId", hidden: true },
-      // { header: "수정일시", name: "updtDt", hidden: true }
    ];
-
-
 
    const Grid1 = () => (
       <div className="border rounded-md p-2 space-y-2">
@@ -521,10 +545,9 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 columns={grid2Columns} gridRef={GridRef2} />
+         <TuiGrid01 columns={grid2Columns} gridRef={GridRef2} handleDblClick={handleDblClick}  />
       </div>
    );
-
 
    const Grid3 = () => (
       <div className="border rounded-md p-2 space-y-2">
@@ -537,14 +560,11 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                   <PlusIcon className="w-5 h-5" />
                   선택등록
                </button>
-         
             </div>
          </div>
-
-         <TuiGrid01 gridRef={GridRef3} columns={grid2Columns} rowHeaders={['checkbox','rowNum']} />
+         <TuiGrid01 gridRef={GridRef3} columns={grid3Columns} rowHeaders={['checkbox','rowNum']} handleDblClick={handleDblClick} />
       </div>
    );
-
 
    return (
       <div className={`space-y-5 overflow-y-auto `}>
@@ -559,7 +579,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             <div className="w-1/2" ref={gridGridContainerRef}>{Grid1()}</div>
             <div className="w-1/2" ref={grid2GridContainerRef}>{Grid2()} </div>
          </div>
-         {Modal()}
+         {ModalDiv()}
       </div>
    );
 };

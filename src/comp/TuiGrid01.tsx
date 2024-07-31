@@ -1,4 +1,4 @@
-import React, { RefObject, useRef } from "react";
+import React, { RefObject, useRef,useEffect } from "react";
 import "tui-grid/dist/tui-grid.css";
 import "tui-pagination/dist/tui-pagination.css";
 import Grid from "@toast-ui/react-grid";
@@ -12,11 +12,12 @@ interface Props {
    handleFocusChange?: (rowKey: any) => void;
    handleAfterChange?: (ev: any) => void; // 추가된 이벤트 핸들러
    handleClick?: (ev: any) => void; // 추가된 이벤트 핸들러
+   handleDblClick?: (ev: any) => void; // 추가된 이벤트 핸들러
    gridRef: RefObject<Grid>;
    treeColumnName?: string;
    perPage?: number;
    perPageYn?: boolean;
-   height?: number;
+   height?: any;
    summary? : any;
    rowHeaders?: any;
 }
@@ -26,7 +27,9 @@ interface Props {
 const refreshGrid = (ref: any) => {
    if (ref.current) {
       let gridInstance = ref.current.getInstance();
-      gridInstance.refreshLayout();
+      if (gridInstance) {
+         gridInstance.refreshLayout();
+    }
    }
 };
 
@@ -41,7 +44,9 @@ const reSizeGrid = ({ ref, containerRef = null, sec = 0 }: reSizeProps) => {
       setTimeout(() => {
          if (ref.current) {
             let gridInstance = ref.current.getInstance();
-            gridInstance.refreshLayout();
+            if (gridInstance) {
+               gridInstance.refreshLayout();
+            }
          }
       }, sec);
    };
@@ -107,12 +112,12 @@ const getGridCheckedDatas = (gridRef: any) => {
       }
    });
 
-   console.log('datas', datas);
+
 
    return datas;
 };
 
-const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick,  gridRef, treeColumnName, perPageYn = true, perPage = 50, height = window.innerHeight - 450, summary ,rowHeaders=["rowNum"] }: Props) => {
+const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick, handleDblClick,  gridRef, treeColumnName, perPageYn = true, perPage = 50, height = window.innerHeight - 450, summary ,rowHeaders=["rowNum"] }: Props) => {
    // 고유한 key 생성을 위해 Math.random() 사용
    TuiGrid.applyTheme("default", {
       cell: {
@@ -175,6 +180,11 @@ const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick,
    if (handleClick) {
       // handleClick이 제공되었을 경우에만 설정합니다.
       gridProps.onClick = handleClick;
+   }
+
+   if (handleDblClick) {
+      // handleDblClick이 제공되었을 경우에만 설정합니다.
+      gridProps.onDblclick = handleDblClick;
    }
 
 

@@ -15,9 +15,11 @@ import Breadcrumb from "../comp/Breadcrumb";
 import { TuiGrid01, getGridDatas, getGridCheckedDatas, refreshGrid, reSizeGrid } from "../comp/TuiGrid01";
 import { InputComp1, InputComp2 } from "../comp/InputComp";
 import { SelectComp1, SelectComp2, SelectComp3 } from "../comp/SelectComp";
+import CommonModal from "../comp/Modal";
+
 
 // 모든 임포트를 하나의 객체로 내보내기
 export { React, useEffect, useState, useRef, useCallback, initChoice, initChoice2, updateChoices, 
    alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas,  getGridCheckedDatas ,refreshGrid, reSizeGrid, 
-   InputComp1, InputComp2, SelectComp1, SelectComp2, SelectComp3,commas };
+   InputComp1, InputComp2, SelectComp1, SelectComp2, SelectComp3,commas,CommonModal };
 
