@@ -141,54 +141,39 @@ interface Props3 {
 
  const DatePickerComp: React.FC<Props4> = ({ id, title, selectedDate, onChange }) => {
    useEffect(() => {
-     const initializeDatePicker = () => {
-       const inputElement = document.getElementById(`${id}-target`) as HTMLInputElement;
-       const containerElement = document.getElementById(`${id}-container`);
+     const inputElement = document.getElementById(`${id}-target`) as HTMLInputElement;
+     const containerElement = document.getElementById(`${id}-container`);
  
-       if (inputElement && containerElement) {
-         const picker = new DatePicker(containerElement, {
-           date: selectedDate ? new Date(selectedDate) : new Date(), // 초기 날짜 설정
-           input: {
-             element: inputElement, // 연결할 input 요소
-             format: 'yyyy-MM-dd', // 날짜 포맷
-           },
-           usageStatistics: false, // 통계 수집 비활성화
-           language: 'ko', // 한글 설정
-         });
- 
-         picker.on('change', (date: Date | null) => {
-           if (date) {
-            if (onChange){
-               onChange(date.toISOString().split('T')[0]);
-            }
+     if (inputElement && containerElement) {
+       const picker = new DatePicker(containerElement, {
+         date: selectedDate ? new Date(selectedDate) : undefined, // 초기 날짜 설정
+         input: {
+           element: inputElement, // 연결할 input 요소
+           format: 'yyyy-MM-dd', // 날짜 포맷
+         },
+         usageStatistics: false, // 통계 수집 비활성화
+         language: 'ko', // 한글 설정
+       });
+
+       picker.on('change', (date: Date | null) => {
+         if (date) {
+           if (onChange){
+             onChange(date.toISOString().split('T')[0]);
            }
-         });
- 
-         // 아이콘 클릭 시 input 클릭 이벤트 발생시키기
-         const iconElement = containerElement.querySelector('.tui-ico-date');
-         if (iconElement) {
-           iconElement.addEventListener('click', () => {
-             inputElement.click();
-           });
          }
+       });
  
-         // 컴포넌트 언마운트 시 DatePicker 인스턴스 및 이벤트 리스너 제거
-         return () => {
-           picker.destroy();
-           if (iconElement) {
-             iconElement.removeEventListener('click', () => {
-               inputElement.click();
-             });
-           }
-         };
+       const iconElement = containerElement.querySelector('.tui-ico-date');
+       if (iconElement) {
+         iconElement.addEventListener('click', () => {
+           inputElement.click();
+         });
        }
-     };
- 
-     // DatePicker를 초기화
-     initializeDatePicker();
- 
-   }, [id, selectedDate, onChange]);
- 
+     } else {
+       console.error('DatePicker 초기화에 필요한 요소를 찾을 수 없습니다.');
+     }
+   }, []);
+
    return (
      <div className="grid grid-cols-3 gap-3 items-center">
        <label className="col-span-1 text-right">{title}</label>
@@ -199,8 +184,8 @@ interface Props3 {
              title={title}
              type="text"
              className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
-             defaultValue={selectedDate}
-             aria-label="Date-Time" 
+             defaultValue={selectedDate || ''}
+             autoComplete="off"
            />
            <span
              className="tui-ico-date absolute top-1/2 right-3 transform -translate-y-1/2 z-10 cursor-pointer"
@@ -211,6 +196,6 @@ interface Props3 {
        </div>
      </div>
    );
- }; 
+};
 
 export { InputComp1, InputComp2, InputSearchComp1, DatePickerComp };
