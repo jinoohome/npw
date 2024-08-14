@@ -10,9 +10,13 @@ import ChoicesEditor from "../util/ChoicesEditor";
 interface Props {
    columns: any[];
    handleFocusChange?: (rowKey: any) => void;
-   handleAfterChange?: (ev: any) => void; // 추가된 이벤트 핸들러
-   handleClick?: (ev: any) => void; // 추가된 이벤트 핸들러
-   handleDblClick?: (ev: any) => void; // 추가된 이벤트 핸들러
+   handleAfterChange?: (ev: any) => void; 
+   handleClick?: (ev: any) => void; 
+   handleDblClick?: (ev: any) => void;
+   beforeChange?: (ev: any) => void; 
+   afterChange?: (ev: any) => void; 
+   check?: (ev: any) => void;
+   uncheck?: (ev: any) => void;
    gridRef: RefObject<Grid>;
    treeColumnName?: string;
    perPage?: number;
@@ -117,7 +121,8 @@ const getGridCheckedDatas = (gridRef: any) => {
    return datas;
 };
 
-const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick, handleDblClick,  gridRef, treeColumnName, perPageYn = true, perPage = 50, height = window.innerHeight - 450, summary ,rowHeaders=["rowNum"] }: Props) => {
+const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick, handleDblClick, beforeChange, afterChange, check, uncheck, 
+                     gridRef, treeColumnName, perPageYn = true, perPage = 50, height = window.innerHeight - 450, summary ,rowHeaders=["rowNum"] }: Props) => {
    // 고유한 key 생성을 위해 Math.random() 사용
    TuiGrid.applyTheme("default", {
       cell: {
@@ -186,6 +191,27 @@ const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick,
       // handleDblClick이 제공되었을 경우에만 설정합니다.
       gridProps.onDblclick = handleDblClick;
    }
+
+   if (beforeChange) {
+      // beforeChange가 제공되었을 경우에만 설정합니다.
+      gridProps.onBeforeChange = beforeChange;
+   }
+
+   if (afterChange) {
+      // afterChange가 제공되었을 경우에만 설정합니다.
+      gridProps.onAfterChange = afterChange;
+   }
+
+   if (check) {
+      // check가 제공되었을 경우에만 설정합니다.
+      gridProps.onCheck = check;
+   }
+
+   if (uncheck) {
+      // uncheck가 제공되었을 경우에만 설정합니다.
+      gridProps.onUncheck = uncheck;
+   }
+   
 
 
    return <Grid {...gridProps} />;

@@ -524,6 +524,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       </div>
    );
 
+
    const Grid2 = () => (
       <div className="border rounded-md p-2 space-y-2">
          <div className="flex justify-between items-center text-sm">
@@ -545,7 +546,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 columns={grid2Columns} gridRef={GridRef2} handleDblClick={handleDblClick}  />
+         <TuiGrid01 columns={grid2Columns} gridRef={GridRef2}   />
       </div>
    );
 
@@ -562,7 +563,8 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                </button>
             </div>
          </div>
-         <TuiGrid01 gridRef={GridRef3} columns={grid3Columns} rowHeaders={['checkbox','rowNum']} handleDblClick={handleDblClick} />
+         <TuiGrid01 gridRef={GridRef3} columns={grid3Columns} rowHeaders={['checkbox','rowNum']} handleDblClick={handleDblClick} 
+         />
       </div>
    );
 

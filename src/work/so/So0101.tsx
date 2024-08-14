@@ -293,7 +293,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const setChangeGridData = (columnName: string, value: any) => {
-         
+      
    };
 
    //검색 창 클릭 또는 엔터시 조회
@@ -339,6 +339,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       </div>
    );
 
+
    //input div
    const inputDiv2 = () => (
       <div className="border rounded-md p-2 space-y-2 input text-sm">
@@ -353,12 +354,20 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
 
          <div className="p-5 space-y-5">
             <div className="grid grid-cols-4  gap-6  justify-around items-center ">
-               <InputComp2 ref={refs.reqNm} title="신청자 성명" target="reqNm" setChangeGridData={setChangeGridData} />
+               <InputComp2 ref={refs.reqNm} title="신청자 성명" target="reqNm" />
                <InputComp2 ref={refs.reqTelNo} title="연락처" target="reqTelNo" setChangeGridData={setChangeGridData} />
             </div>
          </div>
       </div>
    );
+
+   const handleChange = (e: any) => {
+      console.log('handleChange:', e);
+   };
+
+   const onkeydown = (e: any) => {
+      console.log('onkeydown:', e);
+   };
 
    //input div
    const inputDiv3 = () => (
