@@ -1,4 +1,5 @@
-import React, { useState, forwardRef, useId } from "react";
+import { read } from "fs";
+import React, { useState, forwardRef, useId, useImperativeHandle, useEffect } from "react";
 
 const checkboxStyles = `
    input[type='checkbox']:checked {
@@ -202,13 +203,19 @@ interface Props3 {
    onChange?: (checked: string) => void;
    layout?: "horizontal" | "vertical";
    target?: string;
+   readOnly?: boolean;
    setChangeGridData?: (target: string, value: string) => void;
 }
 
 const Checkbox = forwardRef<HTMLInputElement, Props3>(
-   ({ title, value,  checked = false, onChange, layout ='horizontal', target, setChangeGridData }, ref) => {
+   ({ title, value,  checked = false, onChange, layout ='horizontal',readOnly, target, setChangeGridData }, ref) => {
       const [isChecked, setIsChecked] = useState(checked);
       const uniqueId = useId();
+
+      useEffect(() => {
+         setIsChecked(checked);
+      }, [checked]);
+  
  
       const handleChange = () => {
          
@@ -244,6 +251,7 @@ const Checkbox = forwardRef<HTMLInputElement, Props3>(
                      value={value}
                      checked={isChecked}
                      onChange={handleChange}
+                     disabled={readOnly}  
                      className="h-6 w-6 appearance-none bg-white border border-gray-300 rounded-md checked:bg-blue-500 checked:border-transparent cursor-pointer"/>
                </div>
             </div>

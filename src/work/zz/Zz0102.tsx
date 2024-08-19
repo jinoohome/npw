@@ -36,6 +36,7 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
       coCd: useRef<any>(null),
       usrStatus: useRef<any>(null),
       confirmYn: useRef<any>(null),
+      check: useRef<any>(null),
    };
 
 
@@ -172,7 +173,9 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
          );
       };
 
-      refs.siDo2.current.setChoiceByValue("")
+      refs.siDo2.current.setChoiceByValue("");
+      onInputChange('check', 'Y');
+      
       console.log(inputValues);
  
    };
@@ -247,6 +250,7 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
             <Checkbox 
                title = "확정여부" 
                value = {inputValues.check}
+               checked={inputValues.check === "Y"} 
                onChange={(e)=>onInputChange('check', e)} 
             />
 
