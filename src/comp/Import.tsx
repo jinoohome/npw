@@ -15,7 +15,7 @@ import "choices.js/public/assets/styles/choices.min.css";
 import Breadcrumb from "../comp/Breadcrumb";
 import { TuiGrid01, getGridDatas, getGridCheckedDatas, refreshGrid, reSizeGrid } from "../comp/TuiGrid01";
 import { InputComp, InputComp1, InputComp2, InputSearchComp1, DatePickerComp, DateRangePickerComp } from "../comp/InputComp";
-import { SelectComp1, SelectComp2, SelectComp3, SelectSearchComp } from "../comp/SelectComp";
+import { SelectComp1, SelectComp2, SelectComp3, SelectSearchComp, SelectPop } from "../comp/SelectComp";
 import CommonModal from "../comp/Modal";
 import {RadioGroup, RadioGroup2} from "../comp/RadioComp";
 import {CheckboxGroup, CheckboxGroup1, CheckboxGroup2, Checkbox} from "../comp/CheckboxComp";
@@ -24,6 +24,6 @@ import {CheckboxGroup, CheckboxGroup1, CheckboxGroup2, Checkbox} from "../comp/C
 // 모든 임포트를 하나의 객체로 내보내기
 export { React, useEffect, useState, useRef, useCallback, initChoice, initChoice2, updateChoices, 
    alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas,  getGridCheckedDatas ,refreshGrid, reSizeGrid, 
-   InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, SelectComp3, SelectSearchComp,commas,CommonModal, 
+   InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, SelectComp3, SelectSearchComp, SelectPop,commas,CommonModal, 
    RadioGroup, RadioGroup2, CheckboxGroup, CheckboxGroup1, CheckboxGroup2, Checkbox, DatePickerComp, DateRangePickerComp };
 

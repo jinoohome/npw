@@ -5,6 +5,7 @@ import "../css/inputChoicejs.css";
 import "../css/gridChoicejs.css";
 import "choices.js/public/assets/styles/choices.min.css";
 import { fetchPost } from "../util/fetch"; 
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 interface Props1 {
    title: string;
@@ -14,7 +15,7 @@ interface Props1 {
 const SelectComp1 = forwardRef<HTMLSelectElement, Props1>(({ title, handleCallSearch, onChange }, ref) => {
    
    const selectRef = ref as React.RefObject<HTMLSelectElement>;
-   console.log(selectRef.current);
+   
    
    // useEffect(() => {
    //    if (selectRef.current) {
@@ -147,6 +148,7 @@ const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
               // 기존 선택지 삭제
               choiceInstance.clearChoices();
               // 새로운 선택지 설정
+              console.log('item',items);
               choiceInstance.setChoices(items, 'value', 'label', true);
               if (value) {
                  choiceInstance.setChoiceByValue(value); // 초기값 설정
@@ -236,7 +238,54 @@ const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
 );
 
 
+interface SelectPopProps {
+   title: string;
+   target?: string;
+   value?: string;
+   readOnly?: boolean;
+   placeholder?: string;
+   handleInputSearch: (e: any) => void;
+}
+
+const SelectPop = forwardRef<HTMLSelectElement, SelectPopProps>(({ title, value, target, readOnly = false, placeholder, handleInputSearch }, ref) => {
+  const handleKeyDown = (e: any) => {
+    if (e.key === "Enter") {
+       handleInputSearch(e);
+    }
+ };
+
+ const handleClick = (e: any) => {
+    e.preventDefault();
+ };
+
+ return (
+    <div className="grid grid-cols-3 gap-3 items-center">
+       <label className="col-span-1 text-right">{title}</label>
+       <div className="col-span-2 relative">
+          <select
+             className="border rounded-md h-8 p-2 w-full focus:outline-orange-300 appearance-none cursor-pointer"
+             onKeyDown={handleKeyDown}
+             ref={ref}
+             onClick={handleClick}
+             disabled={readOnly} // Disable the select if readOnly is true
+             value={value}
+             
+          >
+             <option value="" disabled selected hidden>
+                {placeholder || "Select an option"}
+             </option>
+             {/* Add your options here */}
+          </select>
+          <MagnifyingGlassIcon
+             className="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
+             onClick={handleInputSearch} // 클릭 시 동일한 함수 호출
+          />
+       </div>
+    </div>
+ );
+});
 
 
 
-export { SelectComp1, SelectComp2, SelectComp3, SelectSearchComp };
+
+export { SelectComp1, SelectComp2, SelectComp3, SelectSearchComp, SelectPop };

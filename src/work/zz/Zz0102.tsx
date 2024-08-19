@@ -1,7 +1,7 @@
 import { on } from "events";
 import { React, useEffect, useState, useRef, useCallback, initChoice, 
    updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
-   reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp,
+   reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp, SelectPop,
     RadioGroup, RadioGroup2, CheckboxGroup, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
@@ -55,9 +55,7 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
    const breadcrumbItem = [{ name: "관리자" }, { name: "공통" }, { name: "INPUT GROUP" }];
 
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
-         startDate : '2024-02-02',
-         endDate : '2024-02-10',
-         radio : 'Y',
+         startDate: "2021-01-01",
          checkGroup:[],
          checkGroup2:[],
    });
@@ -72,28 +70,12 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
 
    // 첫 페이지 시작시 실행
    useEffect(() => {
-      setChoiceUI();
       setGridData();
    }, []);
 
  
    //--------------------init---------------------------
 
-   const setChoiceUI = () => {
-      initChoice(searchRef2, setChoice1, [
-         { value: "999", label: "전체", selected: true },
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.dlvyDiv, setChoice2);
-      // initChoice(refs.siDo, setChoice3);
-      initChoice(refs.siGunGu, setChoice4);
-      initChoice(refs.useYn, setChoice5, [
-         { value: "999", label: "전체", selected: true },
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-   };
 
    const setGridData = async () => {
       try {
@@ -168,9 +150,12 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
 
       const data = JSON.stringify(param);
       const result = await fetchPost("MM0401_S01", { data });
+      console.log(result);
 
       if (result.length === 1) {
          console.log(result[0]);
+         target.value = result[0].dlvyNm;
+         onInputChange('popCd', result[0].dlvyCd);
       } else {
          setIsOpen(true);
       }
@@ -207,10 +192,10 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
 
 
          <InputComp title="이름"
-                     value={inputValues.dlvyNm}    
+                     value={inputValues.name}    
                      onChange={(e)=>{
                         console.log('onChange');
-                        onInputChange('dlvyNm', e);
+                        onInputChange('name', e);
                      }} 
                         //readOnly={true}
                         //type="number"
@@ -224,15 +209,14 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
             
             <SelectSearchComp title="시/도" 
                               ref={refs.siDo}
-                              value="{inputValues.coCd}"
                               onChange={(label, value) => {
                                     console.log(label, value);
                                     onInputChange('coCd', value);
                                  }}
 
                               //초기값 세팅시
-                              //param={{ coCd: "999", majorCode: "WO0002", div: "999" }}
-                              //procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
+                             // param={{ coCd: "999", majorCode: "WO0002", div: "999" }}
+                             // procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
 
             />
             <RadioGroup title = "확정여부" 
@@ -262,7 +246,13 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
                value = {inputValues.check}
                onChange={(e)=>onInputChange('check', e)} 
             />
-            <InputSearchComp1 title="계약번호"  handleInputSearch={handleInputSearch} />
+
+            <InputSearchComp1 
+               title="계약번호" 
+               handleInputSearch={handleInputSearch} 
+               
+       
+               /> 
           
             <DatePickerComp 
                 title="계약번호"
@@ -285,8 +275,11 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
             
             } />
 
-           
-        
+            {/* <SelectPop  
+               title="계약번호"
+               handleInputSearch={handleInputSearch}
+               />
+         */}
          </div>
       </div>
    );
@@ -311,13 +304,15 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
                         //errorMsg="에러메시지" 
             />
             <SelectSearchComp title="시/도" 
-               ref={refs.siDo}
                value="{inputValues.coCd}"
                onChange={(label, value) => {
                      console.log(label, value);
                      onInputChange('coCd', value);
                   }}
                layout="vertical"
+                //초기값 세팅시
+               param={{ coCd: "999", majorCode: "WO0002", div: "999" }}
+               procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
 
             />
             <RadioGroup title = "확정여부" 

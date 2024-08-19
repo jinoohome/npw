@@ -205,11 +205,13 @@ const InputComp2 = forwardRef<HTMLInputElement, Props2>(({ title, target, setCha
 interface Props3 {
    title: string;
    target?: string;
+   value?: string;
    readOnly?: boolean;
    placeholder?: string;
+   onChange?: (e: any) => void;
    handleInputSearch: (e: any) => void;
 }
-const InputSearchComp1 = forwardRef<HTMLInputElement, Props3>(({ title, target, readOnly = false, placeholder, handleInputSearch }, ref) => {
+const InputSearchComp1 = forwardRef<HTMLInputElement, Props3>(({ title, value, target, readOnly = false, placeholder, handleInputSearch }, ref) => {
    const handleKeyDown = (e: any) => {
       if (e.key === "Enter") {
          handleInputSearch(e);
@@ -220,7 +222,11 @@ const InputSearchComp1 = forwardRef<HTMLInputElement, Props3>(({ title, target, 
       <div className="grid grid-cols-3 gap-3 items-center">
          <label className="col-span-1 text-right">{title}</label>
          <div className="col-span-2 relative">
-            <input type="text" className="border rounded-md h-8 p-2 w-full focus:outline-orange-300" placeholder={placeholder} readOnly={readOnly} onKeyDown={handleKeyDown} ref={ref} />
+            <input type="text" 
+                  ref={ref} 
+                  className="border rounded-md h-8 p-2 w-full focus:outline-orange-300" 
+                   value={value} placeholder={placeholder} readOnly={readOnly} 
+                   onKeyDown={handleKeyDown}  />
             <MagnifyingGlassIcon
                className="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
                onClick={handleInputSearch} // 클릭 시 동일한 함수 호출
@@ -282,9 +288,9 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
       }, [value, onChange]);
 
       return (
-         <div className={`grid ${layout === "horizontal" ? "grid-cols-3 gap-3 items-center" : ""}`}>
+         <div className={`grid ${layout === "horizontal" ? "grid-cols-3 gap-3 items-center" : "grid-cols-1 gap-2"}`}>
             <label className={`col-span-1 ${layout === "vertical" ? "" : "text-right"}`}>{title}</label>
-            <div className={`${layout === "horizontal" ? "col-span-2" : "col-span-1"} relative `}>
+            <div className={`${layout === "horizontal" ? "col-span-2" : "col-span-1"} relative`}>
                <div className="relative  ">
                   <input
                      ref={inputRef}
@@ -300,7 +306,7 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
                         inputRef.current?.click();
                      }}
                   ></span>
-                  <div ref={containerRef} className="relative z-50"></div>
+                  <div ref={containerRef}  className="relative z-50"></div>
                </div>
             </div>
          </div>
@@ -389,10 +395,10 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
    }, [startValue, endValue, onChange]);
 
    return (
-      <div className={`grid ${layout === "horizontal" ? "grid-cols-3 gap-3 items-center" : ""}`}>
+      <div className={`grid ${layout === "horizontal" ? "grid-cols-3 gap-3 items-center" : "grid-cols-1 gap-2"}`}>
          <label className={`col-span-1 ${layout === "vertical" ? "" : "text-right"}`}>{title}</label>
          <div className={`col-span-2 flex items-center gap-2 w-full`}>
-            <div className="relative z-40 w-full">
+            <div className="relative  w-full">
                <input
                   ref={startInputRef}
                   value={startValue}
@@ -407,9 +413,9 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
                   className="tui-ico-date absolute top-1/2 right-3 transform -translate-y-1/2 z-10 cursor-pointer"
                   onClick={() => startInputRef.current?.click()}
                ></span>
-               <div ref={startContainerRef}></div>
+               <div ref={startContainerRef}  className="relative z-50"></div>
             </div>
-            <div className="relative z-40 w-full">
+            <div className="relative  w-full">
                <input
                   ref={endInputRef}
                   value={endValue}
@@ -424,7 +430,7 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
                   className="tui-ico-date absolute top-1/2 right-3 transform -translate-y-1/2 z-10 cursor-pointer"
                   onClick={() => endInputRef.current?.click()}
                ></span>
-               <div ref={endContainerRef}></div>
+               <div ref={endContainerRef} className="relative z-50"></div>
             </div>
          </div>
       </div>
