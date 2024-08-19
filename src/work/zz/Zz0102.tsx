@@ -250,6 +250,7 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
             <Checkbox 
                title = "확정여부" 
                value = {inputValues.check}
+               //readOnly={true}
                checked={inputValues.check === "Y"} 
                onChange={(e)=>onInputChange('check', e)} 
             />
