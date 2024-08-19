@@ -1,7 +1,7 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, 
    updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
    reSizeGrid, getGridDatas, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2,
-    RadioGroup1, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal } from "../../comp/Import";
+    RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import 'tui-date-picker/dist/tui-date-picker.css';
@@ -451,18 +451,7 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
 
 
             <InputComp1  title="계약명" handleCallSearch={handleCallSearch} ></InputComp1>
-            <RadioGroup1
-                title = "확정여부"
-                name="confirmYn"
-                options={[
-                  { label: "확정", value: "Y" },
-                  { label: "미확정", value: "N" }
-                ]}
-                defaultIndex={0}
-                onChange={handleRaioChange}
-                onClick={handleRaioClick}
-                
-              />
+        
             <CheckboxGroup1
                 title = "확정여부"
                 name="confirmYn2"
@@ -476,13 +465,6 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
                 
               />
 
-            <Checkbox
-                title = "확정여부"
-                name="confirmYn2"
-                onChange={handleCheckChangeYn}
-               
-                
-              />
 
         
          </div>
@@ -513,17 +495,7 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
                <InputComp2 ref={refs.addr1} title="주소" target="addr1" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.addr2} title="상세주소" target="addr2" setChangeGridData={setChangeGridData} />
                <SelectComp2 ref={refs.useYn} title="사용여부" target="useYn" setChangeGridData={setChangeGridData} />
-               <RadioGroup2
-               ref = {refs.confirmYn}
-                title = "확정여부"
-                name="confirmYn2"
-                options={[
-                  { label: "확정", value: "Y" },
-                  { label: "미확정", value: "N" }
-                ]}
-                defaultIndex={0}
-                
-              />
+         
               <CheckboxGroup2
                 title = "확정여부"
                 name="confirmYn3"

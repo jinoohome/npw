@@ -1,12 +1,39 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useEffect, useRef, useImperativeHandle  } from "react";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import Choices from 'choices.js';
+import "../css/inputChoicejs.css";
+import "../css/gridChoicejs.css";
+import "choices.js/public/assets/styles/choices.min.css";
+import { fetchPost } from "../util/fetch"; 
 
 interface Props1 {
    title: string;
-   handleCallSearch: () => void;
+   handleCallSearch?: () => void;
    onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 const SelectComp1 = forwardRef<HTMLSelectElement, Props1>(({ title, handleCallSearch, onChange }, ref) => {
+   
+   const selectRef = ref as React.RefObject<HTMLSelectElement>;
+   console.log(selectRef.current);
+   
+   // useEffect(() => {
+   //    if (selectRef.current) {
+   //      const newChoices = new Choices(selectRef.current, {
+   //          removeItemButton: false,
+   //          shouldSort: false,
+   //          itemSelectText: "",
+   //          allowHTML: true,
+   //       });
+
+   //       return () => {
+   //          newChoices.destroy();
+   //        };
+        
+   //    }
+
+   // }, []);
+ 
+ 
    return (
       <div className="grid grid-cols-3 gap-3 items-center">
          <label className="col-span-1 text-right ">{title}</label>
@@ -14,9 +41,11 @@ const SelectComp1 = forwardRef<HTMLSelectElement, Props1>(({ title, handleCallSe
             <select
                ref={ref}
                onChange={(event) => {
-                  handleCallSearch();
-                  if (onChange) {
-                     onChange(event);
+                  if (handleCallSearch){
+                     handleCallSearch();
+                     if (onChange) {
+                        onChange(event);
+                     }
                   }
                }}
                className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
@@ -83,4 +112,131 @@ const SelectComp3 = forwardRef<HTMLSelectElement, Props3>(({ placeholder, handle
   );
 });
 
-export { SelectComp1, SelectComp2, SelectComp3 };
+
+ interface Props4 {
+  title: string;
+  value?: string; // 초기 선택 값
+  handleCallSearch?: () => void;
+  onChange?: (label:string, value:string) => void;
+  procedure?: string;
+  param?: any;
+  dataKey?: { value: string; label: string };
+  layout?: "horizontal" | "vertical"; // 레이아웃 옵션 추가
+  target?: string;
+  setChangeGridData?: (target: string, value: string) => void;
+}
+
+// HTMLSelectElement와 추가 메서드를 포함하는 타입 정의
+interface SelectSearchCompRef extends HTMLSelectElement {
+  getChoicesInstance: () => Choices | null;
+  updateChoices: (items: { value: string; label: string }[]) => void;
+}
+
+const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
+  ({ title, value, handleCallSearch, onChange, procedure, param, dataKey, layout = "horizontal", target, setChangeGridData }, ref) => {
+     const localRef = useRef<HTMLSelectElement>(null);
+     const choicesInstanceRef = useRef<Choices | null>(null);
+
+     // useImperativeHandle을 사용하여 부모 컴포넌트에서 ref로 Choices 인스턴스에 접근할 수 있도록 설정
+     useImperativeHandle(ref, () => ({
+        ...localRef.current!,
+        getChoicesInstance: () => choicesInstanceRef.current,
+        updateChoices: (items) => {
+           const choiceInstance = choicesInstanceRef.current;
+           if (choiceInstance) {
+              // 기존 선택지 삭제
+              choiceInstance.clearChoices();
+              // 새로운 선택지 설정
+              choiceInstance.setChoices(items, 'value', 'label', true);
+              if (value) {
+                 choiceInstance.setChoiceByValue(value); // 초기값 설정
+              }
+           } else {
+              console.error("Choices 인스턴스가 초기화되지 않았습니다.");
+           }
+        },
+     }));
+
+     useEffect(() => {
+        if (localRef.current) {
+           const instance = new Choices(localRef.current, {
+              removeItemButton: false,
+              shouldSort: false,
+              itemSelectText: "",
+              allowHTML: true,
+           });
+
+           choicesInstanceRef.current = instance;
+
+           if (procedure && param && dataKey) {
+              getData(procedure, param)
+                 .then((result) => {
+                    if (Array.isArray(result)) {
+                       instance.setChoices(result, dataKey.value, dataKey.label, true);
+                       if (value) {
+                          instance.setChoiceByValue(value); // 초기값 설정
+                       }
+                    }
+                 })
+                 .catch((error) => {
+                    console.error("데이터 로드 중 오류 발생:", error);
+                 });
+           }
+
+           return () => {
+              instance.destroy();
+              choicesInstanceRef.current = null;
+           };
+        }
+     }, [procedure, param, dataKey, value]); // useEffect가 의존하는 값을 명시적으로 선언
+
+     const getData = async (procedure: string, param: any) => {
+        try {
+           const result = await fetchPost(procedure, param);
+           return result;
+        } catch (error) {
+           console.error(`${procedure}:`, error);
+           throw error;
+        }
+     };
+
+     return (
+        <div
+           className={`grid ${
+              layout === "horizontal" ? "grid-cols-3 gap-3 items-center" : ""
+           }`}
+        >
+           <label className={`col-span-1 ${layout === "vertical" ? "" : "text-right"}`}>
+              {title}
+           </label>
+           <div className={`${layout === "horizontal" ? "col-span-2" : "col-span-1"}`}>
+              <select
+                 ref={localRef}
+                 value={value} // 초기 선택 값
+                 onChange={(event) => {
+                  const selectedLabel = event.target.selectedOptions[0].text;
+                  const selectedValue = event.target.value;
+
+                    if (setChangeGridData && target) {
+                       setChangeGridData(target, selectedValue);
+                    }
+                    if (handleCallSearch) {
+                       handleCallSearch();
+                    }
+                    if (onChange) {
+                       onChange(selectedLabel, selectedValue);
+                    }
+                 }}
+                 className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
+              ></select>
+           </div>
+        </div>
+     );
+  }
+);
+
+
+
+
+
+export { SelectComp1, SelectComp2, SelectComp3, SelectSearchComp };

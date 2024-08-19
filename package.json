@@ -36,6 +36,7 @@
     "tui-date-picker": "^4.3.3",
     "tui-grid": "^4.21.22",
     "tui-pagination": "^3.4.1",
+    "tui-time-picker": "^2.1.6",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },

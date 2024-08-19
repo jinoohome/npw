@@ -1,58 +1,66 @@
-import React, { useState, forwardRef } from "react";
+import React, { useState, forwardRef, useId  } from "react";
 
-interface Props1 {
+interface RadioGroupProps {
    options: { label: string; value: string }[];
-   name: string;
    title: string;
-   defaultIndex?: number;
+   value: string;  // 현재 선택된 값을 부모로부터 받음
    onChange?: (value: string) => void;
    onClick?: (value: string) => void;
-}
+   layout?: "horizontal" | "vertical" ;
+   target?: string;
+   setChangeGridData?: (target: string, value: string) => void;
+ }
+ 
+ const RadioGroup = forwardRef<HTMLInputElement, RadioGroupProps>(
+   ({ title, options, value, onChange, onClick, layout = "horizontal", target, setChangeGridData }, ref) => {
+     const uniqueId = useId(); // 컴포넌트별로 고유한 ID 생성
+ 
+     const handleChange = (selectedValue: string) => {
 
-const RadioGroup1 = forwardRef<HTMLInputElement, Props1>(({ title, options, name, defaultIndex = 0, onChange, onClick }, ref) => {
-   const [selectedIndex, setSelectedIndex] = useState(defaultIndex);
-
-   const handleChange = (index: number) => {
-      setSelectedIndex(index);
-      const selectedValue = options[index].value;
-      if (onChange) {
+      if (setChangeGridData && target) {
+         setChangeGridData(target, selectedValue);
+      }
+      
+       if (onChange) {
          onChange(selectedValue);
-      }
-   };
-
-   const handleClick = (index: number) => {
-      const selectedValue = options[index].value;
-      if (onClick) {
+       }
+     };
+ 
+     const handleClick = (selectedValue: string) => {
+       if (onClick) {
          onClick(selectedValue);
-      }
-   };
-
-   return (
-      <div className="grid grid-cols-3 gap-3 items-center">
-         <label className="col-span-1 text-right">{title}</label>
-         <div className="col-span-2 flex space-x-4 bg-white  rounded-md ">
-            {options.map((option, index) => (
-               <div key={option.value} className="flex items-center custom-radio h-8 p-2 ps-3 cursor-pointer">
-                  <input
-                     ref={ref}
-                     id={`${name}-${option.value}`}
-                     name={name}
-                     type="radio"
-                     value={option.value}
-                     checked={selectedIndex === index}
-                     onChange={() => handleChange(index)}
-                     onClick={() => handleClick(index)}
-                     className="h-4 w-4 cursor-pointer"  // Tailwind CSS classes for larger size
-                  />
-                  <label htmlFor={`${name}-${option.value}`} className="pl-3 text-gray-700 cursor-pointer">
-                     {option.label}
-                  </label>
-               </div>
-            ))}
+       }
+     };
+ 
+     return (
+       <div className={layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""}>
+         <label className={layout === "horizontal" ? "col-span-1 text-right" : ""}>{title}</label>
+         <div className={`col-span-2 flex space-x-4 bg-white border rounded-md ${layout === "horizontal" ? "flex-row" : ""}`}>
+           {options.map((option, index) => (
+             <div key={index} className="flex items-center custom-radio h-8 p-2 ps-3 cursor-pointer">
+               <input
+                 ref={ref}
+                 id={`${uniqueId}-${option.value}`}  // 고유한 id 생성
+                 type="radio"
+                 value={option.value}
+                 checked={value === option.value}  // 선택된 값과 비교하여 체크 상태 설정
+                 onChange={() => handleChange(option.value)}
+                 onClick={() => handleClick(option.value)}
+                 className="h-4 w-4 cursor-pointer rounded-full border border-gray-300 appearance-none 
+                        bg-white checked:bg-white checked:border-4 checked:border-blue-500"
+               />
+               <label htmlFor={`${uniqueId}-${option.value}`} className="pl-3 text-gray-700 cursor-pointer">
+                 {option.label}
+               </label>
+             </div>
+           ))}
          </div>
-      </div>
-   );
-});
+       </div>
+     );
+   }
+ );
+ 
+ export default RadioGroup;
 
 interface Props2 {
    options: { label: string; value: string }[];
@@ -96,7 +104,9 @@ const RadioGroup2 = forwardRef<HTMLInputElement, Props2>(({ title, options, name
                      checked={selectedIndex2 === index}
                      onChange={() => handleChange2(index)}
                      onClick={() => handleClick2(index)}
-                     className="h-4 w-4 cursor-pointer"
+                     className="h-4 w-4 cursor-pointer  rounded-full border 
+                     border-gray-300 appearance-none bg-white  
+                     checked:bg-white checked:border-4 checked:border-blue-500"
                   />
                   <label htmlFor={`${name}-${option.value}`} className="pl-3 text-gray-700 cursor-pointer">
                      {option.label}
@@ -108,4 +118,4 @@ const RadioGroup2 = forwardRef<HTMLInputElement, Props2>(({ title, options, name
    );
 });
 
-export { RadioGroup1, RadioGroup2 };
+export { RadioGroup, RadioGroup2 };
