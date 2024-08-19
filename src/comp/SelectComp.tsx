@@ -149,8 +149,7 @@ const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
               // 기존 선택지 삭제
               choiceInstance.clearChoices();
               // 새로운 선택지 설정
-              console.log('item',items);
-              choiceInstance.setChoices(items, 'value', 'label', true);
+               choiceInstance.setChoices(items, 'value', 'label', true);
               if (value) {
                  choiceInstance.setChoiceByValue(value); // 초기값 설정
               }
@@ -194,8 +193,9 @@ const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
               choicesInstanceRef.current = null;
            };
         }
-     }, [procedure, param, dataKey, value]); // useEffect가 의존하는 값을 명시적으로 선언
+     }, []); // useEffect가 의존하는 값을 명시적으로 선언
 
+     
      const getData = async (procedure: string, param: any) => {
         try {
 

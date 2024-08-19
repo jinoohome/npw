@@ -304,10 +304,10 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
                         //errorMsg="에러메시지" 
             />
             <SelectSearchComp title="시/도" 
-               value="{inputValues.coCd}"
+               value="{inputValues.coCd2}"
                onChange={(label, value) => {
                      console.log(label, value);
-                     onInputChange('coCd', value);
+                     onInputChange('coCd2', value);
                   }}
                layout="vertical"
                 //초기값 세팅시
