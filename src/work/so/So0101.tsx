@@ -1,4 +1,8 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
+import { set, setTime } from "react-datepicker/dist/date_utils";
+import { React, useEffect, useState, useRef, useCallback, initChoice, 
+   updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
+   reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp,
+    RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 
@@ -11,11 +15,15 @@ interface Props {
 const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    const gridRef = useRef<any>(null);
    const gridRef2 = useRef<any>(null);
+   const gridRef3 = useRef<any>(null);
+   const gridRef4 = useRef<any>(null);
    const gridContainerRef = useRef(null);
    const gridContainerRef2 = useRef(null);
+   const gridContainerRef3 = useRef(null);
+   const gridContainerRef4 = useRef(null);
 
    //검색창 ref
-   // const searchRef1 = useRef<any>(null);
+    const searchRef1 = useRef<any>(null);
    // const searchRef2 = useRef<any>(null);
 
    const refs = {
@@ -37,6 +45,21 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    const [gridDatas3, setGridDatas3] = useState<any[]>();
    const [gridDatas4, setGridDatas4] = useState<any[]>();
    const [user, setUser] = useState<any[]>([]);
+   const [bpCd, setBpCd] = useState<any[]>([]);
+
+
+   const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
+      rcptUserId2: "",
+   });
+
+   const onInputChange = (name: string, value: any) => {
+      setInputValues((prevValues) => ({
+          ...prevValues,
+          [name]: value,
+      }));
+    
+  };
+
    // const [wo0002Input, setWo0002Input] = useState<ZZ_CODE_RES[]>([]);
    // const [wo0003Input, setWo0003Input] = useState<ZZ_CODE_RES[]>([]);
 
@@ -47,6 +70,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    // const [choice5, setChoice5] = useState<any>();   
    
    const [focusRow, setFocusRow] = useState<any>(0);
+   const [isOpen, setIsOpen] = useState(false);
 
    const breadcrumbItem = [{ name: "주문관리" }, { name: "사전상담" }, { name: "사전상담등록" }];
 
@@ -82,14 +106,14 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const setGridData = async () => {
       try {          
-         let userData = await ZZ_USER_LIST();
+         // let userData = await ZZ_USER_LIST();
 
-         if (userData != null) {
-            userData.unshift({ value: "", text: "" });
-            setUser(userData);
-         }
+         // if (userData != null) {
+         //    userData.unshift({ value: "", text: "" });
+         //    setUser(userData);
+         // }
 
-         console.log("user:", userData);
+         // console.log("user:", userData);
          //await MM0401_S01();
       } catch (error) {
          console.error("setGridData Error:", error);
@@ -120,6 +144,22 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       updateChoices(choice1, user, "value", "text");
    }, [user]);
 
+
+   useEffect(() => {
+      console.log("gridDatas4:", gridDatas4);
+      if (gridRef4.current && gridDatas4) {
+         let grid4 = gridRef4.current.getInstance();
+         grid4.resetData(gridDatas4);
+
+         let focusRowKey = grid4.getFocusedCell().rowKey || 0;
+
+         if (gridDatas4.length > 0) {
+            grid4.focusAt(focusRowKey, 0, true);
+         }
+         
+      }
+   }, [gridDatas4]);
+
    // useEffect(() => {
    //    updateChoices(choice3, wo0002Input, "value", "text");
    // }, [wo0002Input]);
@@ -139,6 +179,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
          };
 
          const data = JSON.stringify(param);
+         console.log('data111:',data);
          const result = await fetchPost(`ZZ_USER_LIST`, { data });
 
          let formattedResult = Array.isArray(result)
@@ -215,6 +256,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const save = async () => {
 
+      console.log('inputValues',inputValues);
       const data2 = {
          preRcptNo: refs.preRcptNo.current?.value,
          rcptDt: refs.rcptDt.current?.value,
@@ -301,7 +343,111 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       setGridData();
    };
 
+   const handleDblClick = () => {
+      const gridInstance = gridRef4.current.getInstance();
+      const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
+
+      const bpCd = gridInstance.getValue(rowKey, "bpCd"); // 해당 rowKey에서 bpCd 값을 가져옴
+      const bpNm = gridInstance.getValue(rowKey, "bpNm"); // 해당 rowKey에서 bpNm 값을 가져옴
+
+      alert(bpCd+">>"+bpNm);
+
+      // InputSearchComp1에 bpNm 값 설정
+      if (refs.bpCd.current) {
+         refs.bpCd.current.value = bpNm; // InputSearchComp1의 ref를 통해 값 설정
+         onInputChange('bpCd', bpCd);
+      }
+      
+      setIsOpen(false);
+   };
+
+   const handleChange = (e: any) => {
+      console.log('handleChange:', e);
+   };
+
+   const onkeydown = (e: any) => {
+      console.log('onkeydown:', e);
+   };
+
+   const handleCheckChangeYn = (value: boolean) => {
+      console.log(value);
+   };
+
    //-------------------div--------------------------
+   const modalSearchDiv = () => (
+      <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
+         <div className="w-full flex justify-between">
+            <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
+              
+            </div>
+            <div className="w-[40%] flex justify-end">
+               <button type="button" className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+                  <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
+                  조회
+               </button>
+            </div>            
+         </div>
+      </div>
+   );
+
+   const modalSearchDiv2 = () => (
+      <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
+         <div className="w-full flex justify-between">
+            <div className="grid grid-cols-2  gap-y-3  justify-start w-[60%]">
+               <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch} title="거래처명"></InputComp1>               
+            </div>
+            <div className="w-[40%] flex justify-end">
+               <button type="button" className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+                  <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
+                  조회
+               </button>
+            </div>            
+         </div> 
+      </div>
+   );
+
+   const handleInputSearch = async (e: any) => {
+      const target = e.target as HTMLInputElement; 
+      const param = {
+         coCd: userInfo.coCd,
+         dlvyNm: target.value || '999',
+         useYn: '999',
+      };
+
+      const data = JSON.stringify(param);
+      const result = await fetchPost("MM0401_S01", { data });
+      console.log(result.length)
+      if (result.length === 1) {
+         console.log(result[0]);
+      } else {
+         setIsOpen(true);
+         
+      }
+   };
+
+   const handleInputSearch2 = async (e: any) => {
+      const target = e.target as HTMLInputElement; 
+      const param = {
+         coCd: '100',
+         bpNm: target.value || '999',
+         bpDiv: 'ZZ0188',
+      };
+      console.log(target.value)
+      const data = JSON.stringify(param);
+      const result = await fetchPost("ZZ_B_PO_BP", { data });
+      console.log(result)
+      setGridDatas4(result);
+      if (result.length === 1) {
+         console.log(result[0]);
+         } else {
+            await setIsOpen(true);
+            setTimeout(() => {
+
+               refreshGrid(gridRef4);
+               //reSizeGrid({ ref: gridRef4, containerRef: gridContainerRef4, sec: 200 });
+            }, 100);
+      }
+   };
 
    //상단 버튼 div
    const buttonDiv = () => (
@@ -330,10 +476,32 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
          </div>
 
          <div className="p-5 space-y-5">
-            <div className="grid grid-cols-4  gap-6  justify-around items-center ">
-               <InputComp2 ref={refs.preRcptNo} title="접수번호" target="preRcptNo" setChangeGridData={setChangeGridData} readOnly= {true} />
-               <InputComp2 ref={refs.rcptDt} title="접수일시" target="rcptDt" setChangeGridData={setChangeGridData} readOnly= {true} />
+            <div className="grid grid-cols-3  gap-6  justify-around items-center ">
+               <InputSearchComp1 ref={refs.preRcptNo} title="접수번호" target="preRcptNo" handleInputSearch={handleInputSearch} />
+               {/* <InputComp2 ref={refs.preRcptNo} title="접수번호" target="preRcptNo" setChangeGridData={setChangeGridData} readOnly= {true} /> */}
+               <InputComp title="접수일시" value={inputValues.rcptDt} readOnly= {true} onChange={(e)=>{
+                        console.log('onChange');
+                        onInputChange('dlvyNm', e);
+                     }} />
                <SelectComp2 ref={refs.rcptUserId} title="접수자" target="rcptUserId" setChangeGridData={setChangeGridData}  />
+               <SelectSearchComp title="접수자" 
+                              value="{inputValues.rcptUserId2}"
+                              onChange={(label, value) => {
+                                    console.log(label, value);
+                                    onInputChange('rcptUserId2', value);
+                                 }}
+
+                              //초기값 세팅시
+                              stringify={true}
+                              param={ { coCd : '100',
+                                       usrId : '999',
+                                       usrDiv : 'ZZ0186',
+                                       useYn : '999' }}
+                              procedure="ZZ_USER_LIST"  dataKey={{ label: 'usrNm2', value: 'usrId' }} 
+
+                              // param={{ coCd: "999", majorCode: "WO0002", div: "999" }}
+                              // procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
+            />
             </div>
          </div>
       </div>
@@ -361,14 +529,6 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       </div>
    );
 
-   const handleChange = (e: any) => {
-      console.log('handleChange:', e);
-   };
-
-   const onkeydown = (e: any) => {
-      console.log('onkeydown:', e);
-   };
-
    //input div
    const inputDiv3 = () => (
       <div className="border rounded-md p-2 space-y-2 input text-sm">
@@ -383,8 +543,8 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
 
          <div className="p-5 space-y-5">
             <div className="grid grid-cols-4  gap-6  justify-around items-center ">
-               <InputComp2 ref={refs.bpCd} title="고객사" target="bpCd" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.mou} title="MOU" target="mou" setChangeGridData={setChangeGridData} />
+               <InputSearchComp1 ref={refs.bpCd} title="고객사" target="bpCd" handleInputSearch={handleInputSearch2} />
+               <Checkbox title = "MOU"  />
                <SelectComp2 ref={refs.subCode} title="재직구분" target="subCode" setChangeGridData={setChangeGridData} />
                <SelectComp2 ref={refs.hsCd} title="경조사유" target="hsCd" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.ownNm} title="대상자" target="ownNm" setChangeGridData={setChangeGridData} />               
@@ -448,6 +608,28 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       </div>
    );
 
+   const columns4 = [
+     
+      { header: "회사코드", name: "coCd", hidden: true },
+      { header: "거래처코드", name: "bpCd", align : "center"},
+      { header: "거래처명", name: "bpNm" },
+   ];
+
+   const grid4 = () => (
+      <div className="border rounded-md p-4 space-y-4">
+         <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center space-x-1 text-orange-500 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="">거래처 정보</div>
+            </div>           
+         </div>
+
+         <TuiGrid01 gridRef={gridRef4} columns={columns4} handleDblClick={handleDblClick} perPageYn = {false} height={window.innerHeight-650}/>
+      </div>
+   );
+
    return (
       <div className={`space-y-2 overflow-y-auto `}>
          <div className="space-y-2">
@@ -467,6 +649,10 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
                <div className="space-x-2 p-1" ref={gridContainerRef2}>{grid2()}</div>
             </div>
          </div>
+         <CommonModal isOpen={isOpen} size="md" onClose={() => setIsOpen(false)} title="">
+            {modalSearchDiv2()}
+            {grid4()}
+         </CommonModal>
          {/* <div className="w-full h-full flex space-x-2 p-2">
             <div className="w-1/2 ">
                <div className="space-x-2 p-2">{inputDiv()}</div> 

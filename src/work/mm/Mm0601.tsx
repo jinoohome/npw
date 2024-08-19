@@ -318,6 +318,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
          const param = {
             coCd: "100",
             bpDiv: "ZZ0188",
+            bpNm: "999",
          };
 
          const data = JSON.stringify(param);

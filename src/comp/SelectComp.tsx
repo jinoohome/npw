@@ -125,6 +125,7 @@ const SelectComp3 = forwardRef<HTMLSelectElement, Props3>(({ placeholder, handle
   layout?: "horizontal" | "vertical"; // 레이아웃 옵션 추가
   target?: string;
   setChangeGridData?: (target: string, value: string) => void;
+  stringify?: boolean;
 }
 
 // HTMLSelectElement와 추가 메서드를 포함하는 타입 정의
@@ -134,7 +135,7 @@ interface SelectSearchCompRef extends HTMLSelectElement {
 }
 
 const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
-  ({ title, value, handleCallSearch, onChange, procedure, param, dataKey, layout = "horizontal", target, setChangeGridData }, ref) => {
+  ({ title, value, handleCallSearch, onChange, procedure, param, dataKey, stringify, layout = "horizontal", target, setChangeGridData }, ref) => {
      const localRef = useRef<HTMLSelectElement>(null);
      const choicesInstanceRef = useRef<Choices | null>(null);
 
@@ -173,8 +174,11 @@ const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
            if (procedure && param && dataKey) {
               getData(procedure, param)
                  .then((result) => {
+
+                                      
                     if (Array.isArray(result)) {
                        instance.setChoices(result, dataKey.value, dataKey.label, true);
+
                        if (value) {
                           instance.setChoiceByValue(value); // 초기값 설정
                        }
@@ -194,7 +198,17 @@ const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
 
      const getData = async (procedure: string, param: any) => {
         try {
-           const result = await fetchPost(procedure, param);
+
+         let result = ''
+         if(stringify){
+            const data = JSON.stringify(param);
+            result = await fetchPost(procedure, {data});
+            
+         }else{
+            result = await fetchPost(procedure, param);
+
+         }
+
            return result;
         } catch (error) {
            console.error(`${procedure}:`, error);
