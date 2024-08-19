@@ -282,10 +282,10 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
       }, [value, onChange]);
 
       return (
-         <div className={`grid ${layout === "horizontal" ? "grid-cols-3 gap-3 items-center" : "grid-cols-1 gap-2"}`}>
+         <div className={`grid ${layout === "horizontal" ? "grid-cols-3 gap-3 items-center" : ""}`}>
             <label className={`col-span-1 ${layout === "vertical" ? "" : "text-right"}`}>{title}</label>
-            <div className={`${layout === "horizontal" ? "col-span-2" : "col-span-1"} relative z-40`}>
-               <div className="relative">
+            <div className={`${layout === "horizontal" ? "col-span-2" : "col-span-1"} relative `}>
+               <div className="relative  ">
                   <input
                      ref={inputRef}
                      title={title}
@@ -300,7 +300,7 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
                         inputRef.current?.click();
                      }}
                   ></span>
-                  <div ref={containerRef}></div>
+                  <div ref={containerRef} className="relative z-50"></div>
                </div>
             </div>
          </div>
@@ -389,7 +389,7 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
    }, [startValue, endValue, onChange]);
 
    return (
-      <div className={`grid ${layout === "horizontal" ? "grid-cols-3 gap-3 items-center" : "grid-cols-1 gap-2"}`}>
+      <div className={`grid ${layout === "horizontal" ? "grid-cols-3 gap-3 items-center" : ""}`}>
          <label className={`col-span-1 ${layout === "vertical" ? "" : "text-right"}`}>{title}</label>
          <div className={`col-span-2 flex items-center gap-2 w-full`}>
             <div className="relative z-40 w-full">
