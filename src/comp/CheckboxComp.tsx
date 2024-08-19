@@ -253,7 +253,7 @@ const Checkbox = forwardRef<HTMLInputElement, Props3>(
                      onChange={handleChange}
                      disabled={readOnly}  
                      className={`h-6 w-6 appearance-none bg-white border border-gray-300 rounded-md 
-                              ${readOnly ? 'cursor-not-allowed bg-gray-200' : 'cursor-pointer'}
+                              ${readOnly ? 'cursor-not-allowed bg-gray-100' : 'cursor-pointer'}
                      checked:bg-blue-500 checked:border-transparent `}/>
                </div>
             </div>
