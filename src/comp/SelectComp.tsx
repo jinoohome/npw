@@ -157,6 +157,31 @@ const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
               console.error("Choices 인스턴스가 초기화되지 않았습니다.");
            }
         },
+        setChoiceByValue: (value: any) => {
+          const choiceInstance = choicesInstanceRef.current;
+          if (choiceInstance) {
+              if (value) {
+                  choiceInstance.setChoiceByValue(value); // 주어진 값으로 선택 설정
+              } else {
+                  const currentValue = choiceInstance.getValue(true);
+                  
+                  if (Array.isArray(currentValue)) {
+                      currentValue.forEach((val) => {
+                          if (typeof val === 'string') {
+                              choiceInstance.removeActiveItemsByValue(val); // string 타입 값에 대해 선택 해제
+                          } else if (val && typeof val === 'object' && 'value' in val) {
+                              choiceInstance.removeActiveItemsByValue(val.value); // Item 객체의 value 속성 사용
+                          }
+                      });
+                  } else if (typeof currentValue === 'string') {
+                      choiceInstance.removeActiveItemsByValue(currentValue); // 단일 string 값에 대해 선택 해제
+                  } else if (currentValue && typeof currentValue === 'object' && 'value' in currentValue) {
+                      choiceInstance.removeActiveItemsByValue(currentValue.value); // 단일 Item 객체의 value 속성 사용
+                  }
+              }
+          }
+      }
+        
      }));
 
      useEffect(() => {

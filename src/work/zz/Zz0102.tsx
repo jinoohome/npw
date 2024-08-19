@@ -22,6 +22,7 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
       dlvyNm: useRef<any>(null),
       dlvyDiv: useRef<any>(null),
       siDo: useRef<any>(null),
+      siDo2: useRef<any>(null),
       siGunGu: useRef<any>(null),
       telNo: useRef<any>(null),
       zipCd: useRef<any>(null),
@@ -170,6 +171,8 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
             }))
          );
       };
+
+      refs.siDo2.current.setChoiceByValue("")
       console.log(inputValues);
  
    };
@@ -304,6 +307,7 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
                         //errorMsg="에러메시지" 
             />
             <SelectSearchComp title="시/도" 
+               ref={refs.siDo2}
                value="{inputValues.coCd2}"
                onChange={(label, value) => {
                      console.log(label, value);
