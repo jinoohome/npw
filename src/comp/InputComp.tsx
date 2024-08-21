@@ -246,7 +246,9 @@ interface InputSearchCompProps {
            <input
              type="text"
              ref={ref || inputRef}
-             className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
+             className={`border rounded-md h-8 p-2 w-full focus:outline-orange-300 
+                        ${readOnly ? "bg-gray-100" : ""}
+               `}
              value={value}
              placeholder={placeholder}
              readOnly={readOnly}
@@ -303,7 +305,10 @@ const InputSearchComp1 = forwardRef<HTMLInputElement, Props3>(({ title, value ='
             <input
                type="text"
                ref={ref || inputRef}
-               className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
+               className={`border rounded-md h-8 p-2 w-full focus:outline-orange-300
+                           ${readOnly ? "bg-gray-100" : ""}
+               `}
+               
                value={value}
                placeholder={placeholder}
                readOnly={readOnly}
