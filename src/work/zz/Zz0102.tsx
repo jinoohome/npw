@@ -2,7 +2,7 @@ import { on } from "events";
 import { React, useEffect, useState, useRef, useCallback, initChoice, 
    updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
    reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp, SelectPop,
-    RadioGroup, RadioGroup2, CheckboxGroup, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp } from "../../comp/Import";
+   TextArea, RadioGroup, RadioGroup2, CheckboxGroup, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 
@@ -94,12 +94,6 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
       }
    };
 
-   //------------------useEffect--------------------------
-
-   useEffect(() => {
-     
-     
-   }, [wo0002Input]);
 
    //---------------------- api -----------------------------
 
@@ -175,6 +169,7 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
 
       refs.siDo2.current.setChoiceByValue("");
       onInputChange('check', 'Y');
+      onInputChange('etc', '비고값 변경');
       
       console.log(inputValues);
  
@@ -258,8 +253,6 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
             <InputSearchComp1 
                title="계약번호" 
                handleInputSearch={handleInputSearch} 
-               
-       
                /> 
           
             <DatePickerComp 
@@ -283,13 +276,15 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
             
             } />
 
-            {/* <SelectPop  
-               title="계약번호"
-               handleInputSearch={handleInputSearch}
-               />
-         */}
-         </div>
+
+            <TextArea title="비고" 
+                      value={inputValues.etc}
+                      onChange={(e)=>{onInputChange('etc', e)}}
+                      placeholder="비고를 입력하세요"
+            />
+
       </div>
+   </div>
    );
 
    //input div
@@ -378,6 +373,13 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
             
             } />
             
+
+            <TextArea title="비고" 
+                      layout="vertical"
+                      value={inputValues.etc2}
+                      onChange={(e)=>{onInputChange('etc2', e)}}
+                      placeholder="비고를 입력하세요"
+            />
          </div>
       </div>
    );

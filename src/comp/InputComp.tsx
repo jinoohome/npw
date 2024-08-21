@@ -209,12 +209,14 @@ interface Props3 {
    readOnly?: boolean;
    placeholder?: string;
    onChange?: (e: any) => void;
-   handleInputSearch: (e: any) => void;
+   handleInputSearch?: (e: any) => void;
 }
 const InputSearchComp1 = forwardRef<HTMLInputElement, Props3>(({ title, value, target, readOnly = false, placeholder, handleInputSearch }, ref) => {
    const handleKeyDown = (e: any) => {
       if (e.key === "Enter") {
+         if (handleInputSearch) {
          handleInputSearch(e);
+         }
       }
    };
 
