@@ -2,7 +2,7 @@ import React, { useState, forwardRef, useId  } from "react";
 
 interface RadioGroupProps {
    options: { label: string; value: string }[];
-   title: string;
+   title?: string;
    value: string;  // 현재 선택된 값을 부모로부터 받음
    onChange?: (value: string) => void;
    onClick?: (value: string) => void;
@@ -34,7 +34,9 @@ interface RadioGroupProps {
  
      return (
        <div className={layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""}>
-         <label className={layout === "horizontal" ? "col-span-1 text-right" : ""}>{title}</label>
+          <label className={`${layout === "horizontal" ? "col-span-1 text-right" : ""}
+                              ${!title ? "hidden" : ""}                 
+         `}>{title}</label>
          <div className={`col-span-2 flex space-x-4 bg-white border rounded-md ${layout === "horizontal" ? "flex-row" : ""}`}>
            {options.map((option, index) => (
              <div key={index} className="flex items-center custom-radio h-8 p-2 ps-3 cursor-pointer">
