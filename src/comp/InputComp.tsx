@@ -202,7 +202,64 @@ const InputComp2 = forwardRef<HTMLInputElement, Props2>(({ title, target, setCha
    );
 });
 
-interface Props3 {
+interface InputSearchCompProps {
+   title: string;
+   target?: string;
+   value?: string;
+   readOnly?: boolean;
+   placeholder?: string;
+   onChange?: (value: string) => void;
+   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+   onIconClick?: (value: string) => void;
+ }
+ 
+ const InputSearchComp = forwardRef<HTMLInputElement, InputSearchCompProps>(
+   ({ title, value = '', target, readOnly = false, placeholder, onChange, onKeyDown, onIconClick }, ref) => {
+     const inputRef = useRef<HTMLInputElement>(null);
+ 
+     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+       if (onKeyDown) {
+         onKeyDown(e); // onKeyDown 핸들러를 호출합니다.
+       }
+     };
+ 
+     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+       if (onChange) {
+         onChange(e.target.value);
+       }
+     };
+ 
+     const handleIconClick = () => {
+       if (inputRef.current && onIconClick) {
+         onIconClick(inputRef.current.value); // onIconClick 핸들러를 호출합니다.
+       }
+     };
+ 
+     return (
+       <div className="grid grid-cols-3 gap-3 items-center">
+         <label className="col-span-1 text-right">{title}</label>
+         <div className="col-span-2 relative">
+           <input
+             type="text"
+             ref={ref || inputRef}
+             className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
+             value={value}
+             placeholder={placeholder}
+             readOnly={readOnly}
+             onKeyDown={handleKeyDown} // onKeyDown 이벤트를 처리합니다.
+             onChange={handleChange}
+           />
+           <MagnifyingGlassIcon
+             className="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
+             onClick={handleIconClick} // 아이콘 클릭 이벤트를 처리합니다.
+           />
+         </div>
+       </div>
+     );
+   }
+ );
+
+ interface Props3 {
    title: string;
    target?: string;
    value?: string;
@@ -257,6 +314,7 @@ const InputSearchComp1 = forwardRef<HTMLInputElement, Props3>(({ title, value ='
       </div>
    );
 });
+
 
 interface Props4 {
    title: string;
@@ -459,4 +517,4 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
    );
 };
 
-export { InputComp, InputComp1, InputComp2, InputSearchComp1, DatePickerComp, DateRangePickerComp };
+export { InputComp, InputComp1, InputComp2, InputSearchComp, InputSearchComp1, DatePickerComp, DateRangePickerComp };
