@@ -5,8 +5,19 @@
 }
 
 .tui-grid-cell{
-	padding:5px;
+	white-space: pre-wrap;
+  word-break: break-word;
+  vertical-align: top; /* 셀 내용이 상단에 맞춰지도록 설정 */
+  line-height: 1.5; /* 행 간격을 일정하게 유지 */
 
+}
+
+.tui-grid-row {
+    height: auto; /* 행 높이를 자동으로 조정 */
+}
+
+.tui-grid-cell-content {
+    padding: 8px; /* 셀 내부 여백 설정 */
 }
 
 .tui-grid-cell-header{
