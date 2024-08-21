@@ -1,7 +1,6 @@
-import { userInfo } from "os";
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid,  InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
+import { useEffect, useState, useRef,  initChoice, updateChoices,  fetchPost, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid,  InputComp1, SelectComp1 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
-import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, QrCodeIcon } from "@heroicons/react/24/outline";
+import { SwatchIcon, MagnifyingGlassIcon} from "@heroicons/react/24/outline";
 
 interface Props {
    item: any;

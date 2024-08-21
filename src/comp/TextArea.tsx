@@ -16,6 +16,7 @@ interface TextAreaProps {
   width?: number;
   height?: number;
   placeholder?: string;
+  display? : "flex" | "grid";
   onChange?: (e: any) => void;
   onkeyDown?: (e: any) => void;
   handleCallSearch?: () => void;
@@ -34,6 +35,7 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
   width,
   height,
   placeholder,
+  display = "grid",
   onChange,
   onkeyDown,
   handleCallSearch
@@ -70,11 +72,13 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
 
   return (
     <div>
-      <div className={`${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : "" } `}>
-      <label className={`col-span-1 ${layout === "vertical" ? "" : "text-right"}`}>{title}</label>
+      <div className={`${layout === "horizontal" && display === "grid"  ? "grid grid-cols-3 gap-3 items-center" : "" } 
+                       ${layout === "horizontal" && display === "flex"  ? "flex" : "" }
+      `}> 
+      <label className={`${layout === "horizontal" ? "col-span-1 text-right" : ""}`}>{title}</label>
         <textarea
             ref={ref}
-            className={`col-span-2 p-2 border border-gray-300 rounded-lg
+            className={`${layout === "horizontal" ? "col-span-2" : ""}  p-2 border border-gray-300 rounded-lg
                         ${width ? `w-[${width}px]` : "w-full"}
                         ${height ? `h-[${height}px]` : ""}
             `}

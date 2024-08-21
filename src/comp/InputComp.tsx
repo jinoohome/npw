@@ -211,7 +211,9 @@ interface Props3 {
    onChange?: (e: any) => void;
    handleInputSearch?: (e: any) => void;
 }
-const InputSearchComp1 = forwardRef<HTMLInputElement, Props3>(({ title, value, target, readOnly = false, placeholder, handleInputSearch }, ref) => {
+const InputSearchComp1 = forwardRef<HTMLInputElement, Props3>(({ title, value ='', target, readOnly = false, placeholder,onChange, handleInputSearch }, ref) => {
+   const inputRef = useRef<HTMLInputElement>(null);
+   
    const handleKeyDown = (e: any) => {
       if (e.key === "Enter") {
          if (handleInputSearch) {
@@ -220,18 +222,36 @@ const InputSearchComp1 = forwardRef<HTMLInputElement, Props3>(({ title, value, t
       }
    };
 
+   const handleChange = (e: any) => {
+
+      if (onChange) {
+         onChange(e.target.value);
+      }
+   }
+
+   const handleIconClick = () => {
+      if (inputRef.current && handleInputSearch) {
+         handleInputSearch({ target: inputRef.current });
+      }
+   };
+
    return (
       <div className="grid grid-cols-3 gap-3 items-center">
          <label className="col-span-1 text-right">{title}</label>
          <div className="col-span-2 relative">
-            <input type="text" 
-                  ref={ref} 
-                  className="border rounded-md h-8 p-2 w-full focus:outline-orange-300" 
-                   value={value} placeholder={placeholder} readOnly={readOnly} 
-                   onKeyDown={handleKeyDown}  />
+            <input
+               type="text"
+               ref={ref || inputRef}
+               className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
+               value={value}
+               placeholder={placeholder}
+               readOnly={readOnly}
+               onKeyDown={handleKeyDown}
+               onChange={handleChange}
+            />
             <MagnifyingGlassIcon
                className="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
-               onClick={handleInputSearch} // 클릭 시 동일한 함수 호출
+               onClick={handleIconClick} // 클릭 시 동일한 함수 호출
             />
          </div>
       </div>

@@ -1,7 +1,7 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, 
    updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
    reSizeGrid, getGridDatas, SelectSearchComp, InputComp,  InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2,
-    RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp } from "../../comp/Import";
+   TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import 'tui-date-picker/dist/tui-date-picker.css';
@@ -129,11 +129,34 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    );    
 
    const div2 = () => (
+      <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
+         <div className="space-y-3 w-[60%]">
+            <div className="grid grid-cols-2 gap-y-2">
+               <RadioGroup title = "완료문자이미지 전송 여부" 
+                  value={inputValues.radio} 
+                  options={[ { label: "확정", value: "Y" }, { label: "미확정", value: "N" } ]} 
+                  onChange={(e)=>{
+                     console.log('onChange')
+                     onInputChange('radio', e);  
+                  }}  
+                  onClick={() => {console.log('onClick')}} />
 
+               <RadioGroup title = "기타이미지 전송 여부" 
+                  value={inputValues.radio} 
+                  options={[ { label: "확정", value: "Y" }, { label: "미확정", value: "N" } ]} 
+                  onChange={(e)=>{
+                     console.log('onChange')
+                     onInputChange('radio', e);  
+                  }}  
+                  onClick={() => {console.log('onClick')}} />
+            </div>
+            <div className="w-full">
+               <TextArea title="비고"/>
+            </div>
+         </div>
+      </div>
+   );   
       
-
-
-
    return (
       <div className={`space-y-5 overflow-y-hidden h-screen`}>
          <div className="space-y-2">
@@ -142,6 +165,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                {buttonDiv()}
             </div>
             <div>{div1()}</div>
+            <div>{div2()}</div>
            
             
          </div>

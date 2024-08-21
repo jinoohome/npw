@@ -1,5 +1,4 @@
-import { on } from "events";
-import { React, useEffect, useState, useRef, useCallback, initChoice, 
+import {useEffect, useState, useRef,
    updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
    reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp, SelectPop,
    TextArea, RadioGroup, RadioGroup2, CheckboxGroup, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp } from "../../comp/Import";
@@ -138,6 +137,7 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
 
    const handleInputSearch = async (e: any) => {
       const target = e.target as HTMLInputElement; 
+  
       const param = {
          coCd: userInfo.coCd,
          dlvyNm: target.value || '999',
@@ -252,7 +252,9 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
 
             <InputSearchComp1 
                title="계약번호" 
+               value={inputValues.inputSearch}
                handleInputSearch={handleInputSearch} 
+               onChange={(e)=>onInputChange('inputSearch', e)}
                /> 
           
             <DatePickerComp 
