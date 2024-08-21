@@ -160,7 +160,7 @@ const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick,
       scrollY: true,
       columnOptions: { resizable: true },
       heightResizable: true,
-      //rowHeaders: rowHeaders,
+      rowHeaders: rowHeaders,
       oneTimeBindingProps: ["data", "columns"],
       ...(perPageYn && {
          pageOptions: {
