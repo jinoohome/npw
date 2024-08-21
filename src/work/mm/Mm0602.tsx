@@ -1,7 +1,9 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, 
    updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
    reSizeGrid, getGridDatas, SelectSearchComp, InputComp,  InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2,
-   TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp } from "../../comp/Import";
+   TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp,
+   Tabs1, Tabs2
+} from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import 'tui-date-picker/dist/tui-date-picker.css';
@@ -17,20 +19,51 @@ interface Props {
 const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
    const breadcrumbItem = [{ name: "기준정보" }, { name: "계약관리" }, { name: "계약등록" }];
-
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
     
    });
 
-   const onInputChange = (name: string, value: any) => {
+
+   const gridRef = useRef<any>(null);
+   const gridContainerRef = useRef(null); 
+   const [gridDatas, setGridDatas] = useState<any[]>();
+
+
+
+   useEffect(() => {
+      setGridData();
+      reSizeGrid({ ref: gridRef, containerRef: gridContainerRef, sec: 200 });
+   }, []);
+
+
+   const setGridData = async () => {
+      try {
+        
+      } catch (error) {
+         console.error("setGridData Error:", error);
+      }
+   };
+
+   //------------------useEffect--------------------------
+
+   useEffect(() => {
+      if (gridRef.current && gridDatas) {
+         let grid = gridRef.current.getInstance();
+         grid.resetData((gridDatas));
+         if (gridDatas.length > 0) {
+            // grid.focusAt(focusRow, 0, true);
+         }
+      }
+   }, [gridDatas]);
+
+
+    //-------------------event--------------------------
+    const onInputChange = (name: string, value: any) => {
       setInputValues((prevValues) => ({
          ...prevValues,
          [name]: value,
       }));
    }; 
-
-
-    //-------------------event--------------------------
 
    const save = () => {
       console.log(inputValues);
@@ -39,6 +72,28 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    const handleInputSearch = () => {
       console.log();
    };
+
+      //-------------------grid----------------------------
+      const columns = [
+         { header: "경조코드", name: "coCd" },
+         { header: "경조명", name: "bpCd", width: 100, align: "center" },
+
+      ];
+   
+      const grid1 = () => (
+         <div className="border rounded-md p-2 space-y-2 w-full">
+            <div className="flex justify-between items-center text-sm">
+               <div className="flex items-center space-x-1 text-orange-500 ">
+                  <div>
+                     <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+                  </div>
+                  <div className="">거래처 조회</div>
+               </div>            
+            </div>
+   
+            <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={()=>{}} perPageYn={false} height={window.innerHeight - 440} />
+         </div>
+      );
 
       
    //-------------------div--------------------------
@@ -151,12 +206,17 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                   onClick={() => {console.log('onClick')}} />
             </div>
             <div className="w-full">
-               <TextArea title="비고"/>
+               <TextArea title="비고"
+                     display="flex"
+                     labelWidth="1/6"
+                     width="5/6"
+               />
             </div>
          </div>
       </div>
    );   
       
+
    return (
       <div className={`space-y-5 overflow-y-hidden h-screen`}>
          <div className="space-y-2">
@@ -164,8 +224,12 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                <Breadcrumb items={breadcrumbItem} />
                {buttonDiv()}
             </div>
+  
+          
+        
             <div>{div1()}</div>
             <div>{div2()}</div>
+            <div>{grid1()}</div>
            
             
          </div>

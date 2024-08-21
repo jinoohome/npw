@@ -13,8 +13,9 @@ interface TextAreaProps {
   errorMsg?: string;
   type?: string;
   layout?: "horizontal" | "vertical";
-  width?: number;
-  height?: number;
+  width?: string;
+  labelWidth?: string;
+  height?: string;
   placeholder?: string;
   display? : "flex" | "grid";
   onChange?: (e: any) => void;
@@ -34,6 +35,7 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
   layout = "horizontal",
   width,
   height,
+  labelWidth,
   placeholder,
   display = "grid",
   onChange,
@@ -73,14 +75,19 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
   return (
     <div>
       <div className={`${layout === "horizontal" && display === "grid"  ? "grid grid-cols-3 gap-3 items-center" : "" } 
-                       ${layout === "horizontal" && display === "flex"  ? "flex" : "" }
+                       ${layout === "horizontal" && display === "flex"  ? "flex w-full" : "" }
       `}> 
-      <label className={`${layout === "horizontal" ? "col-span-1 text-right" : ""}`}>{title}</label>
+      <label className={`${layout === "horizontal" && display === "grid" ? "col-span-1 text-right" : "w-full"}
+                         ${layout === "horizontal" && display === "flex" && labelWidth ? `w-${labelWidth} text-right px-3` : ""}
+                         
+                    `}>{title}</label>
         <textarea
             ref={ref}
-            className={`${layout === "horizontal" ? "col-span-2" : ""}  p-2 border border-gray-300 rounded-lg
-                        ${width ? `w-[${width}px]` : "w-full"}
-                        ${height ? `h-[${height}px]` : ""}
+            className={`
+                      p-2 border border-gray-200 rounded-md  focus:outline-orange-300
+                      ${layout === "horizontal"  && display === "grid"  ? "col-span-2" : ""}  
+                      ${layout === "horizontal" && display === "flex" && width ? `w-${width}` : "w-full"}
+                      ${height ? `h-[${height}px]` : ""}
             `}
             value={value}
             placeholder={placeholder}
