@@ -218,9 +218,13 @@ interface InputSearchCompProps {
      const inputRef = useRef<HTMLInputElement>(null);
  
      const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-       if (onKeyDown) {
-         onKeyDown(e); // onKeyDown 핸들러를 호출합니다.
-       }
+      if (e.key === "Enter") {
+         if (onKeyDown) {
+            onKeyDown(e); // onKeyDown 핸들러를 호출합니다.
+          }
+      }
+
+      
      };
  
      const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
