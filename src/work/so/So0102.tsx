@@ -1,4 +1,4 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, reSizeGrid, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, DateRangePickerComp } from "../../comp/Import";
+import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, reSizeGrid, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, DateRangePickerComp, date } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
@@ -25,8 +25,8 @@ const So0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const [gridDatas1, setGridDatas] = useState<any[]>();
 
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
-      startDate: "2024-08-01",
-      endDate: "2024-08-31",
+      startDate: date(-1, 'month'),
+      endDate: date(),
    });
 
    const onInputChange = (name: string, value: any) => {
@@ -164,7 +164,7 @@ const So0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "접수일시", name: "rcptDt", align: "center", width: 150, rowSpan: true },
       { header: "접수자", name: "rcptUserNm", align: "center", width: 100 },
       { header: "신청자", name: "reqNm", align: "center", width: 100 },
-      { header: "고객사", name: "bpNm", width: 120, hidden: true },
+      { header: "고객사", name: "bpNm", width: 120 },
       { header: "대상자", name: "ownNm", align: "center", width: 100 },
       { header: "재직구분", name: "subCodeNm", width: 150 },
       { header: "경조사유", name: "hsNm", width: 150 },

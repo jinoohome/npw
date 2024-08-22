@@ -10,35 +10,32 @@ interface Props {
    userInfo : any;
 }
 
-const SO0101 = ({ item, activeComp, userInfo }: Props) => {
-   const gridRef = useRef<any>(null);
+const SO0201 = ({ item, activeComp, userInfo }: Props) => {
+   const gridRef1 = useRef<any>(null);
    const gridRef2 = useRef<any>(null);
    const gridRef3 = useRef<any>(null);
    const gridRef4 = useRef<any>(null);
-   const gridContainerRef = useRef(null);
+   const gridRef5 = useRef<any>(null);
+   const gridContainerRef1 = useRef(null);
    const gridContainerRef2 = useRef(null);
    const gridContainerRef3 = useRef(null);
    const gridContainerRef4 = useRef(null);
+   const gridContainerRef5 = useRef(null);
 
    //검색창 ref
     const searchRef1 = useRef<any>(null);
     const searchRef2 = useRef<any>(null);
 
+   const [tabIndex, setTabIndex] = useState(0);
+
    const refs = {
-      preRcptNo: useRef<any>(null),
-      rcptDt: useRef<any>(null),
       rcptUserId: useRef<any>(null),
-      reqNm: useRef<any>(null),
-      reqTelNo: useRef<any>(null),
-      bpCd: useRef<any>(null),
       mouYn: useRef<any>(null),
       subCode: useRef<any>(null),
-      hsCd: useRef<any>(null),
-      ownNm: useRef<any>(null),
-      coCd: useRef<any>(null),    
+      hsCd: useRef<any>(null),  
    };
 
-   const [gridDatas, setGridDatas] = useState<any[]>();
+   const [gridDatas1, setGridDatas] = useState<any[]>();
    const [gridDatas2, setGridDatas2] = useState<any[]>();
    const [gridDatas3, setGridDatas3] = useState<any[]>();
    const [gridDatas4, setGridDatas4] = useState<any[]>();
@@ -46,6 +43,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       startDate: date(-1, 'month'),
       endDate: date(),
+      dealType: 'Y',
       rcptUserId: "",
    });
 
@@ -61,11 +59,11 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    const [isOpen, setIsOpen] = useState(false);
    const [isOpen2, setIsOpen2] = useState(false);
 
-   const breadcrumbItem = [{ name: "주문관리" }, { name: "사전상담" }, { name: "사전상담등록" }];
+   const breadcrumbItem = [{ name: "주문관리" }, { name: "주문" }, { name: "주문 등록" }];
 
    // 첫 페이지 시작시 실행
    useEffect(() => {
-      reSizeGrid({ ref: gridRef, containerRef: gridContainerRef, sec: 200 });
+      reSizeGrid({ ref: gridRef1, containerRef: gridContainerRef1, sec: 200 });
       reSizeGrid({ ref: gridRef2, containerRef: gridContainerRef2, sec: 200 });
       reSizeGrid({ ref: gridRef3, containerRef: gridContainerRef3, sec: 200 });
       reSizeGrid({ ref: gridRef4, containerRef: gridContainerRef4, sec: 200 });
@@ -77,7 +75,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
 
    // 탭 클릭시 Grid 리사이즈
    useEffect(() => {
-      refreshGrid(gridRef);
+      refreshGrid(gridRef1);
       refreshGrid(gridRef2);
       refreshGrid(gridRef3);
       refreshGrid(gridRef4);
@@ -85,15 +83,15 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
 
    //Grid 데이터 설정
    useEffect(() => {
-      if (gridRef.current && gridDatas) {
-         let grid = gridRef.current.getInstance();
-         grid.resetData(gridDatas);
-         if (gridDatas.length > 0) {
+      if (gridRef1.current && gridDatas1) {
+         let grid = gridRef1.current.getInstance();
+         grid.resetData(gridDatas1);
+         if (gridDatas1.length > 0) {
             grid.focusAt(focusRow, 0, true);
          }
       }
 
-   }, [gridDatas]);
+   }, [gridDatas1]);
 
    useEffect(() => {
       //console.log(inputValues);
@@ -301,7 +299,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       setGridDatas4(result);
    };
 
-   //연락처 조회
+   // 팝업조회
    const handleCallSearch4 = async () => {
       const param = {         
          reqTelNo: inputValues.reqTelNo,
@@ -349,17 +347,6 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       refs.hsCd.current.updateChoices();
       
       setIsOpen(false);
-   };
-
-   const handleDblClick2 = async () => {
-      const gridInstance = gridRef3.current.getInstance();
-      const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
-
-      const preRcptNo = gridInstance.getValue(rowKey, "preRcptNo"); // 해당 rowKey에서 bpCd 값을 가져옴
-      
-      search(preRcptNo);
-
-      setIsOpen2(false);
    };
 
    // 사전상담 팝업
@@ -525,8 +512,8 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <div className="p-5 space-y-5">
-            <div className="grid grid-cols-3  gap-3  justify-around items-center ">
+         <div className="space-y-5">
+            <div className="grid grid-cols-2  gap-3  justify-around items-center ">
                <InputSearchComp1 value={inputValues.preRcptNo} readOnly={true} title="접수번호" target="preRcptNo" handleInputSearch={handleInputSearch} />
                <InputComp title="접수일시" value={inputValues.rcptDt} readOnly= {true} onChange={(e)=>{
                         onInputChange('rcptDt', e);
@@ -647,48 +634,52 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    );
 
    //-------------------grid----------------------------
-   const columns = [
-      { header: "품목코드", name: "itemCd", align:"center", width: 100, hidden: false },
-      { header: "품목명", name: "itemNm", width: 350 },
-      { header: "수량", name: "qty", align:"center" },
-      { header: "복리단가", name: "priceCom", align:"right",
-         formatter: function(e: any) {if(e.value){return commas(e.value);} }
-       },
-      { header: "개별단가", name: "pricePer", align:"right",
-         formatter: function(e: any) {if(e.value){return commas(e.value);} }
-       },
+   const columns1 = [
+      { header: "참고사항", name: "tip" },
    ];
 
-   const grid = () => (
+   const grid1 = () => (
       <div className="border rounded-md p-2 space-y-2">
          <div className="flex justify-between items-center text-sm">
             <div className="flex items-center space-x-1 text-orange-500 ">
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
-               <div className="">지원품목</div>
+               <div className="">고객사별 참고사항</div>
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef} columns={columns}  height={window.innerHeight-750} perPageYn = {false}/>
+         <TuiGrid01 gridRef={gridRef1} columns={columns1}  height={window.innerHeight-750} perPageYn = {false}/>
       </div>
    );
 
    const columns2 = [
-      { header: "접수자", name: "insrtUserId", hidden: true },
-      { header: "접수자", name: "insrtUserNm", width: 100, align: "center" },
-      { header: "접수일시", name: "insrtDt", width: 150, align: "center" },
-      { header: "메모", name: "consultMemo", editor: "text"},
+      { header: "구분", name: "dealType", hidden: true },
+      { header: "품목코드", name: "itemCd", width: 100, align: "center" },
+      { header: "품목명", name: "itemNm", width: 150, align: "center" },
+      { header: "지점명", name: "poBpCd", editor: "text"},
+      { header: "수량", name: "soQty", editor: "text"},
+      { header: "가용재고", name: "invQty", editor: "text"},
+      { header: "단가", name: "soPrice", editor: "text"},
+      { header: "금액", name: "soAmt", editor: "text"},
+      { header: "공급가액", name: "netAmt", editor: "text"},
+      { header: "부가세액", name: "vatAmt", editor: "text"},
+      { header: "유/무상", name: "payDiv", editor: "text"},
+      { header: "무상사유", name: "reason", editor: "text"},
    ];
 
    const grid2 = () => (
       <div className="border rounded-md p-2 space-y-2">
          <div className="flex justify-between items-center text-sm">
             <div className="flex items-center space-x-1 text-orange-500 ">
-               <div>
-                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
-               </div>
-               <div className="">주요상담내용</div>
+               <RadioGroup value={inputValues.dealType} 
+                           options={[ { label: "표준", value: "Y" }, { label: "예외", value: "N" } ]} 
+                           layout="horizontal"
+                           onChange={(e)=>{
+                              console.log('onChange')
+                              onInputChange('dealType', e);  
+                           }}  
+                           onClick={() => {console.log('onClick')}} />
             </div>
             <div className="flex space-x-1">
                <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
@@ -702,17 +693,20 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef2} columns={columns2} perPageYn = {false} height={window.innerHeight-650}/>
+         <TuiGrid01 gridRef={gridRef2} columns={columns2} rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-650} />
       </div>
    );
 
    const columns3 = [
      
-      { header: "회사코드", name: "coCd", hidden: true },
-      { header: "접수번호", name: "preRcptNo", align : "center"},
-      { header: "신청자", name: "reqNm", align : "center" },
-      { header: "대상자", name: "ownNm", align : "center" },
-      { header: "고객사", name: "bpNm", align : "center" },
+      { header: "품목코드", name: "itemCd" },
+      { header: "품목명", name: "itemNm", align : "center"},
+      { header: "지점코드", name: "poBpCd", align : "center" },
+      { header: "지점명", name: "poBpNm", align : "center" },
+      { header: "수량", name: "soQty", editor: "text"},
+      { header: "가용재고", name: "invQty", editor: "text"},
+      { header: "발주단가", name: "poPrice", editor: "text"},
+      { header: "발주금액", name: "poAmt", editor: "text"},
    ];
 
    const grid3 = () => (
@@ -722,19 +716,19 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
-               <div className="">사전상담 접수정보</div>
+               <div className="">발주정보</div>
             </div>           
          </div>
 
-         <TuiGrid01 gridRef={gridRef3} columns={columns3} handleDblClick={handleDblClick2} perPageYn = {false} height={window.innerHeight-650}/>
+         <TuiGrid01 gridRef={gridRef3} columns={columns3} perPageYn = {false} height={window.innerHeight-650}/>
       </div>
    );
 
    const columns4 = [
-     
-      { header: "회사코드", name: "coCd", hidden: true },
-      { header: "거래처코드", name: "bpCd", align : "center"},
-      { header: "거래처명", name: "bpNm" },
+      { header: "접수자", name: "insrtUserId", hidden: true },
+      { header: "접수자", name: "insrtUserNm", width: 100, align: "center" },
+      { header: "접수일시", name: "insrtDt", width: 150, align: "center" },
+      { header: "메모", name: "consultMemo", editor: "text"},
    ];
 
    const grid4 = () => (
@@ -744,13 +738,43 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
-               <div className="">거래처 정보</div>
+               <div className="">사전상담 정보</div>
             </div>           
          </div>
 
-         <TuiGrid01 gridRef={gridRef4} columns={columns4} handleDblClick={handleDblClick} perPageYn = {false} height={window.innerHeight-650}/>
+         <TuiGrid01 gridRef={gridRef4} columns={columns4} perPageYn = {false} height={window.innerHeight-650}/>
       </div>
    );
+
+   const columns5 = [
+      { header: "결제방법", name: "insrtUserId", hidden: true },
+      { header: "결제금액", name: "insrtUserNm", width: 100, align: "center" },
+      { header: "저장유무", name: "insrtDt", width: 150, align: "center" },
+   ];
+
+   const grid5 = () => (
+      <div className="border rounded-md p-4 space-y-4">
+         <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center space-x-1 text-orange-500 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="">결제 항목 리스트</div>
+            </div>           
+         </div>
+
+         <TuiGrid01 gridRef={gridRef5} columns={columns5} perPageYn = {false} height={window.innerHeight-650}/>
+      </div>
+   );
+
+   const handleTabIndex = async (index: number) => {
+      await setTabIndex(index);
+      await refreshGrid(gridRef2);
+      await refreshGrid(gridRef3);
+      await refreshGrid(gridRef4);
+   };
+
+   const tabLabels = ['상품정보', '발주정보', '사전상담', '결제처리', '메모정보', '재고이동', '주문확정'];
 
    return (
       <div className={`space-y-2 overflow-y-auto `}>
@@ -760,16 +784,47 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
                {buttonDiv()}
             </div>
          </div>
-         <div className="w-full h-full flex">
-            <div className="w-1/2 ">
-               <div className="space-x-2 p-1">{inputDiv()}</div> 
-               <div className="space-x-2 p-1">{inputDiv2()}</div> 
-               <div className="space-x-2 p-1">{inputDiv3()}</div> 
+         <div>
+            <div className="w-full h-full flex">
+               <div className="w-1/3 ">
+                  <div className="space-x-2 p-1">{inputDiv()}</div> 
+               </div>
+               <div className="w-1/3 ">
+                  <div className="space-x-2 p-1">{inputDiv2()}</div> 
+               </div>
+               <div className="w-1/3 ">
+                  <div className="space-x-2 p-1" ref={gridContainerRef1}>{grid1()}</div> 
+               </div>
             </div>
-            <div className="w-1/2 ">
-               <div className="space-x-2 p-1" ref={gridContainerRef}>{grid()}</div> 
-               <div className="space-x-2 p-1" ref={gridContainerRef2}>{grid2()}</div>
-            </div>
+            <div className="w-full h-full md:flex md:space-x-2 md:space-y-0 space-y-2">
+               <div className="w-full">
+                  <div className="flex ">
+                     {tabLabels.map((label, index) => (
+                           <div
+                              key={index} // 고유한 key 속성 추가
+                              className={`p-1 px-2  w-auto text-center rounded-t-md  text-sm cursor-pointer border border-b-0
+                                 ${tabIndex === index ? "text-white bg-sky-900  " : "text-gray-500"}
+                              `}
+                              onClick={() => {
+                                 handleTabIndex(index);
+                              }}
+                           >
+                              {label}
+                           </div>
+                     ))}
+                  </div>
+                  <div className={"w-full md:flex md:space-x-2 md:space-y-0 space-y-2"}>
+                     <div className={`w-full ${tabIndex === 0 ? " " : "hidden"}`} ref={gridContainerRef2}>{grid2()} </div>                     
+                  </div>
+                  <div className={`w-full ${tabIndex === 1 ? " " : "hidden"}`} ref={gridContainerRef3}>{grid3()}</div>
+                  <div className={`w-full ${tabIndex === 2 ? " " : "hidden"}`} ref={gridContainerRef4}>{grid4()}</div>
+                  {/* <div className={` ${tabIndex === 3 ? " " : "hidden"}`} ref={gridContainerRef5}>{grid5()}</div> */}
+                  <div className="w-full flex space-x-2 p-2">
+                     {/* <div className={`w-1/3 ${tabIndex === 4 ? " " : "hidden"}`} ref={gridContainerRef6}>{grid6()}</div> */}
+                     <div className={`w-full ${tabIndex === 4 ? " " : "hidden"}`} ref={gridContainerRef2}>{grid2()}</div>
+                  </div>
+               </div>
+         </div>
          </div>
          <CommonModal isOpen={isOpen} size="md" onClose={() => setIsOpen(false)} title="">
             {modalSearchDiv2()}
@@ -783,4 +838,4 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    );
 };
 
-export default SO0101;
+export default SO0201;
