@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useRef, useImperativeHandle  } from "react";
+import React, { forwardRef, useEffect, useRef, useImperativeHandle, useState  } from "react";
 import { commas, fetchPost } from "./Import";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DatePicker from "tui-date-picker";
@@ -38,20 +38,39 @@ const InputComp = forwardRef<HTMLInputElement, InputCompProps>(
       },
       ref
    ) => {
+
+
+      
+      const [internalValue, setInternalValue] = useState(value);
+
+   
+      useEffect(() => {
+         if (type === "number" && value) {
+            setInternalValue(commas(value)); // commas 함수로 처리
+         } else {
+            setInternalValue(value);
+         }
+      }, [value, type]);
+
       const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+         
+
          let newValue = event.target.value;
          if (type === "number") {
-            newValue = newValue.replace(/[^0-9]/g, "");
             if (setChangeGridData && target) {
                setChangeGridData(target, newValue);
             }
-            newValue = commas(Number(newValue));
-            event.target.value = newValue;
+            setInternalValue(commas(newValue));
+            // newValue = commas(Number(newValue));
+            // event.target.value = newValue;
          } else {
             if (setChangeGridData && target) {
                setChangeGridData(target, newValue);
             }
          }
+
+
+
          if (onChange) {
             onChange(newValue, event); // value와 event를 전달
          }
@@ -66,15 +85,16 @@ const InputComp = forwardRef<HTMLInputElement, InputCompProps>(
          }
       };
 
+
       return (
          <div>
-            <div className={`grid ${layout === "horizontal" ? "grid-cols-3 gap-3 items-center" : ""}`}>
+            <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""}`}>
                <label className={`col-span-1 ${layout === "vertical" ? "" : "text-right"}`}>{title}</label>
                <div className={`${layout === "horizontal" ? "col-span-2" : "col-span-1"}`}>
                   <input
                      ref={ref}
                      readOnly={readOnly}
-                     value={value} // value 설정
+                     value={internalValue} 
                      type="text"
                      data-type={type === "number" ? "number" : "text"}
                      className={`border rounded-md h-8 p-2 w-full 
@@ -217,14 +237,13 @@ interface InputSearchCompProps {
    ({ title, value = '', target, readOnly = false, placeholder, onChange, onKeyDown, onIconClick }, ref) => {
      const inputRef = useRef<HTMLInputElement>(null);
  
+     // Combine the forwarded ref with the internal ref
+     useImperativeHandle(ref, () => inputRef.current!);
+ 
      const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") {
-         if (onKeyDown) {
-            onKeyDown(e); // onKeyDown 핸들러를 호출합니다.
-          }
-      }
-
-      
+       if (e.key === "Enter" && onKeyDown) {
+         onKeyDown(e);
+       }
      };
  
      const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -235,7 +254,7 @@ interface InputSearchCompProps {
  
      const handleIconClick = () => {
        if (inputRef.current && onIconClick) {
-         onIconClick(inputRef.current.value); // onIconClick 핸들러를 호출합니다.
+         onIconClick(inputRef.current.value);
        }
      };
  
@@ -245,25 +264,27 @@ interface InputSearchCompProps {
          <div className="col-span-2 relative">
            <input
              type="text"
-             ref={ref || inputRef}
+             ref={inputRef}
              className={`border rounded-md h-8 p-2 w-full focus:outline-orange-300 
-                        ${readOnly ? "bg-gray-100" : ""}
-               `}
+                       ${readOnly ? "bg-gray-100" : ""}
+             `}
              value={value}
              placeholder={placeholder}
              readOnly={readOnly}
-             onKeyDown={handleKeyDown} // onKeyDown 이벤트를 처리합니다.
+             onKeyDown={handleKeyDown}
              onChange={handleChange}
            />
            <MagnifyingGlassIcon
              className="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
-             onClick={handleIconClick} // 아이콘 클릭 이벤트를 처리합니다.
+             onClick={handleIconClick}
            />
          </div>
        </div>
      );
    }
  );
+ 
+ 
 
  interface Props3 {
    title: string;
@@ -412,8 +433,8 @@ interface DateRangePickerCompProps {
 }
 
 const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
-   startValue,
-   endValue,
+   startValue = '',
+   endValue ='',
    title,
    onChange,
    layout = "horizontal"
