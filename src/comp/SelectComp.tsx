@@ -126,6 +126,7 @@ const SelectComp3 = forwardRef<HTMLSelectElement, Props3>(({ placeholder, handle
   target?: string;
   setChangeGridData?: (target: string, value: string) => void;
   stringify?: boolean;
+  datas?: any[];
 }
 
 // HTMLSelectElement와 추가 메서드를 포함하는 타입 정의
@@ -135,7 +136,7 @@ interface SelectSearchCompRef extends HTMLSelectElement {
 }
 
 const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
-  ({ title, value, handleCallSearch, onChange, procedure, param, dataKey, stringify, layout = "horizontal", target, setChangeGridData }, ref) => {
+  ({ title, value, handleCallSearch, onChange, procedure, param, dataKey, stringify, layout = "horizontal", target, setChangeGridData, datas }, ref) => {
      const localRef = useRef<HTMLSelectElement>(null);
      const choicesInstanceRef = useRef<Choices | null>(null);
 
@@ -195,7 +196,18 @@ const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
 
            choicesInstanceRef.current = instance;
 
-           if (procedure && param && dataKey) {
+           if (datas && datas.length > 0) {
+            const items = datas.map((item) => ({
+              value: dataKey ? item[dataKey.value] : item.value,
+              label: dataKey ? item[dataKey.label] : item.label
+            }));
+            instance.setChoices(items, 'value', 'label', true);
+            if (value) {
+              Array.isArray(value)
+                ? value.forEach((val) => instance.setChoiceByValue(val))
+                : instance.setChoiceByValue(value);
+            }
+          } else if (procedure && param && dataKey) {
               getData(procedure, param)
                  .then((result) => {
 
