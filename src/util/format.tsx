@@ -1,5 +1,12 @@
-const commas = (number: number) => {
-   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+const commas = (input: string | number) => {
+   // 입력값이 문자열인 경우 숫자만 남기기
+   const onlyNumbers = input.toString().replace(/\D/g, '');
+
+   // 숫자가 하나도 없으면 0으로 설정
+   const numberValue = onlyNumbers.length > 0 ? parseInt(onlyNumbers, 10) : 0;
+
+   // 쉼표 추가
+   return numberValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 const date = (offset = 0, unit = 'day', format = 'YYYY-MM-DD') => {
@@ -40,6 +47,31 @@ const date = (offset = 0, unit = 'day', format = 'YYYY-MM-DD') => {
      .replace('ss', seconds);
  };
 
+ const formatCardNumber = (value: string) => {
+  // 숫자만 남기기
+  const cleanValue = value.replace(/\D/g, '');
+
+  // 12자리까지만 유지
+  const limitedValue = cleanValue.slice(0, 16);
+
+  // 4자리마다 '-' 추가
+  const formattedValue = limitedValue.replace(/(\d{4})(?=\d)/g, '$1-');
+
+  return formattedValue;  
+};
+
+const formatExpiryDate = (value: string) => {
+  // 숫자만 남기기
+  const cleanValue = value.replace(/\D/g, '');
+
+  // 4자리까지만 유지 (MMYY)
+  const limitedValue = cleanValue.slice(0, 4);
+
+  // 2자리마다 '/' 추가
+  const formattedValue = limitedValue.replace(/(\d{2})(?=\d)/g, '$1/');
+
+  return formattedValue;
+};
 
 
-export { commas, date };
+export { commas, date, formatCardNumber, formatExpiryDate };
