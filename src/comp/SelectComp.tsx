@@ -122,10 +122,11 @@ const SelectComp3 = forwardRef<HTMLSelectElement, Props3>(({ placeholder, handle
   procedure?: string;
   param?: any;
   dataKey?: { value: string; label: string };
-  layout?: "horizontal" | "vertical"; // 레이아웃 옵션 추가
+  layout?: "horizontal" | "vertical" | "flex"; // 레이아웃 옵션 추가
   target?: string;
   setChangeGridData?: (target: string, value: string) => void;
   stringify?: boolean;
+  minWidth?: string;
   datas?: any[];
 }
 
@@ -136,7 +137,7 @@ interface SelectSearchCompRef extends HTMLSelectElement {
 }
 
 const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
-  ({ title, value, handleCallSearch, onChange, procedure, param, dataKey, stringify, layout = "horizontal", target, setChangeGridData, datas }, ref) => {
+  ({ title, value, handleCallSearch, minWidth, onChange, procedure, param, dataKey, stringify, layout = "horizontal", target, setChangeGridData, datas }, ref) => {
      const localRef = useRef<HTMLSelectElement>(null);
      const choicesInstanceRef = useRef<Choices | null>(null);
 
@@ -254,15 +255,15 @@ const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
      };
 
      return (
-        <div
-           className={`grid ${
-              layout === "horizontal" ? "grid-cols-3 gap-3 items-center" : ""
-           }`}
-        >
-           <label className={`col-span-1 ${layout === "vertical" ? "" : "text-right"}`}>
-              {title}
-           </label>
-           <div className={`${layout === "horizontal" ? "col-span-2" : "col-span-1"}`}>
+      <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""}
+                        ${layout === "flex" ? "flex items-center space-x-2" : ""}
+                        `}>
+         <label className={` ${layout === "horizontal" ? "col-span-1 text-right" : ""}
+                           ${layout === "flex" ? " w-auto" : ""}
+
+               `} style={minWidth ? { minWidth: minWidth } : {}}>{title}</label>
+            <div className={`${layout === "horizontal" ? "col-span-2" : "flex-grow"}
+            `}>
               <select
                  ref={localRef}
                  value={value} // 초기 선택 값

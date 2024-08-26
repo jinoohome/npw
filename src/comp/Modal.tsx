@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
 interface CommonModalProps {
@@ -15,6 +15,23 @@ const CommonModal = ({ isOpen, onClose, title, children, size = 'lg' }: CommonMo
       onClose();
     }
   };
+
+
+  useEffect(() => {
+    const handleEscKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscKey);
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [isOpen, onClose]);
+  
 
   const sizeClass = {
     sm: 'w-1/3',

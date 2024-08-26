@@ -15,10 +15,12 @@ interface InputCompProps {
    readOnly?: boolean;
    errorMsg?: string;
    type?: string;
-   layout?: "horizontal" | "vertical";
+   layout?: "horizontal" | "vertical" | "flex";
+   minWidth? : string;
    handleCallSearch?: () => void;
    onChange?: (value: string, event: React.ChangeEvent<HTMLInputElement>) => void;
    onkeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+
 }
 
 const InputComp = forwardRef<HTMLInputElement, InputCompProps>(
@@ -35,12 +37,12 @@ const InputComp = forwardRef<HTMLInputElement, InputCompProps>(
          onkeyDown,
          layout = "horizontal",
          handleCallSearch,
+         minWidth
       },
       ref
    ) => {
 
 
-      
       const [internalValue, setInternalValue] = useState(value);
 
    
@@ -88,9 +90,15 @@ const InputComp = forwardRef<HTMLInputElement, InputCompProps>(
 
       return (
          <div>
-            <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""}`}>
-               <label className={`col-span-1 ${layout === "vertical" ? "" : "text-right"}`}>{title}</label>
-               <div className={`${layout === "horizontal" ? "col-span-2" : "col-span-1"}`}>
+            <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""}
+                              ${layout === "flex" ? "flex items-center space-x-2" : ""}
+         
+             `}>
+               <label className={` ${layout === "horizontal" ? "col-span-1 text-right" : ""}
+                                   ${layout === "flex" ? " w-auto" : ""}
+                                   
+                           `} style={minWidth ? { minWidth: minWidth } : {}}>{title}</label>
+               <div className={`${layout === "horizontal" ? "col-span-2" : "flex-grow"}`}>
                   <input
                      ref={ref}
                      readOnly={readOnly}
@@ -100,6 +108,7 @@ const InputComp = forwardRef<HTMLInputElement, InputCompProps>(
                      className={`border rounded-md h-8 p-2 w-full 
                         ${readOnly ? "bg-gray-100" : ""} 
                         ${type === "number" ? "text-right" : ""}
+                        ${layout === "flex" ? "w-full" : ""}
                         focus:outline-orange-300`}
                      onChange={handleChange}
                      onKeyDown={handleKeyDown}
@@ -231,10 +240,12 @@ interface InputSearchCompProps {
    onChange?: (value: string) => void;
    onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
    onIconClick?: (value: string) => void;
+   layout?: 'horizontal' | 'vertical' | 'flex';
+   minWidth?: string;
  }
  
  const InputSearchComp = forwardRef<HTMLInputElement, InputSearchCompProps>(
-   ({ title, value = '', target, readOnly = false, placeholder, onChange, onKeyDown, onIconClick }, ref) => {
+   ({ title, value = '', layout='horizontal', minWidth, target, readOnly = false, placeholder, onChange, onKeyDown, onIconClick }, ref) => {
      const inputRef = useRef<HTMLInputElement>(null);
  
      // Combine the forwarded ref with the internal ref
@@ -259,14 +270,23 @@ interface InputSearchCompProps {
      };
  
      return (
-       <div className="grid grid-cols-3 gap-3 items-center">
-         <label className="col-span-1 text-right">{title}</label>
-         <div className="col-span-2 relative">
+       <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""}
+                      ${layout === "flex" ? "flex items-center space-x-2" : ""}
+
+         `}>      
+            <label className={` ${layout === "horizontal" ? "col-span-1 text-right" : ""}
+                                     ${layout === "flex" ? " w-auto" : ""}
+
+                           `}  style={minWidth ? { minWidth: minWidth } : {}}>{title}</label>
+        <div className={`relative ${layout === "horizontal" ? "col-span-2" : "flex-grow"}
+
+        `}>
            <input
              type="text"
              ref={inputRef}
              className={`border rounded-md h-8 p-2 w-full focus:outline-orange-300 
                        ${readOnly ? "bg-gray-100" : ""}
+                  
              `}
              value={value}
              placeholder={placeholder}
@@ -352,13 +372,14 @@ interface Props4 {
    format?: string;
    timePicker?: boolean;
    onChange?: (e: any) => void;
-   layout?: "horizontal" | "vertical";
+   layout?: "horizontal" | "vertical" | "flex";
    target?: string;
    setChangeGridData?: (target: string, value: string) => void;
+   minWidth?: string;
 }
 
 const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
-   ({ title, value, format = 'yyyy-MM-dd', timePicker = false, onChange, layout = "horizontal", target, setChangeGridData }, ref) => {
+   ({ title, value, minWidth, format = 'yyyy-MM-dd', timePicker = false, onChange, layout = "horizontal", target, setChangeGridData }, ref) => {
       const inputRef = useRef<HTMLInputElement>(null);
       const containerRef = useRef<HTMLDivElement>(null);
 
@@ -398,9 +419,15 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
       }, [value, onChange]);
 
       return (
-         <div className={`grid ${layout === "horizontal" ? "grid-cols-3 gap-3 items-center" : "grid-cols-1 gap-2"}`}>
-            <label className={`col-span-1 ${layout === "vertical" ? "" : "text-right"}`}>{title}</label>
-            <div className={`${layout === "horizontal" ? "col-span-2" : "col-span-1"} relative`}>
+         <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""}
+                                 ${layout === "flex" ? "flex items-center space-x-2" : ""}
+                        `}>
+             <label className={` ${layout === "horizontal" ? "col-span-1 text-right" : ""}
+                                     ${layout === "flex" ? " w-auto" : ""}
+
+                           `}  style={minWidth ? { minWidth: minWidth } : {}}>{title}</label>
+             <div className={`relative ${layout === "horizontal" ? "col-span-2" : "flex-grow"}
+            `}>
                <div className="relative  ">
                   <input
                      ref={inputRef}
