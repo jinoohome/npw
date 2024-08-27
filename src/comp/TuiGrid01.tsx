@@ -25,6 +25,7 @@ interface Props {
    height?: any;
    summary? : any;
    rowHeaders?: any;
+   headerHeight?: number;
 }
 
 
@@ -102,7 +103,9 @@ const getGridCheckedDatas = (gridRef: any) => {
       ...rows.updatedRows.map((e: any) => ({ ...e, status: "U" }))
    ];
 
-   const uncheckedRows = allRows.filter((row: any) => !row.checked);
+
+   const uncheckedRows = allRows.filter((row: any) => !row._attributes.checked);
+   
 
    //기존에 있던 데이터중에 체크가 해제된 데이터는 status를 D로 변경
    const datas = prevDatas.map((data: any) => {
@@ -122,7 +125,7 @@ const getGridCheckedDatas = (gridRef: any) => {
    return datas;
 };
 
-const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick, handleDblClick, beforeChange, afterChange, check, uncheck, afterRender,
+const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick, handleDblClick, beforeChange, afterChange, check, uncheck, afterRender, headerHeight = 40,
                      gridRef, treeColumnName, perPageYn = true, perPage = 50, height = window.innerHeight - 450, summary ,rowHeaders=["rowNum"] }: Props) => {
    // 고유한 key 생성을 위해 Math.random() 사용
    TuiGrid.applyTheme("default", {
@@ -154,6 +157,7 @@ const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick,
       ref: gridRef,
       editingEvent: "click", // EditingEvent 타입으로 캐스팅합니다.
       columns,
+      header : {height : headerHeight},
       bodyHeight: height,
       rowHeight: 'auto', 
       scrollX: true,

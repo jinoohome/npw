@@ -1,0 +1,103 @@
+/* customSelect.css */
+
+.react-select__input-container {
+   display: flex; /* Flexbox를 사용하여 정렬 */
+   align-items: center; /* 수직 정렬을 중앙으로 */
+   padding: 0 !important; /* 기본 패딩 제거 */
+   margin: 0 !important; /* 기본 마진 제거 */
+   height: 100%; /* 부모 요소의 높이에 맞춤 */
+ }
+ 
+
+/* 구체적인 선택자로 우선순위를 높여 적용합니다 */
+.react-select__control.react-select__control--is-focused {
+   border-color: #f8af7b !important; /* 포커스 상태에서의 테두리 색상 */
+   box-shadow: none !important; /* 기본 박스 그림자 제거 */
+   border-width: 2px;
+ }
+ 
+
+ .react-select__menu {
+   border-radius: 0.375rem !important; /* Tailwind 'rounded-md' */
+ }
+ 
+ .react-select__option {
+   background-color: white !important; /* 옵션 기본 배경색 */
+   color: black !important; /* 옵션 기본 텍스트 색상 */
+ }
+ 
+ .react-select__option--is-selected {
+   background-color: rgba(234, 88, 12, 0.1) !important; /* 선택된 옵션의 배경색 (Tailwind 'bg-orange-100') */
+ }
+ 
+ .react-select__option--is-focused {
+   background-color: #e6ecf881 !important; /* 포커스된 옵션의 배경색 (Tailwind 'hover:bg-orange-300') */
+ }
+ 
+/* customSelect.css */
+
+.react-select__control {
+   border-color: #e4e8ed !important; /* 기본 상태에서의 테두리 색상 */
+   border-radius: 0.375rem !important; /* Tailwind 'rounded-md' */
+   height: 0rem !important; /* Tailwind 'h-8' */
+   padding: 0.25rem !important; /* 적절한 패딩 적용 */
+   width: 100% !important; /* Tailwind 'w-full' */
+   display: flex; /* Flexbox 사용 */
+   align-items: center; /* 수직 정렬 */
+   min-height : 33px !important;
+   
+ }
+ 
+ .react-select__value-container {
+   padding: 0 !important; /* 기본 패딩 제거 */
+   height: 100%; /* 부모 요소의 전체 높이 */
+   display: flex; /* Flexbox 사용 */
+   align-items: center; /* 수직 정렬 */
+ }
+ 
+ .react-select__single-value {
+   margin: 0 !important; /* 기본 마진 제거 */
+   padding: 0 !important; /* 기본 패딩 제거 */
+   line-height: 1rem !important; /* 텍스트 수직 정렬 조정 */
+   top: 50%; /* 텍스트를 중앙 정렬하기 위한 위치 조정 */
+   transform: translateY(0%); /* 중앙 정렬을 약간 조정 */
+ }
+ 
+ .react-select__input-container {
+   margin: 0 !important; /* 기본 마진 제거 */
+   padding: 0 !important; /* 기본 패딩 제거 */
+   height: 100%; /* 부모 요소의 전체 높이 */
+   display: flex; /* Flexbox 사용 */
+   align-items: center; /* 수직 정렬 */
+ }
+ 
+ .react-select__placeholder {
+   margin: 0 !important; /* 기본 마진 제거 */
+   padding: 0 !important; /* 기본 패딩 제거 */
+   line-height: 1.25rem !important; /* 텍스트 수직 정렬 조정 */
+ }
+ 
+ .react-select__indicator-separator {
+   display: none; /* 구분선을 보이지 않게 합니다 */
+ }
+ 
+
+.react-select__indicators {
+   padding: 0 !important; /* 기본 패딩 제거 */
+   height: 100%; /* 부모 요소의 전체 높이 */
+   display: flex; /* Flexbox 사용 */
+   align-items: center; /* 수직 정렬 */
+ }
+ 
+ .react-select__dropdown-indicator {
+   padding: 0 !important; /* 기본 패딩 제거 */
+   margin: 0 0px 0 0 !important; /* 마진 조정 */
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   transform: translateY(0%); /* 아이콘을 약간 위로 이동 */
+ }
+
+ .react-select__menu {
+  z-index: 9999 !important; /* 원하는 z-index 값으로 수정 */
+}

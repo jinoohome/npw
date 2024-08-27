@@ -73,7 +73,7 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
 };
 
   return (
-    <div>
+    <div >
       <div className={`${layout === "horizontal" && display === "grid"  ? "grid grid-cols-3 gap-3 items-center" : "" } 
                        ${layout === "horizontal" && display === "flex"  ? "flex w-full" : "" }
       `}> 

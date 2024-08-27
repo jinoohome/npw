@@ -42,39 +42,39 @@ const InputComp = forwardRef<HTMLInputElement, InputCompProps>(
       ref
    ) => {
 
-
       const [internalValue, setInternalValue] = useState(value);
 
-   
+      // 포맷팅된 값을 별도로 관리
+      const [formattedValue, setFormattedValue] = useState(value);
+
       useEffect(() => {
          if (type === "number" && value) {
-            setInternalValue(commas(value)); // commas 함수로 처리
+            setFormattedValue(commas(value)); // 포맷팅된 값을 설정
          } else {
-            setInternalValue(value);
+            setFormattedValue(value);
          }
+         setInternalValue(value); // 실제 값을 설정
       }, [value, type]);
 
       const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-         
+         let newValue = event.target.value.replace(/,/g, ''); // 포맷팅 제거된 값
 
-         let newValue = event.target.value;
          if (type === "number") {
             if (setChangeGridData && target) {
                setChangeGridData(target, newValue);
             }
-            setInternalValue(commas(newValue));
-            // newValue = commas(Number(newValue));
-            // event.target.value = newValue;
+            setFormattedValue(commas(newValue)); // 포맷된 값을 다시 설정
          } else {
+            setFormattedValue(newValue);
             if (setChangeGridData && target) {
                setChangeGridData(target, newValue);
             }
          }
 
-
+         setInternalValue(newValue); // 실제 값을 업데이트
 
          if (onChange) {
-            onChange(newValue, event); // value와 event를 전달
+            onChange(newValue, event); // 실제 값과 이벤트를 전달
          }
       };
 
@@ -87,22 +87,19 @@ const InputComp = forwardRef<HTMLInputElement, InputCompProps>(
          }
       };
 
-
       return (
          <div>
             <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""}
                               ${layout === "flex" ? "flex items-center space-x-2" : ""}
-         
              `}>
                <label className={` ${layout === "horizontal" ? "col-span-1 text-right" : ""}
                                    ${layout === "flex" ? " w-auto" : ""}
-                                   
                            `} style={minWidth ? { minWidth: minWidth } : {}}>{title}</label>
                <div className={`${layout === "horizontal" ? "col-span-2" : "flex-grow"}`}>
                   <input
                      ref={ref}
                      readOnly={readOnly}
-                     value={internalValue} 
+                     value={formattedValue} // 포맷팅된 값을 표시
                      type="text"
                      data-type={type === "number" ? "number" : "text"}
                      className={`border rounded-md h-8 p-2 w-full 
@@ -379,7 +376,7 @@ interface Props4 {
 }
 
 const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
-   ({ title, value, minWidth, format = 'yyyy-MM-dd', timePicker = false, onChange, layout = "horizontal", target, setChangeGridData }, ref) => {
+   ({ title, value ='', minWidth, format = 'yyyy-MM-dd', timePicker = false, onChange, layout = "horizontal", target, setChangeGridData }, ref) => {
       const inputRef = useRef<HTMLInputElement>(null);
       const containerRef = useRef<HTMLDivElement>(null);
 
@@ -417,6 +414,14 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
             console.error("DatePicker 초기화에 필요한 요소를 찾을 수 없습니다.");
          }
       }, [value, onChange]);
+
+      useEffect(() => {
+         if (inputRef.current) {
+            inputRef.current.value = value || ""; // value가 null이나 빈 문자열일 때 빈 값으로 초기화
+         }
+      }, [value]);
+
+
 
       return (
          <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""}
@@ -499,8 +504,11 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
          if (startValue && startValeIconRef.current) {
             startValeIconRef.current.style.display = 'none';
          }
+
+         console.log('endValue', endValue);
          if (endValue && endDateValueIconRef.current) {
             endDateValueIconRef.current.style.display = 'none';
+              endInputElement.disabled = false;
          }
 
          picker.on("change:start", () => {

@@ -208,34 +208,28 @@ interface Props3 {
 }
 
 const Checkbox = forwardRef<HTMLInputElement, Props3>(
-   ({ title, value,  checked = false, onChange, layout ='horizontal',readOnly, target, setChangeGridData }, ref) => {
-      const [isChecked, setIsChecked] = useState(checked);
+   ({ title, value = 'N',  checked = false, onChange, layout ='horizontal',readOnly, target, setChangeGridData }, ref) => {
+      const [isChecked, setIsChecked] = useState(value === 'Y');
       const uniqueId = useId();
 
       useEffect(() => {
-         setIsChecked(checked);
-      }, [checked]);
-  
+         setIsChecked(value === 'Y');
+       }, [value]);
+   
  
-      const handleChange = () => {
-         
+       const handleChange = () => {
          const newChecked = !isChecked;
-
-         let newValue = 'N';
-         if(newChecked){
-            newValue = 'Y';
-         }
-
+         const newValue = newChecked ? 'Y' : 'N';
+   
          if (setChangeGridData && target) {
-            setChangeGridData(target, newValue);
+           setChangeGridData(target, newValue);
          }
-
-
+   
          setIsChecked(newChecked);
          if (onChange) {
-            onChange(newValue);
+           onChange(newValue);
          }
-      };
+       };
 
       return (
          <>
@@ -248,7 +242,6 @@ const Checkbox = forwardRef<HTMLInputElement, Props3>(
                      id={`${uniqueId}`}
                      name={`${uniqueId}`}
                      type="checkbox"
-                     value={value}
                      checked={isChecked}
                      onChange={handleChange}
                      disabled={readOnly}  

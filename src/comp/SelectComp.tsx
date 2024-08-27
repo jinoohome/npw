@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useRef, useImperativeHandle  } from "react";
+import React, { forwardRef, useEffect, useState, useRef, useImperativeHandle  } from "react";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import Choices from 'choices.js';
 import "../css/inputChoicejs.css";
@@ -6,6 +6,35 @@ import "../css/gridChoicejs.css";
 import "choices.js/public/assets/styles/choices.min.css";
 import { fetchPost } from "../util/fetch"; 
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import Select from 'react-select';
+import "../css/react-select.css";
+
+const customStyles = {
+   // control: (provided: any, state: any) => ({
+   //   ...provided,
+   //   borderColor: state.isFocused ? '#fb923c' : '#d1d5db',  // Focus 시에는 주황색, 그렇지 않으면 회색
+   //   borderRadius: '0.375rem', // Tailwind의 'rounded-md'와 동일
+   //   height: '2rem', // Tailwind의 'h-8'과 동일
+   //   padding: '0.5rem', // Tailwind의 'p-2'와 동일
+   //   width: '100%', // Tailwind의 'w-full'과 동일
+   //   boxShadow: 'none',  // 기본 박스 그림자를 제거
+   //   '&:hover': {
+   //     borderColor: '#fb923c', // Hover 시 주황색 테두리
+   //   },
+   // }),
+   // menu: (provided: any) => ({
+   //   ...provided,
+   //   borderRadius: '0.375rem', // Tailwind의 'rounded-md'와 동일
+   // }),
+   // option: (provided: any, state: any) => ({
+   //   ...provided,
+   //   backgroundColor: state.isSelected ? 'rgba(234, 88, 12, 0.1)' : 'white', // 선택된 항목 배경색
+   //   color: 'black', // 기본 텍스트 색상
+   //   '&:hover': {
+   //     backgroundColor: 'rgba(234, 88, 12, 0.3)', // Hover 시 배경색
+   //   },
+   // }),
+ };
 
 interface Props1 {
    title: string;
@@ -163,7 +192,8 @@ const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
           const choiceInstance = choicesInstanceRef.current;
           if (choiceInstance) {
               if (value) {
-                  choiceInstance.setChoiceByValue(value); // 주어진 값으로 선택 설정
+                  choiceInstance.setChoiceByValue(value); 
+               
               } else {
                   const currentValue = choiceInstance.getValue(true);
                   
@@ -182,6 +212,7 @@ const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
                   }
               }
           }
+        
       }
         
      }));
@@ -290,6 +321,130 @@ const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
 );
 
 
+
+interface SelectSearchProps {
+   title: string;
+   value?: string; // 초기 선택 값
+   handleCallSearch?: () => void;
+   onChange?: (label: string, value: string) => void;
+   procedure?: string;
+   param?: any;
+   dataKey?: { value: string; label: string };
+   layout?: "horizontal" | "vertical" | "flex"; // 레이아웃 옵션 추가
+   target?: string;
+   setChangeGridData?: (target: string, value: string) => void;
+   stringify?: boolean;
+   minWidth?: string;
+   datas?: any[];
+ }
+ 
+ // react-select에 맞게 forwardRef를 사용하지 않음.
+ const SelectSearch = ({
+   title,
+   value,
+   handleCallSearch,
+   onChange,
+   procedure,
+   param,
+   dataKey,
+   layout = "horizontal",
+   target,
+   setChangeGridData,
+   stringify,
+   minWidth,
+   datas,
+ }: SelectSearchProps) => {
+   const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
+ 
+   useEffect(() => {
+     // 데이터를 로드하고 옵션을 설정
+     if (datas && datas.length > 0) {
+       const items = datas.map((item) => ({
+         value: dataKey ? item[dataKey.value] : item.value,
+         label: dataKey ? item[dataKey.label] : item.label,
+       }));
+       setOptions(items);
+     } else if (procedure && param && dataKey) {
+       getData(procedure, param)
+         .then((result) => {
+           if (Array.isArray(result)) {
+             const items = result.map((item: any) => ({
+               value: item[dataKey.value],
+               label: item[dataKey.label],
+             }));
+             setOptions(items);
+           }
+         })
+         .catch((error) => {
+           console.error("데이터 로드 중 오류 발생:", error);
+         });
+     }
+   }, [datas, procedure, param, dataKey]);
+ 
+   const getData = async (procedure: string, param: any) => {
+     try {
+       let result = "";
+       if (stringify) {
+         const data = JSON.stringify(param);
+         result = await fetchPost(procedure, { data });
+       } else {
+         result = await fetchPost(procedure, param);
+       }
+       return result;
+     } catch (error) {
+       console.error(`${procedure}:`, error);
+       throw error;
+     }
+   };
+ 
+   const handleChange = (selectedOption: { value: string; label: string } | null) => {
+     if (selectedOption) {
+       if (setChangeGridData && target) {
+         setChangeGridData(target, selectedOption.value);
+       }
+       if (handleCallSearch) {
+         handleCallSearch();
+       }
+       if (onChange) {
+         onChange(selectedOption.label, selectedOption.value);
+       }
+     }
+   };
+ 
+   return (
+     <div
+       className={` ${
+         layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""
+       } ${layout === "flex" ? "flex items-center space-x-2" : ""}`}
+     >
+       <label
+         className={` ${
+           layout === "horizontal" ? "col-span-1 text-right" : ""
+         } ${layout === "flex" ? " w-auto" : ""}`}
+         style={minWidth ? { minWidth: minWidth } : {}}
+       >
+         {title}
+       </label>
+       <div
+         className={`${
+           layout === "horizontal" ? "col-span-2" : "flex-grow"
+         }`}
+       >
+         <Select
+           value={options.find((option) => option.value === value) || null}
+           onChange={handleChange}
+           options={options}
+           classNamePrefix="react-select"
+           className=" focus:outline-orange-300"
+           placeholder=""
+           styles={customStyles}
+         />
+       </div>
+     </div>
+   );
+ };
+
+
 interface SelectPopProps {
    title: string;
    target?: string;
@@ -340,4 +495,4 @@ const SelectPop = forwardRef<HTMLSelectElement, SelectPopProps>(({ title, value,
 
 
 
-export { SelectComp1, SelectComp2, SelectComp3, SelectSearchComp, SelectPop };
+export { SelectComp1, SelectComp2, SelectComp3, SelectSearchComp, SelectPop, SelectSearch };

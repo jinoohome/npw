@@ -1,6 +1,6 @@
 import {useEffect, useState, useRef,
    updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
-   reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp, SelectPop,
+   reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, InputSearchComp, SelectComp1, SelectComp2, SelectSearchComp, SelectPop,
    TextArea, RadioGroup, RadioGroup2, CheckboxGroup, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
@@ -135,12 +135,11 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
       console.log(value);
    };
 
-   const handleInputSearch = async (e: any) => {
-      const target = e.target as HTMLInputElement; 
-  
+   const onIconClickSearch = async (e:any) => {
+   
       const param = {
          coCd: userInfo.coCd,
-         dlvyNm: target.value || '999',
+         dlvyNm: e || '999',
          useYn: searchRef2.current?.value || '999',
       };
 
@@ -150,11 +149,15 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
 
       if (result.length === 1) {
          console.log(result[0]);
-         target.value = result[0].dlvyNm;
+         e = result[0].dlvyNm;
          onInputChange('popCd', result[0].dlvyCd);
       } else {
          setIsOpen(true);
       }
+   };
+   const onKeyDownSearch = async (e:any) => {
+   
+     console.log(e);
    };
    
    const save = () => {
@@ -245,16 +248,16 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
             <Checkbox 
                title = "확정여부" 
                value = {inputValues.check}
-               //readOnly={true}
-               checked={inputValues.check === "Y"} 
-               onChange={(e)=>onInputChange('check', e)} 
+              onChange={(e)=>onInputChange('check', e)} 
             />
 
-            <InputSearchComp1 
+
+            <InputSearchComp
                title="계약번호" 
                value={inputValues.inputSearch}
-               handleInputSearch={handleInputSearch} 
-               onChange={(e)=>onInputChange('inputSearch', e)}
+               onIconClick={onIconClickSearch}
+               onKeyDown={onKeyDownSearch}
+               onChange={(e:any)=>onInputChange('inputSearch', e)}
                /> 
           
             <DatePickerComp 
@@ -291,7 +294,7 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
 
    //input div
    const inputDiv = () => (
-      <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
+      <div className="bg-gray-100 rounded-lg p-5 search text-sm ">
          <div className="grid grid-cols-4 gap-4  justify-start w-[60%]">
 
          <InputComp title="이름"
@@ -301,6 +304,7 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
                         onInputChange('dlvyNm', e);
                      }} 
                      layout="vertical"
+                    
                         //readOnly={true}
                         //type="number"
                         //onkeyDown={()=>{console.log('onkeyDown')}}
@@ -374,6 +378,17 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
             }
             
             } />
+
+            <InputSearchComp
+               title="계약번호" 
+               value={inputValues.inputSearch2}
+               onIconClick={onIconClickSearch}
+               onKeyDown={onKeyDownSearch}
+               layout="vertical"
+               onChange={(e:any)=>onInputChange('inputSearch2', e)}
+               /> 
+      
+
             
 
             <TextArea title="비고" 
@@ -382,11 +397,77 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
                       onChange={(e)=>{onInputChange('etc2', e)}}
                       placeholder="비고를 입력하세요"
             />
+
+
+           
+          
          </div>
       </div>
    );
 
    
+   const  flexDiv = () => (
+      <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
+         <div className="grid grid-cols-3 gap-8 justify-start w-[60%]">
+
+         <InputComp title="이름"
+                     value={inputValues.name}  
+                     layout="flex"  
+                     onChange={(e)=>{
+                        console.log('onChange');
+                        onInputChange('name', e);
+                     }} 
+                     minWidth="40px"
+                        //readOnly={true}
+                        //type="number"
+                        //onkeyDown={()=>{console.log('onkeyDown')}}
+                        //handleCallSearch={handleCallSearch} 
+                       // setChangeGridData={setGridData}
+                        //errorMsg="에러메시지" 
+            />
+            
+           
+            
+            <SelectSearchComp title="시/도" 
+                              ref={refs.siDo}
+                              onChange={(label, value) => {
+                                    console.log(label, value);
+                                    onInputChange('coCd', value);
+                                 }}
+                              layout="flex"
+                              minWidth="40px"
+                              //초기값 세팅시
+                             // param={{ coCd: "999", majorCode: "WO0002", div: "999" }}
+                             // procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
+
+            />
+
+            <InputSearchComp
+               title="계약번호" 
+               value={inputValues.inputSearch2}
+               onIconClick={onIconClickSearch}
+               onKeyDown={onKeyDownSearch}
+               layout="flex"
+               minWidth="40px"
+               onChange={(e:any)=>onInputChange('inputSearch2', e)}
+               /> 
+
+            <DatePickerComp 
+                title="계약일"
+                value = {inputValues.date2}
+                onChange={(e) => { 
+                   onInputChange('date2', e);  
+                  }} 
+               layout="flex"
+               minWidth="40px"
+               //format="yyyy-MM-dd HH:mm A"
+               //timePicker={true}
+            />
+      
+
+      </div>
+   </div>
+   );
 
 
 
@@ -400,6 +481,7 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
             
             <div>{searchDiv()}</div>
             <div>{inputDiv()} </div>
+            <div>{flexDiv()} </div>
             
          </div>
          
