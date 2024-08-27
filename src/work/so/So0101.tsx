@@ -1,6 +1,6 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, 
    updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
-   reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp, DateRangePickerComp,
+   reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp, DateRangePickerComp, date, InputSearchComp, commas,
     RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp } from "../../comp/Import";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 
@@ -44,8 +44,8 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    const [gridDatas4, setGridDatas4] = useState<any[]>();
 
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
-      startDate: "2024-08-01",
-      endDate: "2024-08-31",
+      startDate: date(-1, 'month'),
+      endDate: date(),
       rcptUserId: "",
    });
 
@@ -72,22 +72,6 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    }, []);
 
    //--------------------init---------------------------
-
-   const setGridData = async () => {
-      try {          
-         // let userData = await ZZ_USER_LIST();
-
-         // if (userData != null) {
-         //    userData.unshift({ value: "", text: "" });
-         //    setUser(userData);
-         // }
-
-         // console.log("user:", userData);
-         //await MM0401_S01();
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
-   };
 
    //------------------useEffect--------------------------
 
@@ -157,14 +141,6 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       }
    }, [gridDatas4]);
 
-   // useEffect(() => {
-   //    updateChoices(choice3, wo0002Input, "value", "text");
-   // }, [wo0002Input]);
-
-   // useEffect(() => {
-   //    updateChoices(choice4, wo0003Input, "value", "text");
-   // }, [wo0003Input]);
-
    //---------------------- api -----------------------------
    var ZZ_CONT_INFO = async (param : any) => {
       try {
@@ -228,7 +204,6 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       setGridDatas2(result2);
 
       // InputSearchComp1에 값 설정      
-      console.log(result);
       onInputChange('preRcptNo', result[0].preRcptNo);
       onInputChange('reqNm', result[0].reqNm);
       onInputChange('rcptUserId', result[0].rcptUserId);
@@ -324,6 +299,19 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       const data = JSON.stringify(param);
       const result = await fetchPost("ZZ_B_PO_BP", { data });
       setGridDatas4(result);
+   };
+
+   //연락처 조회
+   const handleCallSearch4 = async () => {
+      const param = {         
+         reqTelNo: inputValues.reqTelNo,
+      };
+      const data = JSON.stringify(param);
+      const result = await fetchPost("SO0101_P02", { data });
+
+      if (result.length === 1) {
+         search(result[0].preRcptNo);
+      }
    };
 
    const handleDblClick = async () => {
@@ -445,6 +433,25 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       }
    };
 
+   // 고객사 팝업
+   const handleInputSearch3 = async (e: any) => {
+      const target = e.target as HTMLInputElement; 
+      const param = {
+         coCd: '100',
+         bpNm: '999',
+         bpDiv: 'ZZ0188',
+      };
+      const data = JSON.stringify(param);
+      const result = await fetchPost("ZZ_B_PO_BP", { data });
+      setGridDatas4(result);
+      
+      await setIsOpen(true);
+      setTimeout(() => {
+
+         refreshGrid(gridRef4);
+      }, 100);
+   };
+
    //-------------------div--------------------------
    const modalSearchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
@@ -491,13 +498,17 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    //상단 버튼 div
    const buttonDiv = () => (
       <div className="flex justify-end space-x-2">
-         <button type="button" onClick={search} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+         <button type="button" className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
             <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
-            조회
+            신규
          </button>
          <button type="button" onClick={save} className="bg-blue-500 text-white  rounded-lg px-2 py-1 flex items-center shadow">
             <ServerIcon className="w-5 h-5 mr-1" />
             저장
+         </button>
+         <button type="button" className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+            <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
+            삭제
          </button>
       </div>
    );
@@ -516,7 +527,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
 
          <div className="p-5 space-y-5">
             <div className="grid grid-cols-3  gap-3  justify-around items-center ">
-               <InputSearchComp1 value={inputValues.preRcptNo} title="접수번호" target="preRcptNo" handleInputSearch={handleInputSearch} />
+               <InputSearchComp1 value={inputValues.preRcptNo} readOnly={true} title="접수번호" target="preRcptNo" handleInputSearch={handleInputSearch} />
                <InputComp title="접수일시" value={inputValues.rcptDt} readOnly= {true} onChange={(e)=>{
                         onInputChange('rcptDt', e);
                      }} />
@@ -559,10 +570,11 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
                           onChange={(e) => {
                            onInputChange('reqNm', e);                           
                         }}   />
-               <InputComp value={inputValues.reqTelNo} title="연락처" target="reqTelNo"
+               <InputComp value={inputValues.reqTelNo} title="연락처" target="reqTelNo" 
                            onChange={(e) => {
-                              onInputChange('reqTelNo', e);                           
-                           }} />
+                              onInputChange('reqTelNo', e);                      
+                           }} 
+                           handleCallSearch={handleCallSearch4} />
             </div>
          </div>
       </div>
@@ -582,7 +594,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
 
          <div className="p-5 space-y-5">
             <div className="grid grid-cols-3  gap-3  justify-around items-center ">
-               <InputSearchComp1 title="고객사" value={inputValues.bpNm} target="bpNm" handleInputSearch={handleInputSearch2}
+               <InputSearchComp title="고객사" value={inputValues.bpNm} target="bpNm" onKeyDown={handleInputSearch2} onIconClick={handleInputSearch3}
                                  onChange={(e) => {
                                     onInputChange('bpNm', e);                           
                                 }} />
@@ -639,8 +651,12 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       { header: "품목코드", name: "itemCd", align:"center", width: 100, hidden: false },
       { header: "품목명", name: "itemNm", width: 350 },
       { header: "수량", name: "qty", align:"center" },
-      { header: "복리단가", name: "priceCom", align:"right" },
-      { header: "개별단가", name: "pricePer", align:"right" },
+      { header: "복리단가", name: "priceCom", align:"right",
+         formatter: function(e: any) {if(e.value){return commas(e.value);} }
+       },
+      { header: "개별단가", name: "pricePer", align:"right",
+         formatter: function(e: any) {if(e.value){return commas(e.value);} }
+       },
    ];
 
    const grid = () => (
@@ -702,7 +718,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    const grid3 = () => (
       <div className="border rounded-md p-4 space-y-4">
          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center space-x-1 text-orange-500 ">
+            <div className="flex items-center text-orange-500 ">
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
@@ -724,7 +740,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    const grid4 = () => (
       <div className="border rounded-md p-4 space-y-4">
          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center space-x-1 text-orange-500 ">
+            <div className="flex items-center text-orange-500 ">
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
