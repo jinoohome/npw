@@ -1,7 +1,8 @@
+import { on } from "events";
 import { React, useEffect, useState, useRef, useCallback, initChoice, 
    updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
    reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp, DateRangePickerComp, date, InputSearchComp, commas,
-    RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp } from "../../comp/Import";
+    RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, formatCardNumber, formatExpiryDate } from "../../comp/Import";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 
 interface Props {
@@ -11,38 +12,63 @@ interface Props {
 }
 
 const SO0201 = ({ item, activeComp, userInfo }: Props) => {
-   const gridRef1 = useRef<any>(null);
-   const gridRef2 = useRef<any>(null);
-   const gridRef3 = useRef<any>(null);
-   const gridRef4 = useRef<any>(null);
-   const gridRef5 = useRef<any>(null);
+   const gridRef1 = useRef<any>(null);    // 고객사별 참고사항
+   const gridRef2 = useRef<any>(null);    // 상품정보
+   const gridRef3 = useRef<any>(null);    // 발주정보
+   const gridRef4 = useRef<any>(null);    // 사전상담 정보
+   const gridRef5 = useRef<any>(null);    // 결제처리
+   const gridRef6 = useRef<any>(null);    // 메모정보
+   const gridRef7 = useRef<any>(null);    // 재고이동정보
+   const gridRef8 = useRef<any>(null);    // 발주확정정보
+   const gridRefP1 = useRef<any>(null);    // 주문팝업
+   const gridRefP2 = useRef<any>(null);    // 고객사팝업
+   const gridRefP3 = useRef<any>(null);    // 배송지팝업
+   const gridRefP4 = useRef<any>(null);    // 사전상담팝업
    const gridContainerRef1 = useRef(null);
    const gridContainerRef2 = useRef(null);
    const gridContainerRef3 = useRef(null);
    const gridContainerRef4 = useRef(null);
    const gridContainerRef5 = useRef(null);
+   const gridContainerRef6 = useRef(null);
+   const gridContainerRef7 = useRef(null);
+   const gridContainerRef8 = useRef(null);
 
    //검색창 ref
     const searchRef1 = useRef<any>(null);
     const searchRef2 = useRef<any>(null);
+    const searchRef3 = useRef<any>(null);
+    const searchRef4 = useRef<any>(null);
 
    const [tabIndex, setTabIndex] = useState(0);
+   const [currentInputDiv, setCurrentInputDiv] = useState<JSX.Element | null>(null);
 
    const refs = {
       rcptUserId: useRef<any>(null),
       mouYn: useRef<any>(null),
       subCode: useRef<any>(null),
       hsCd: useRef<any>(null),  
+      rcptMeth: useRef<any>(null),  
+      payYn: useRef<any>(null),  
    };
 
-   const [gridDatas1, setGridDatas] = useState<any[]>();
-   const [gridDatas2, setGridDatas2] = useState<any[]>();
-   const [gridDatas3, setGridDatas3] = useState<any[]>();
-   const [gridDatas4, setGridDatas4] = useState<any[]>();
+   const [gridDatas1, setGridDatas1] = useState<any[]>();       // 고객사별 참고사항
+   const [gridDatas2, setGridDatas2] = useState<any[]>();      // 상품정보
+   const [gridDatas3, setGridDatas3] = useState<any[]>();      // 발주정보
+   const [gridDatas4, setGridDatas4] = useState<any[]>();      // 사전상담 정보
+   const [gridDatas5, setGridDatas5] = useState<any[]>();      // 결제처리
+   const [gridDatas6, setGridDatas6] = useState<any[]>();      // 메모정보
+   const [gridDatas7, setGridDatas7] = useState<any[]>();      // 재고이동정보
+   const [gridDatas8, setGridDatas8] = useState<any[]>();      // 발주확정정보
+   const [gridDatasP1, setGridDatasP1] = useState<any[]>();      // 주문정보
+   const [gridDatasP2, setGridDatasP2] = useState<any[]>();      // 고객사정보
+   const [gridDatasP3, setGridDatasP3] = useState<any[]>();      // 배송지정보
+   const [gridDatasP4, setGridDatasP4] = useState<any[]>();      // 사전상담팝업정보
 
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
-      startDate: date(-1, 'month'),
+      startDate: date(-1, 'month'),    //주문팝업
       endDate: date(),
+      startDate2: date(-1, 'month'),   // 사전상담 팝업
+      endDate2: date(),
       dealType: 'Y',
       rcptUserId: "",
    });
@@ -56,8 +82,10 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
   };
 
    const [focusRow, setFocusRow] = useState<any>(0);
-   const [isOpen, setIsOpen] = useState(false);
-   const [isOpen2, setIsOpen2] = useState(false);
+   const [isOpen, setIsOpen] = useState(false);       // 주문정보 팝업
+   const [isOpen2, setIsOpen2] = useState(false);     // 고객사 팝업
+   const [isOpen3, setIsOpen3] = useState(false);     // 배송지 팝업
+   const [isOpen4, setIsOpen4] = useState(false);     // 사전상담 팝업
 
    const breadcrumbItem = [{ name: "주문관리" }, { name: "주문" }, { name: "주문 등록" }];
 
@@ -67,6 +95,10 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       reSizeGrid({ ref: gridRef2, containerRef: gridContainerRef2, sec: 200 });
       reSizeGrid({ ref: gridRef3, containerRef: gridContainerRef3, sec: 200 });
       reSizeGrid({ ref: gridRef4, containerRef: gridContainerRef4, sec: 200 });
+      reSizeGrid({ ref: gridRef5, containerRef: gridContainerRef5, sec: 200 });
+      reSizeGrid({ ref: gridRef6, containerRef: gridContainerRef6, sec: 200 });
+      reSizeGrid({ ref: gridRef7, containerRef: gridContainerRef7, sec: 200 });
+      reSizeGrid({ ref: gridRef8, containerRef: gridContainerRef7, sec: 200 });
    }, []);
 
    //--------------------init---------------------------
@@ -79,7 +111,19 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       refreshGrid(gridRef2);
       refreshGrid(gridRef3);
       refreshGrid(gridRef4);
-   }, [activeComp]);
+      refreshGrid(gridRef5);
+      refreshGrid(gridRef6);
+      refreshGrid(gridRef7);
+      refreshGrid(gridRef8);
+      refreshGrid(gridRefP1);
+      refreshGrid(gridRefP2);
+      refreshGrid(gridRefP3);
+      refreshGrid(gridRefP4);
+   }, [activeComp,tabIndex]);
+
+   useEffect(() => {
+      //console.log(inputValues);
+   }, [inputValues]);
 
    //Grid 데이터 설정
    useEffect(() => {
@@ -94,10 +138,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    }, [gridDatas1]);
 
    useEffect(() => {
-      //console.log(inputValues);
-   }, [inputValues]);
-
-   useEffect(() => {
       if (gridRef2.current && gridDatas2) {
          let grid2 = gridRef2.current.getInstance();
          grid2.resetData(gridDatas2);
@@ -109,6 +149,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          }
          
       }
+
    }, [gridDatas2]);
 
    useEffect(() => {
@@ -129,7 +170,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       if (gridRef4.current && gridDatas4) {
          let grid4 = gridRef4.current.getInstance();
          grid4.resetData(gridDatas4);
-
+        
+     
          let focusRowKey = grid4.getFocusedCell().rowKey || 0;
 
          if (gridDatas4.length > 0) {
@@ -138,6 +180,118 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          
       }
    }, [gridDatas4]);
+
+   useEffect(() => {
+      if (gridRef5.current && gridDatas5) {
+         let grid5 = gridRef5.current.getInstance();
+         grid5.resetData(gridDatas5);
+
+         let focusRowKey = grid5.getFocusedCell().rowKey || 0;
+
+         if (gridDatas5.length > 0) {
+            grid5.focusAt(focusRowKey, 0, true);
+         }
+         
+      }
+   }, [gridDatas5]);
+
+   useEffect(() => {
+      if (gridRef6.current && gridDatas6) {
+         let grid6 = gridRef6.current.getInstance();
+         grid6.resetData(gridDatas6);
+
+         let focusRowKey = grid6.getFocusedCell().rowKey || 0;
+
+         if (gridDatas6.length > 0) {
+            grid6.focusAt(focusRowKey, 0, true);
+         }
+         
+      }
+   }, [gridDatas6]);
+
+   useEffect(() => {
+      if (gridRef7.current && gridDatas7) {
+         let grid7 = gridRef7.current.getInstance();
+         grid7.resetData(gridDatas7);
+
+         let focusRowKey = grid7.getFocusedCell().rowKey || 0;
+
+         if (gridDatas7.length > 0) {
+            grid7.focusAt(focusRowKey, 0, true);
+         }
+         
+      }
+   }, [gridDatas7]);
+
+   useEffect(() => {
+      if (gridRef8.current && gridDatas8) {
+         let grid8 = gridRef8.current.getInstance();
+         grid8.resetData(gridDatas8);
+
+         let focusRowKey = grid8.getFocusedCell().rowKey || 0;
+
+         if (gridDatas8.length > 0) {
+            grid8.focusAt(focusRowKey, 0, true);
+         }
+         
+      }
+   }, [gridDatas8]);
+
+   useEffect(() => {
+      if (gridRefP1.current && gridDatasP1) {
+         let gridP1 = gridRefP1.current.getInstance();
+         gridP1.resetData(gridDatasP1);
+         refreshGrid(gridRefP1);
+         let focusRowKey = gridP1.getFocusedCell().rowKey || 0;
+
+         if (gridDatasP1.length > 0) {
+            gridP1.focusAt(focusRowKey, 0, true);
+         }
+         
+      }
+   }, [gridDatasP1]);
+
+   useEffect(() => {
+      if (gridRefP2.current && gridDatasP2) {
+         let gridP2 = gridRefP2.current.getInstance();
+         gridP2.resetData(gridDatasP2);
+         refreshGrid(gridRefP2);
+         let focusRowKey = gridP2.getFocusedCell().rowKey || 0;
+
+         if (gridDatasP2.length > 0) {
+            gridP2.focusAt(focusRowKey, 0, true);
+         }
+         
+      }
+   }, [gridDatasP2]);
+
+   useEffect(() => {
+      if (gridRefP3.current && gridDatasP3) {
+         let gridP3 = gridRefP3.current.getInstance();
+         gridP3.resetData(gridDatasP3);
+         refreshGrid(gridRefP3);
+         let focusRowKey = gridP3.getFocusedCell().rowKey || 0;
+
+         if (gridDatasP3.length > 0) {
+            gridP3.focusAt(focusRowKey, 0, true);
+         }
+         
+      }
+   }, [gridDatasP3]);
+
+   useEffect(() => {
+      if (gridRefP4.current && gridDatasP4) {
+         let gridP4 = gridRefP4.current.getInstance();
+         gridP4.resetData(gridDatasP4);
+         refreshGrid(gridRefP4);
+         let focusRowKey = gridP4.getFocusedCell().rowKey || 0;
+
+         if (gridDatasP4.length > 0) {
+            gridP4.focusAt(focusRowKey, 0, true);
+         }
+         
+      }
+   }, [gridDatasP4]);
 
    //---------------------- api -----------------------------
    var ZZ_CONT_INFO = async (param : any) => {
@@ -148,6 +302,71 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          return result;
       } catch (error) {
          console.error("ZZ_CONT_INFO Error:", error);
+         throw error;
+      }
+   }
+
+   // 상품정보, 발주정보
+   var SO0201_S02 = async (param : any) => {
+      try {
+         const data = JSON.stringify(param);
+         const result = await fetchPost(`SO0201_S02`, { data });
+
+         return result;
+      } catch (error) {
+         console.error("SO0201_S02 Error:", error);
+         throw error;
+      }
+   }
+
+   // 사전상담 조회
+   var SO0101_S02 = async (param : any) => {
+      try {
+         const data = JSON.stringify(param);
+         const result = await fetchPost(`SO0101_S02`, { data });
+
+         return result;
+      } catch (error) {
+         console.error("SO0101_S02 Error:", error);
+         throw error;
+      }
+   }
+
+   // 결제처리 조회
+   var SO0201_S03 = async (param : any) => {
+      try {
+         const data = JSON.stringify(param);
+         const result = await fetchPost(`SO0201_S03`, { data });
+
+         return result;
+      } catch (error) {
+         console.error("SO0201_S03 Error:", error);
+         throw error;
+      }
+   }
+
+   // 메모 조회
+   var SO0201_S04 = async (param : any) => {
+      try {
+         const data = JSON.stringify(param);
+         const result = await fetchPost(`SO0201_S04`, { data });
+
+         return result;
+      } catch (error) {
+         console.error("SO0201_S04 Error:", error);
+         throw error;
+      }
+   }
+
+   // 고객사별 참고사항
+   var SO0201_P05 = async (param : any) => {
+      try {
+         const data = JSON.stringify(param);
+         const result = await fetchPost(`SO0201_P05`, { data });
+
+         return result;
+      } catch (error) {
+         console.error("SO0201_P05 Error:", error);
          throw error;
       }
    }
@@ -164,14 +383,14 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
    //-------------------event--------------------------
 
-   const search = async (preRcptNo:any) => {
+   const search = async (soNo:any) => {
       const param = {    
-         preRcptNo: preRcptNo,
+         soNo: soNo,
       };
       const data = JSON.stringify(param);
-      const result = await fetchPost("SO0101_S01", {data});
+      const result = await fetchPost("SO0201_S01", {data});
 
-      let subCodeIn = await ZZ_CONT_INFO({ contNo: result[0].contNo, bpCd: result[0].bpCd, subCode: result[0].subCode, searchDiv: "SUB" });
+      let subCodeIn = await ZZ_CONT_INFO({ contNo: result[0].contNo, bpCd: result[0].soldToParty, subCode: result[0].subCode, searchDiv: "SUB" });
 
       if (refs.subCode.current) {
          refs.subCode.current.updateChoices(
@@ -182,7 +401,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          );
       };
 
-      let hsCdIn = await ZZ_CONT_INFO({ contNo: result[0].contNo, bpCd: result[0].bpCd, subCode: result[0].subCode, searchDiv: "HS" });
+      let hsCdIn = await ZZ_CONT_INFO({ contNo: result[0].contNo, bpCd: result[0].soldToParty, subCode: result[0].subCode, searchDiv: "HS" });
 
       if (refs.hsCd.current) {
          refs.hsCd.current.updateChoices(
@@ -193,29 +412,63 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          );
       };
 
-      let itemIn = await ZZ_CONT_INFO({ contNo: result[0].contNo, bpCd: result[0].bpCd, subCode: result[0].subCode, searchDiv: "ITEM", hsCd: result[0].hsCd});
+      // 고객사별 참고사항
+      let tip = await SO0201_P05({ bpCd: result[0].soldToParty });
+      setGridDatas1(tip);
 
-      setGridDatas(itemIn);
+      // 상품정보
+      let itemInfo = await SO0201_S02({ soNo: result[0].soNo });
+      setGridDatas2(itemInfo);
+      setGridDatas3(itemInfo);
+      setGridDatas7(itemInfo);
+      setGridDatas8(itemInfo);
 
-      const result2 = await fetchPost("SO0101_S02", {data});
+      // 사전상담
+      let preRcpt = await SO0101_S02({ preRcptNo: result[0].preRcptNo });
+      setGridDatas4(preRcpt);
 
-      setGridDatas2(result2);
+      // 결제처리
+      let payInfo = await SO0201_S03({ soNo: result[0].soNo });
+      setGridDatas5(payInfo);
+
+      // 메모
+      let memo = await SO0201_S04({ soNo: result[0].soNo });
+      setGridDatas6(memo);
 
       // InputSearchComp1에 값 설정      
-      onInputChange('preRcptNo', result[0].preRcptNo);
-      onInputChange('reqNm', result[0].reqNm);
+      onInputChange('soNo', result[0].soNo);
+      onInputChange('rcptMeth', result[0].rcptMeth);
+      refs.rcptMeth.current.setChoiceByValue(result[0].rcptMeth);
+      onInputChange('orderDt', result[0].orderDt);
       onInputChange('rcptUserId', result[0].rcptUserId);
       refs.rcptUserId.current.setChoiceByValue(result[0].rcptUserId);
-      onInputChange('reqTelNo', result[0].reqTelNo);
-      onInputChange('bpCd', result[0].bpCd);
+      onInputChange('ownNm', result[0].ownNm);
+      onInputChange('ownTelNo', result[0].ownTelNo);
+      onInputChange('bpCd', result[0].soldToParty);
       onInputChange('bpNm', result[0].bpNm);
-      onInputChange('mouYn', result[0].mouYn);
-      onInputChange('rcptDt', result[0].rcptDt);
+      onInputChange('contNo', result[0].contNo);
       onInputChange('subCode', result[0].subCode);
       refs.subCode.current.setChoiceByValue(result[0].subCode);
       onInputChange('hsCd', result[0].hsCd);
       refs.hsCd.current.setChoiceByValue(result[0].hsCd);
-      onInputChange('ownNm', result[0].ownNm);
+      onInputChange('deptNm', result[0].deptNm);
+      onInputChange('roleNm', result[0].roleNm);
+      onInputChange('dlvyCd', result[0].dlvyCd);
+      onInputChange('dlvyNm', result[0].dlvyNm);
+      onInputChange('dlvyAddr', result[0].dlvyAddr);
+      onInputChange('roomNo', result[0].roomNo);
+      onInputChange('reqNm', result[0].reqNm);
+      onInputChange('reqTelNo', result[0].reqTelNo);
+      onInputChange('dNm', result[0].dNm);
+      onInputChange('memo', result[0].memo);
+      onInputChange('confirmDt', result[0].confirmDt);
+      onInputChange('preRcptNo', result[0].preRcptNo);
+      onInputChange('pkgYn', result[0].pkgYn);
+   };
+
+   const create = async () => {
+      console.log('create');
+      refreshGrid(gridRef4);
    };
 
    const save = async () => {
@@ -242,19 +495,19 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
       console.log(inputValues);
 
-      let preConsultHdr = [inputValues];
-      let preConsultDtl = await getGridDatas(gridRef2);
-      let preRcptNo = inputValues.preRcptNo;
+      // let preConsultHdr = [inputValues];
+      // let preConsultDtl = await getGridDatas(gridRef2);
+      // let preRcptNo = inputValues.preRcptNo;
 
-      let data = {
-         menuId: activeComp.menuId,
-         insrtUserId: userInfo.usrId,
-         preRcptNo: preRcptNo,
-         preConsultHdr: JSON.stringify(preConsultHdr),
-         preConsultDtl: JSON.stringify(preConsultDtl),
-      };
+      // let data = {
+      //    menuId: activeComp.menuId,
+      //    insrtUserId: userInfo.usrId,
+      //    preRcptNo: preRcptNo,
+      //    preConsultHdr: JSON.stringify(preConsultHdr),
+      //    preConsultDtl: JSON.stringify(preConsultDtl),
+      // };
 
-      return data;
+      return '';
    };
 
    //grid 추가버튼
@@ -273,53 +526,87 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       grid.removeRow(rowKey, {});
    };
 
-   //사전상담 팝업조회
+   //주문 팝업조회
    const handleCallSearch2 = async () => {
       const param = {    
          startDt: inputValues.startDate,     
          endDt: inputValues.endDate,     
-         reqNm: '999',
-         ownNm: searchRef2.current?.value || '999',
-         bpNm: '999',
+         soNo: '999',
+         ownNm: searchRef1.current?.value || '999',
       };
       const data = JSON.stringify(param);
-      const result = await fetchPost("SO0101_P01", { data });
-      setGridDatas3(result);
+      const result = await fetchPost("SO0201_P01", { data });
+      setGridDatasP1(result);
    };
 
    //고객사 팝업조회
    const handleCallSearch3 = async () => {
       const param = {
          coCd: '100',
-         bpNm: searchRef1.current?.value || '999',
+         bpNm: searchRef2.current?.value || '999',
          bpDiv: 'ZZ0188',
       };
       const data = JSON.stringify(param);
       const result = await fetchPost("ZZ_B_PO_BP", { data });
-      setGridDatas4(result);
+      setGridDatasP2(result);
    };
 
-   // 팝업조회
+   // 사전상담 조회 (연락처)
    const handleCallSearch4 = async () => {
       const param = {         
-         reqTelNo: inputValues.reqTelNo,
+         ownTelNo: inputValues.ownTelNo,
       };
       const data = JSON.stringify(param);
-      const result = await fetchPost("SO0101_P02", { data });
+      const result = await fetchPost("SO0201_P02", { data });
 
       if (result.length === 1) {
-         search(result[0].preRcptNo);
+         onInputChange('preRcptNo', result[0].preRcptNo);
       }
    };
 
+   //배송지 팝업조회
+   const handleCallSearch5 = async () => {
+      const param = {
+         dlvyNm: searchRef3.current?.value || '999',
+      };
+      const data = JSON.stringify(param);
+      const result = await fetchPost("SO0201_P04", { data });
+      setGridDatasP3(result);
+   };
+
+   //사전상담 팝업조회
+   const handleCallSearch6 = async () => {
+      const param = {    
+         startDt: inputValues.startDate2,     
+         endDt: inputValues.endDate2,     
+         reqNm: '999',
+         ownNm: searchRef4.current?.value || '999',
+         bpNm: '999',
+      };
+      const data = JSON.stringify(param);
+      const result = await fetchPost("SO0101_P01", { data });
+      setGridDatasP4(result);
+   };
+
    const handleDblClick = async () => {
+      const gridInstance = gridRefP1.current.getInstance();
+      const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
+
+      const soNo = gridInstance.getValue(rowKey, "soNo"); // 해당 rowKey에서 soNo 값을 가져옴
+      
+      search(soNo);
+
+      setIsOpen(false);
+   };
+
+   // 거래처팝업 더블클릭
+   const handleDblClick2 = async () => {
       refs.subCode.current.setChoiceByValue("");
       onInputChange('subCode', '');
       refs.hsCd.current.setChoiceByValue("");
       onInputChange('hsCd', '');
-      setGridDatas([]);
 
-      const gridInstance = gridRef4.current.getInstance();
+      const gridInstance = gridRefP2.current.getInstance();
       const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
 
       const bpCd = gridInstance.getValue(rowKey, "bpCd"); // 해당 rowKey에서 bpCd 값을 가져옴
@@ -345,28 +632,65 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       };
 
       refs.hsCd.current.updateChoices();
+
+      // 고객사별 참고사항
+      const param = {       
+         bpCd: bpCd,
+      };
+      const data = JSON.stringify(param);
+      const result = await fetchPost("SO0201_P05", { data });
+
+      setGridDatas1(result);
       
-      setIsOpen(false);
+      setIsOpen2(false);
    };
 
-   // 사전상담 팝업
+   // 배송지팝업 더블클릭
+   const handleDblClick3 = async () => {
+      const gridInstance = gridRefP3.current.getInstance();
+      const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
+
+      const dlvyCd = gridInstance.getValue(rowKey, "dlvyCd"); // 해당 rowKey에서 soNo 값을 가져옴
+      const dlvyNm = gridInstance.getValue(rowKey, "dlvyNm"); // 해당 rowKey에서 soNo 값을 가져옴
+      const addr1 = gridInstance.getValue(rowKey, "addr1"); // 해당 rowKey에서 soNo 값을 가져옴
+      
+      onInputChange('dlvyCd', dlvyCd);
+      onInputChange('dlvyNm', dlvyNm);
+      onInputChange('dlvyAddr', addr1);
+
+      setIsOpen3(false);
+   };
+
+   // 사전상담 팝업 더블클릭
+   const handleDblClick4 = async () => {
+      const gridInstance = gridRefP4.current.getInstance();
+      const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
+
+      const preRcptNo = gridInstance.getValue(rowKey, "preRcptNo"); // 해당 rowKey에서 bpCd 값을 가져옴
+      
+      let preRcpt = await SO0101_S02({ preRcptNo: preRcptNo });
+
+      setGridDatas4(preRcpt);
+
+      setIsOpen4(false);
+   };
+
+   // 주문 팝업
    const handleInputSearch = async (e: any) => {
-      const target = e.target as HTMLInputElement; 
       const param = {    
          startDt: inputValues.startDate,     
          endDt: inputValues.endDate,     
-         reqNm: '999',
-         ownNm: searchRef2.current?.value || '999',
-         bpNm: '999',
+         soNo: '999',
+         ownNm: searchRef1.current?.value || '999',
       };
       const data = JSON.stringify(param);
-      const result = await fetchPost("SO0101_P01", { data });
-      setGridDatas3(result);
+      const result = await fetchPost("SO0201_P01", { data });
+      setGridDatasP1(result);
 
-      await setIsOpen2(true);
+      await setIsOpen(true);
       setTimeout(() => {
 
-         refreshGrid(gridRef3);
+         refreshGrid(gridRefP1);
       }, 100);
    };
 
@@ -380,13 +704,12 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       };
       const data = JSON.stringify(param);
       const result = await fetchPost("ZZ_B_PO_BP", { data });
-      setGridDatas4(result);
+      setGridDatasP2(result);
       if (result.length === 1) {
             refs.subCode.current.setChoiceByValue("");
             onInputChange('subCode', '');
             refs.hsCd.current.setChoiceByValue("");
             onInputChange('hsCd', '');
-            setGridDatas([]);
 
             const bpCd = result[0].bpCd 
             const bpNm = result[0].bpNm
@@ -411,41 +734,176 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             };
 
             refs.hsCd.current.updateChoices();
+
+            // 고객사별 참고사항
+            const param = {       
+               bpCd: bpCd,
+            };
+            const data = JSON.stringify(param);
+            const result2 = await fetchPost("SO0201_P05", { data });
+
+            setGridDatas1(result2);
          } else {
-            await setIsOpen(true);
+            await setIsOpen2(true);
             setTimeout(() => {
 
-               refreshGrid(gridRef4);
+               refreshGrid(gridRefP2);
             }, 100);
       }
    };
 
-   // 고객사 팝업
+   // 고객사 팝업 돋보기 클릭
    const handleInputSearch3 = async (e: any) => {
-      const target = e.target as HTMLInputElement; 
       const param = {
          coCd: '100',
-         bpNm: '999',
+         bpNm: e || '999',
          bpDiv: 'ZZ0188',
       };
+
+      onInputChange('bpNmS', e);
       const data = JSON.stringify(param);
       const result = await fetchPost("ZZ_B_PO_BP", { data });
-      setGridDatas4(result);
+      setGridDatasP2(result);
       
-      await setIsOpen(true);
+      await setIsOpen2(true);
       setTimeout(() => {
 
-         refreshGrid(gridRef4);
+         refreshGrid(gridRefP2);
       }, 100);
    };
 
+   // 배송지 팝업
+   const handleInputSearch4 = async (e: any) => {
+      const target = e.target as HTMLInputElement; 
+      const param = {
+         dlvyNm: target.value || '999',
+      };
+      const data = JSON.stringify(param);
+      const result = await fetchPost("SO0201_P04", { data });
+      setGridDatasP3(result);
+      if (result.length === 1) {
+            const dlvyCd = result[0].dlvyCd 
+            const dlvyNm = result[0].dlvyNm
+            const addr1 = result[0].addr1
+
+            // InputSearchComp1에 값 설정
+            onInputChange('dlvyCd', dlvyCd);
+            onInputChange('dlvyNm', dlvyNm);
+            onInputChange('dlvyAddr', addr1);
+         } else {
+            await setIsOpen3(true);
+            setTimeout(() => {
+
+               refreshGrid(gridRefP3);
+            }, 100);
+      }
+   };
+
+   // 배송지 팝업 돋보기 클릭
+   const handleInputSearch5 = async (e: any) => {
+      const param = {
+         dlvyNm: e || '999',
+      };
+
+      onInputChange('dlvyNmS', e);
+      const data = JSON.stringify(param);
+      const result = await fetchPost("SO0201_P04", { data });
+      setGridDatasP3(result);
+      
+      await setIsOpen3(true);
+      setTimeout(() => {
+
+         refreshGrid(gridRefP3);
+      }, 100);
+   };
+
+   // 사전상담 팝업 돋보기 클릭
+   const handleInputSearch6 = async (e: any) => {
+      const target = e.target as HTMLInputElement; 
+      const param = {    
+         startDt: inputValues.startDate2,     
+         endDt: inputValues.endDate2,     
+         reqNm: '999',
+         ownNm: searchRef4.current?.value || '999',
+         bpNm: '999',
+      };
+      const data = JSON.stringify(param);
+      const result = await fetchPost("SO0101_P01", { data });
+      setGridDatasP4(result);
+
+      await setIsOpen4(true);
+      setTimeout(() => {
+
+         refreshGrid(gridRefP4);
+      }, 100);
+   };
+
+   //grid 포커스변경시
+   const handleFocusChange = async ({ rowKey }: any) => {
+      if (rowKey !== null && gridRef5.current) {
+         const grid = gridRef5.current.getInstance();
+         const rowData = grid.getRow(rowKey);
+
+         if (rowData) {
+            // 새로운 inputValues 상태를 생성
+            const newInputValues = { ...inputValues };
+
+            Object.entries(rowData).forEach(([key, value]) => {
+                  if (key === "payYn") {
+                     setTimeout(function () {
+                        refs.payYn.current?.setChoiceByValue(value);
+                     }, 100);
+                  }
+                // inputValues 상태에 값 설정
+                newInputValues[key] = value;
+            });
+
+            //상태 업데이트
+            setInputValues(newInputValues);
+
+            // payDiv 값에 따라 다른 InputDiv 설정
+            if (rowData.payType === 'FU0019') {
+               setCurrentInputDiv(inputDiv3());
+           } else if (rowData.payType === 'FU0020') {
+               setCurrentInputDiv(inputDiv4()); // inputDiv4 함수가 정의되어 있다고 가정
+           } else {
+               setCurrentInputDiv(null); // 아무것도 표시하지 않음
+           }
+        }
+      }
+   };
+
+   //-------------------function--------------------------
+   // 카드포맷
+   const onCardNumberChange = (e: any) => {
+      const inputValue = e;
+  
+      // 카드번호 포맷팅
+      const formattedValue = formatCardNumber(inputValue);
+
+      // 상태 업데이트
+      onInputChange('cardNo', formattedValue);
+  };
+
+  // 유효년월포맷
+  const onExpiryDateChange = (e: any) => {
+      const inputValue = e;
+
+      // 유효년월 포맷팅
+      const formattedValue = formatExpiryDate(inputValue);
+
+      // 상태 업데이트
+      onInputChange('expDt', formattedValue);
+   };
+
    //-------------------div--------------------------
+   //주문 팝업 div
    const modalSearchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
          <div className="w-full flex justify-between">
             <div className="grid grid-cols-2 justify-start ">
                <DateRangePickerComp 
-                     title="접수기간"
+                     title="기간"
                      startValue= {inputValues.startDate}
                      endValue= {inputValues.endDate}
                      onChange={(startDate, endDate) => {
@@ -454,7 +912,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                }
                
                } /> 
-               <InputComp1 ref={searchRef2} handleCallSearch={handleCallSearch2} title="대상자"></InputComp1>              
+               <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch2} title="대상자"></InputComp1>              
             </div>
             <div className="w-[20%] flex justify-end">
                <button type="button" onClick={handleCallSearch2} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
@@ -466,11 +924,15 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       </div>
    );
 
+   //고객사 팝업 div
    const modalSearchDiv2 = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
          <div className="w-full flex justify-between">
             <div className="grid grid-cols-2  gap-y-3  justify-start w-[60%]">
-               <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch3} title="거래처명"></InputComp1>               
+               <InputComp title="거래처명" ref={searchRef2} value={inputValues.bpNmS} handleCallSearch={handleCallSearch3} 
+                          onChange={(e)=>{
+                          onInputChange('bpNmS', e);
+                     }} />              
             </div>
             <div className="w-[40%] flex justify-end">
                <button type="button" onClick={handleCallSearch3} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
@@ -482,10 +944,57 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       </div>
    );
 
+   //배송지 팝업 div
+   const modalSearchDiv3 = () => (
+      <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
+         <div className="w-full flex justify-between">
+            <div className="grid grid-cols-2  gap-y-3  justify-start w-[60%]">
+               <InputComp title="배송지명" ref={searchRef3} value={inputValues.dlvyNmS} handleCallSearch={handleCallSearch5} 
+                          onChange={(e)=>{
+                          onInputChange('dlvyNmS', e);
+                     }} />         
+            </div>
+            <div className="w-[40%] flex justify-end">
+               <button type="button" onClick={handleCallSearch5} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+                  <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
+                  조회
+               </button>
+            </div>            
+         </div> 
+      </div>
+   );
+
+   //사전상담 팝업 div
+   const modalSearchDiv4 = () => (
+      <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
+         <div className="w-full flex justify-between">
+            <div className="grid grid-cols-2 justify-start ">
+               <DateRangePickerComp 
+                     title="접수기간"
+                     startValue= {inputValues.startDate2}
+                     endValue= {inputValues.endDate2}
+                     onChange={(startDate2, endDate2) => {
+                        onInputChange('startDate2', startDate2);
+                        onInputChange('endDate2', endDate2);   
+               }
+               
+               } /> 
+               <InputComp1 ref={searchRef4} handleCallSearch={handleCallSearch6} title="대상자"></InputComp1>              
+            </div>
+            <div className="w-[20%] flex justify-end">
+               <button type="button" onClick={handleCallSearch6} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+                  <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
+                  조회
+               </button>
+            </div>            
+         </div>
+      </div>
+   );
+
    //상단 버튼 div
    const buttonDiv = () => (
       <div className="flex justify-end space-x-2">
-         <button type="button" className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+         <button type="button" onClick={create} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
             <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
             신규
          </button>
@@ -493,30 +1002,37 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             <ServerIcon className="w-5 h-5 mr-1" />
             저장
          </button>
-         <button type="button" className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
-            <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
-            삭제
-         </button>
       </div>
    );
 
-   //input div
+   // 주문정보
    const inputDiv = () => (
-      <div className="border rounded-md p-2 space-y-2 input text-sm">
+      <div className="border rounded-md space-y-2 input text-sm">
          <div className="flex justify-between items-center  border-b">
             <div className="flex items-center space-x-1 text-orange-500 p-2 ">
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
-               <div className="">접수 정보</div>
+               <div className="">주문정보</div>
             </div>
          </div>
 
          <div className="space-y-5">
-            <div className="grid grid-cols-2  gap-3  justify-around items-center ">
-               <InputSearchComp1 value={inputValues.preRcptNo} readOnly={true} title="접수번호" target="preRcptNo" handleInputSearch={handleInputSearch} />
-               <InputComp title="접수일시" value={inputValues.rcptDt} readOnly= {true} onChange={(e)=>{
-                        onInputChange('rcptDt', e);
+            <div className="grid grid-cols-2  gap-3  justify-around items-center pr-2 pb-14">
+               <InputSearchComp1 value={inputValues.soNo} readOnly={true} title="주문번호" target="soNo" handleInputSearch={handleInputSearch} />
+               <SelectSearchComp title="접수구분" 
+                              ref={refs.rcptMeth}
+                              value={inputValues.rcptMeth}
+                              onChange={(label, value) => {
+                                    onInputChange('rcptMeth', value);
+                                 }}
+
+                              //초기값 세팅시
+                              param={{ coCd: "999", majorCode: "FU0003", div: "-999" }}
+                              procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
+               />
+               <InputComp title="접수일시" value={inputValues.orderDt} readOnly= {true} onChange={(e)=>{
+                        onInputChange('orderDt', e);
                      }} />
                <SelectSearchComp title="접수자" 
                               ref={refs.rcptUserId}
@@ -532,60 +1048,24 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                                        usrDiv : 'ZZ0186',
                                        useYn : '999' }}
                               procedure="ZZ_USER_LIST"  dataKey={{ label: 'usrNm2', value: 'usrId' }} 
-            />
-            </div>
-         </div>
-      </div>
-   );
-
-
-   //input div
-   const inputDiv2 = () => (
-      <div className="border rounded-md p-2 space-y-2 input text-sm">
-         <div className="flex justify-between items-center  border-b">
-            <div className="flex items-center space-x-1 text-orange-500 p-2 ">
-               <div>
-                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
-               </div>
-               <div className="">신청자 정보</div>
-            </div>
-         </div>
-
-         <div className="p-5 space-y-5">
-            <div className="grid grid-cols-3  gap-3  justify-around items-center ">
-               <InputComp value={inputValues.reqNm} title="신청자 성명" target="reqNm" 
+               />
+               <InputComp value={inputValues.ownNm} title="대상자" target="ownNm" 
                           onChange={(e) => {
-                           onInputChange('reqNm', e);                           
+                           onInputChange('ownNm', e);                           
                         }}   />
-               <InputComp value={inputValues.reqTelNo} title="연락처" target="reqTelNo" 
+               <InputComp value={inputValues.ownTelNo} title="연락처" target="ownTelNo" 
                            onChange={(e) => {
-                              onInputChange('reqTelNo', e);                      
+                              onInputChange('ownTelNo', e);                      
                            }} 
                            handleCallSearch={handleCallSearch4} />
-            </div>
-         </div>
-      </div>
-   );
-
-   //input div
-   const inputDiv3 = () => (
-      <div className="border rounded-md p-2 space-y-2 input text-sm">
-         <div className="flex justify-between items-center  border-b">
-            <div className="flex items-center space-x-1 text-orange-500 p-2 ">
-               <div>
-                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
-               </div>
-               <div className="">지원 정보</div>
-            </div>
-         </div>
-
-         <div className="p-5 space-y-5">
-            <div className="grid grid-cols-3  gap-3  justify-around items-center ">
                <InputSearchComp title="고객사" value={inputValues.bpNm} target="bpNm" onKeyDown={handleInputSearch2} onIconClick={handleInputSearch3}
                                  onChange={(e) => {
                                     onInputChange('bpNm', e);                           
                                 }} />
-               <Checkbox  title = "MOU" value={inputValues.mouYn}  checked={inputValues.mouYn == 'Y'} readOnly={true} />
+               <InputComp value={inputValues.contNo} readOnly={true} title="계약번호" target="contNo" 
+                          onChange={(e) => {
+                           onInputChange('contNo', e);                           
+                        }}   />
                <SelectSearchComp title="재직구분" 
                               ref={refs.subCode}
                               value={inputValues.subCode}
@@ -604,30 +1084,226 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                                           }))
                                        );
                                     };
-
-                                    let itemIn = await ZZ_CONT_INFO({ contNo: inputValues.contNo, bpCd: inputValues.bpCd, subCode: value, searchDiv: "ITEM", hsCd: inputValues.hsCd});
-
-                                    setGridDatas(itemIn);
                                  }}   
                />                           
-               <SelectSearchComp title="경조사유" 
+               <SelectSearchComp title="신청사유" 
                               ref={refs.hsCd}
                               value={inputValues.hsCd}
                               onChange={async (label, value) => {                                    
                                     onInputChange('hsCd', value);
-
-                                    // const foundItem = hsCode.find((item: { hsCode: string; }) => item.hsCode === value);
-                                    // const foundhsType = foundItem ? foundItem.hsType : null;
-
-                                    let itemIn = await ZZ_CONT_INFO({ contNo: inputValues.contNo, bpCd: inputValues.bpCd, subCode: inputValues.subCode, searchDiv: "ITEM", hsCd: value});
-
-                                    setGridDatas(itemIn);
                                  }}
                />
-               <InputComp value={inputValues.ownNm} title="대상자" target="ownNm" 
+               <InputComp value={inputValues.deptNm} title="부서" target="deptNm" 
                           onChange={(e) => {
-                              onInputChange('ownNm', e);                           
-                          }}/>               
+                           onInputChange('deptNm', e);                           
+                        }}   />
+               <InputComp value={inputValues.roleNm} title="직급" target="roleNm" 
+                          onChange={(e) => {
+                           onInputChange('roleNm', e);                           
+                        }}   />
+            </div>
+         </div>
+      </div>
+   );
+
+
+   // 배송정보
+   const inputDiv2 = () => (
+      <div className="border rounded-md space-y-2 input text-sm">
+         <div className="flex justify-between items-center  border-b">
+            <div className="flex items-center space-x-1 text-orange-500 p-2 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="">배송정보</div>
+            </div>
+         </div>
+
+         <div className="grid gap-3 px-6">
+            <div className="space-y-3">
+               {/* <InputSearchComp display="flex" title="배송지" value={inputValues.dlvyCd} target="dlvyCd" onKeyDown={handleInputSearch2} onIconClick={handleInputSearch3} */}
+               <InputSearchComp title="배송지" value={inputValues.dlvyNm} layout="flex" target="dlvyNm" minWidth="60px" onKeyDown={handleInputSearch4} onIconClick={handleInputSearch5}
+                                 onChange={(e) => {
+                                    onInputChange('dlvyNm', e);                           
+                                }} />
+               <InputComp value={inputValues.dlvyAddr} title="상세주소" layout="flex" minWidth="60px" target="dlvyAddr" 
+                          onChange={(e) => {
+                           onInputChange('dlvyAddr', e);                           
+                        }}   />
+            </div>
+            <div className="grid grid-cols-2 gap-3  justify-around items-center pb-1">
+               <InputComp value={inputValues.roomNo} title="호실" target="roomNo" 
+                          onChange={(e) => {
+                           onInputChange('roomNo', e);                           
+                        }}   />
+               <InputComp value={inputValues.reqNm} title="주문자" target="reqNm" 
+                           onChange={(e) => {
+                              onInputChange('reqNm', e);                      
+                           }} />
+               <InputComp value={inputValues.reqTelNo} title="연락처" target="reqTelNo" 
+                           onChange={(e) => {
+                              onInputChange('reqTelNo', e);                      
+                           }} />
+               <InputComp value={inputValues.dNm} title="고인명" target="dNm" 
+                           onChange={(e) => {
+                              onInputChange('dNm', e);                      
+                           }} />
+            </div>
+            <div className="">
+               <InputComp title="의전배송메모" layout="flex" minWidth="60px" value={inputValues.memo} target="memo"
+                                 onChange={(e) => {
+                                    onInputChange('memo', e);                           
+                                }} />
+            </div>
+            <div className="grid grid-cols-2 gap-y-3 gap-x-1  justify-around items-center pb-2">
+               <InputComp value={inputValues.confirmDt} title="발주확정일시" target="confirmDt" readOnly={true}
+                          onChange={(e) => {
+                           onInputChange('confirmDt', e);                           
+                        }}   />
+               <InputSearchComp title="사전상담번호" value={inputValues.preRcptNo} target="preRcptNo" onIconClick={handleInputSearch6} readOnly={true}
+                                 onChange={(e) => {
+                                    onInputChange('preRcptNo', e);                           
+                                }} />    
+               <Checkbox  title = "패키지 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;진행여부" value={inputValues.pkgYn}  checked={inputValues.pkgYn == 'Y'} 
+                          onChange={(e) => {
+                                    onInputChange('pkgYn', e)}} />           
+            </div>  
+         </div>
+      </div>
+   );
+
+   // 카드결제
+   const inputDiv3 = () => (
+      <div className="border rounded-md p-2 space-y-2 input text-sm">
+         <div className="flex justify-between items-center  border-b">
+            <div className="flex items-center space-x-1 text-orange-500 p-2 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="">카드결제</div>
+            </div>
+            <div className="flex space-x-2">
+               <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+                  <PlusIcon className="w-5 h-5" />
+                  결제
+               </button>
+               <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+                  <MinusIcon className="w-5 h-5" />
+                  결제취소
+               </button>
+               <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+                  <MinusIcon className="w-5 h-5" />
+                  영수증
+               </button>
+            </div>
+         </div>
+
+         <div className="">
+            <div className="grid grid-cols-3  gap-3 justify-around items-center pt-4 pb-4">
+               <SelectSearchComp title="결제상태" 
+                              ref={refs.payYn}
+                              value={inputValues.payYn}
+                              onChange={(label, value) => {
+                                    onInputChange('payYn', value);
+                                 }}
+                              
+                              //datas={[{value : 'Y', label : '결제완료'},{value : 'N', label : '미결제'}]}
+                              //초기값 세팅시
+                              param={{ coCd: "999", majorCode: "FU0008", div: "-999" }}
+                              procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
+               />
+               <InputComp value={inputValues.amt} title="결제금액" target="amt" type="number"
+                          onChange={(e) => {
+                              onInputChange('amt', e);  
+                          }}/>   
+            </div>
+            <div className="grid grid-cols-3  gap-3  justify-around items-center pb-4">
+               <InputComp value={inputValues.cardNo} title="카드번호" target="cardNo" 
+                          onChange={(e) => {
+                              onCardNumberChange(e);                            
+                          }}/>    
+               <InputComp value={inputValues.expDt} title="유효기간" target="expDt" 
+                          onChange={(e) => {
+                              onExpiryDateChange(e);                        
+                          }}/>  
+            </div>
+            <div className="pb-4"> 
+               <InputComp value={inputValues.remark} title="기타메모" target="remark" 
+                          onChange={(e) => {
+                              onInputChange('remark', e);                           
+                          }}/>   
+            </div>
+            <div className="grid grid-cols-3  gap-3  justify-around items-center pb-2">
+               <InputComp value={inputValues.appNo} title="승인번호" target="appNo" 
+                          onChange={(e) => {
+                              onInputChange('appNo', e);                           
+                          }}/> 
+               <InputComp value={inputValues.mbrRefNo} title="주문번호" target="mbrRefNo" 
+                          onChange={(e) => {
+                              onInputChange('mbrRefNo', e);                           
+                          }}/> 
+               <InputComp value={inputValues.cancelMbrRefNo} title="취소번호" target="cancelMbrRefNo" 
+                          onChange={(e) => {
+                              onInputChange('cancelMbrRefNo', e);                           
+                          }}/>  
+            </div>
+         </div>
+      </div>
+   );
+
+   // 현금결제
+   const inputDiv4 = () => (
+      <div className="border rounded-md p-2 space-y-2 input text-sm">
+         <div className="flex justify-between items-center  border-b">
+            <div className="flex items-center space-x-1 text-orange-500 p-2 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="">현금결제</div>
+            </div>
+            <div className="flex space-x-2">
+               <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+                  <PlusIcon className="w-5 h-5" />
+                  발행
+               </button>
+               <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+                  <MinusIcon className="w-5 h-5" />
+                  발행취소
+               </button>
+               <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+                  <MinusIcon className="w-5 h-5" />
+                  영수증
+               </button>
+            </div>
+         </div>
+
+         <div className="">
+            <div className="grid grid-cols-3  gap-3 justify-around items-center pt-4 pb-4">
+               <SelectSearchComp title="결제상태" 
+                              ref={refs.payYn}
+                              value={inputValues.payYn}
+                              onChange={(label, value) => {
+                                    onInputChange('payYn', value);
+                                 }}
+
+                              //초기값 세팅시
+                              param={{ coCd: "999", majorCode: "FU0007", div: "-999" }}
+                              procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
+               />
+               <InputComp value={inputValues.amt} title="결제금액" target="amt" type="number"
+                          onChange={(e) => {
+                              onInputChange('amt', e);  
+                          }}/>   
+            </div>
+            <div className="grid grid-cols-3  gap-3  justify-around items-center pb-4">
+               <InputComp value={inputValues.cardNo} title="카드번호" target="cardNo" 
+                          onChange={(e) => {
+                              onCardNumberChange(e);                            
+                          }}/>    
+               <InputComp value={inputValues.expDt} title="유효기간" target="expDt" 
+                          onChange={(e) => {
+                              onExpiryDateChange(e);                        
+                          }}/>  
             </div>
          </div>
       </div>
@@ -649,34 +1325,35 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef1} columns={columns1}  height={window.innerHeight-750} perPageYn = {false}/>
+         <TuiGrid01 gridRef={gridRef1} columns={columns1}  height={window.innerHeight-650} perPageYn = {false}/>
       </div>
    );
 
    const columns2 = [
+      { header: "주문번호", name: "soNo", hidden: true },
+      { header: "순번", name: "soSeq", hidden: true },
       { header: "구분", name: "dealType", hidden: true },
       { header: "품목코드", name: "itemCd", width: 100, align: "center" },
-      { header: "품목명", name: "itemNm", width: 150, align: "center" },
-      { header: "지점명", name: "poBpCd", editor: "text"},
-      { header: "수량", name: "soQty", editor: "text"},
-      { header: "가용재고", name: "invQty", editor: "text"},
-      { header: "단가", name: "soPrice", editor: "text"},
-      { header: "금액", name: "soAmt", editor: "text"},
-      { header: "공급가액", name: "netAmt", editor: "text"},
-      { header: "부가세액", name: "vatAmt", editor: "text"},
-      { header: "유/무상", name: "payDiv", editor: "text"},
+      { header: "품목명", name: "itemNm", width: 300 },
+      { header: "지점명", name: "poBpCd", width: 200, editor: "text"},
+      { header: "수량", name: "soQty", width: 60, align:"center", editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "가용재고", name: "invQty", width: 80, align:"center"},
+      { header: "단가", name: "soPrice", width: 90, align:"right", editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "금액", name: "soAmt", width: 90, align:"right", editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "공급가액", name: "netAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "부가세액", name: "vatAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "유/무상", name: "payDiv", width: 120, editor: "text"},
       { header: "무상사유", name: "reason", editor: "text"},
    ];
 
    const grid2 = () => (
-      <div className="border rounded-md p-2 space-y-2">
+      <div className="border rounded-md p-2 space-y-2 ">
          <div className="flex justify-between items-center text-sm">
             <div className="flex items-center space-x-1 text-orange-500 ">
                <RadioGroup value={inputValues.dealType} 
                            options={[ { label: "표준", value: "Y" }, { label: "예외", value: "N" } ]} 
                            layout="horizontal"
                            onChange={(e)=>{
-                              console.log('onChange')
                               onInputChange('dealType', e);  
                            }}  
                            onClick={() => {console.log('onClick')}} />
@@ -693,20 +1370,22 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef2} columns={columns2} rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-650} />
+         <TuiGrid01 gridRef={gridRef2} columns={columns2} rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-750}             
+         />
       </div>
    );
 
    const columns3 = [
-     
-      { header: "품목코드", name: "itemCd" },
-      { header: "품목명", name: "itemNm", align : "center"},
-      { header: "지점코드", name: "poBpCd", align : "center" },
-      { header: "지점명", name: "poBpNm", align : "center" },
-      { header: "수량", name: "soQty", editor: "text"},
-      { header: "가용재고", name: "invQty", editor: "text"},
-      { header: "발주단가", name: "poPrice", editor: "text"},
-      { header: "발주금액", name: "poAmt", editor: "text"},
+      { header: "주문번호", name: "soNo", hidden: true },
+      { header: "순번", name: "soSeq", hidden: true },
+      { header: "품목코드", name: "itemCd", width: 100, align: "center" },
+      { header: "품목명", name: "itemNm", width: 500},
+      { header: "지점코드", name: "poBpCd", align : "center", width: 100 },
+      { header: "지점명", name: "poBpNm", align : "center", width: 300 },
+      { header: "수량", name: "soQty", align:"center", width: 60, editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value)}}},
+      { header: "가용재고", name: "invQty", align:"center", width: 80, formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "발주단가", name: "poPrice", align:"right", width: 90, editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "발주금액", name: "poAmt", align:"right", editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
    ];
 
    const grid3 = () => (
@@ -720,15 +1399,15 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             </div>           
          </div>
 
-         <TuiGrid01 gridRef={gridRef3} columns={columns3} perPageYn = {false} height={window.innerHeight-650}/>
+         <TuiGrid01 gridRef={gridRef3} columns={columns3} perPageYn = {false} height={window.innerHeight-750}/>
       </div>
    );
 
    const columns4 = [
-      { header: "접수자", name: "insrtUserId", hidden: true },
-      { header: "접수자", name: "insrtUserNm", width: 100, align: "center" },
-      { header: "접수일시", name: "insrtDt", width: 150, align: "center" },
-      { header: "메모", name: "consultMemo", editor: "text"},
+      
+      { header: "접수자", name: "insrtUserNm", width:150, align: "center" },
+      { header: "접수일시", name: "insrtDt", width:200,  align: "center" },
+      { header: "상담내용", name: "consultMemo" },
    ];
 
    const grid4 = () => (
@@ -742,36 +1421,270 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             </div>           
          </div>
 
-         <TuiGrid01 gridRef={gridRef4} columns={columns4} perPageYn = {false} height={window.innerHeight-650}/>
+         <TuiGrid01 gridRef={gridRef4} columns={columns4} perPageYn = {false} height={window.innerHeight-750}/>
       </div>
    );
 
    const columns5 = [
-      { header: "결제방법", name: "insrtUserId", hidden: true },
-      { header: "결제금액", name: "insrtUserNm", width: 100, align: "center" },
-      { header: "저장유무", name: "insrtDt", width: 150, align: "center" },
+      { header: "주문번호", name: "soNo", hidden: true },
+      { header: "순번", name: "soSeq", hidden: true },
+      { header: "결제방법", name: "payType", width: 150, align: "center"},
+      { header: "결제금액", name: "amt", width: 150, align: "right", formatter: function(e: any) {if(e.value){return commas(e.value)}}},
+      { header: "저장유무", name: "saveYn", align: "center" },
+      { header: "", name: "netAmt", hidden: true },
+      { header: "", name: "vatAmt", hidden: true },
+      { header: "", name: "payYn", hidden: true },
+      { header: "", name: "mbrNo", hidden: true },
+      { header: "", name: "mbrRefNo", hidden: true },
+      { header: "", name: "refNo", hidden: true },
+      { header: "", name: "tranDate", hidden: true },
+      { header: "", name: "payType2", hidden: true },
+      { header: "", name: "tranTime", hidden: true },
+      { header: "", name: "appNo", hidden: true },
+      { header: "", name: "cancelMbrRefNo", hidden: true },
+      { header: "", name: "cancelRefNo", hidden: true },
+      { header: "", name: "cancelTranDate", hidden: true },
+      { header: "", name: "cancelTranTime", hidden: true },
+      { header: "", name: "remark", hidden: true },
    ];
 
    const grid5 = () => (
+      <div className="border p-2 rounded-md space-y-4">            
+         <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center space-x-1 text-orange-500 pt-2">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="">결제 항목 리스트</div>
+            </div>     
+            <div className="flex pt-2">
+               <InputComp value={inputValues.payAmt} title="결제대상금액" target="payAmt" readOnly={true} type="number"
+                              onChange={(e) => {
+                                    onInputChange('payAmt', e);                           
+                              }}/>            
+            </div>
+            <div className="flex pt-2 space-x-2">
+               <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+                  <PlusIcon className="w-5 h-5" />
+                  추가
+               </button>
+               <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+                  <MinusIcon className="w-5 h-5" />
+                  삭제
+               </button>
+            </div>      
+         </div>
+
+         <TuiGrid01 gridRef={gridRef5} columns={columns5} handleFocusChange={handleFocusChange} perPageYn = {false} height={window.innerHeight-785}/>
+      </div>
+   );
+
+   const columns6 = [
+      { header: "주문번호", name: "soNo", hidden: true },
+      { header: "순번", name: "soSeq", hidden: true },
+      { header: "작성일시", name: "insrtDt", width:200,  align: "center" },
+      { header: "작성자", name: "insrtUserId", width:150, align: "center" },
+      { header: "내용", name: "memo" },
+   ];
+
+   const grid6 = () => (
       <div className="border rounded-md p-4 space-y-4">
          <div className="flex justify-between items-center text-sm">
             <div className="flex items-center space-x-1 text-orange-500 ">
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
-               <div className="">결제 항목 리스트</div>
+               <div className="">메모리스트</div>
+            </div>     
+            <div className="flex pt-2">
+               <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+                  <PlusIcon className="w-5 h-5" />
+                  추가
+               </button>               
+            </div>        
+         </div>
+
+         <TuiGrid01 gridRef={gridRef6} columns={columns6} perPageYn = {false} height={window.innerHeight-750}/>
+      </div>
+   );
+
+   const columns7 = [
+      { header: "주문번호", name: "soNo", hidden: true },
+      { header: "순번", name: "soSeq", hidden: true },
+      { header: "품목코드", name: "itemCd", width: 100, align: "center" },
+      { header: "품목명", name: "itemNm", width: 350},
+      { header: "수량", name: "soQty", align:"center", width: 60, formatter: function(e: any) {if(e.value){return commas(e.value)}}},
+      { header: "도착지점코드", name: "poBpCd", align : "center", width: 100 },
+      { header: "도착지점명", name: "poBpNm", align : "center", width: 300 },
+      { header: "가용재고", name: "invQty", align:"center", width: 80, formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "출발지점코드", name: "tsBpCd", align : "center", editor: "text", width: 100 },
+      { header: "출발지점명", name: "tsBpNm", align : "center", editor: "text", width: 300 },
+      { header: "배송비", name: "moveCost", align:"right", editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+   ];
+
+   const grid7 = () => (
+      <div className="border rounded-md p-4 space-y-4">
+         <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center space-x-1 text-orange-500 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="">재고이동</div>
             </div>           
          </div>
 
-         <TuiGrid01 gridRef={gridRef5} columns={columns5} perPageYn = {false} height={window.innerHeight-650}/>
+         <TuiGrid01 gridRef={gridRef7} columns={columns7} perPageYn = {false} height={window.innerHeight-750}/>
+      </div>
+   );
+
+   const columns8 = [
+      { header: "주문번호", name: "soNo", hidden: true },
+      { header: "순번", name: "soSeq", hidden: true },
+      { header: "품목코드", name: "itemCd", width: 100, align: "center" },
+      { header: "품목명", name: "itemNm", width: 250},
+      { header: "수량", name: "soQty", align:"center", width: 60, formatter: function(e: any) {if(e.value){return commas(e.value)}}},
+      { header: "도착지점코드", name: "poBpCd", align : "center", width: 100 },
+      { header: "도착지점명", name: "poBpNm", align : "center", width: 150 },
+      { header: "출발지점코드", name: "tsBpCd", align : "center", width: 100 },
+      { header: "출발지점명", name: "tsBpNm", align : "center", width: 150 },
+      { header: "배송비", name: "moveCost", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "단가", name: "soPrice", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "금액", name: "soAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "공급가액", name: "netAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "부가세액", name: "vatAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "유/무상", name: "payDiv", width: 80},
+      { header: "무상사유", name: "reason"},
+   ];
+
+   const grid8 = () => (
+      <div className="border p-2 rounded-md space-y-4">            
+         <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center space-x-1 text-orange-500 pt-2">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="">확정 대상 품목 리스트</div>
+               <div className="flex text-black pl-10">
+                  <InputComp value={inputValues.payAmt} title="결제대상금액" target="payAmt" readOnly={true} type="number"
+                                 onChange={(e) => {
+                                       onInputChange('payAmt', e);                           
+                                 }}/>            
+               </div>
+            </div>                 
+            <div className="flex p-2 space-x-2">
+               <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+                  <PlusIcon className="w-5 h-5" />
+                  주문취소
+               </button>
+               <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+                  <MinusIcon className="w-5 h-5" />
+                  주문삭제
+               </button>
+               <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+                  <MinusIcon className="w-5 h-5" />
+                  주문확정
+               </button>
+            </div>      
+         </div>
+
+         <TuiGrid01 gridRef={gridRef8} columns={columns8} perPageYn = {false} height={window.innerHeight-750}/>
+      </div>
+   );
+
+   const columnsP1 = [
+     
+      { header: "주문번호", name: "soNo", align : "center", width: 120 },
+      { header: "거래처명", name: "bpNm", width: 350 },
+      { header: "주문일", name: "orderDt", align : "center", width: 150 },
+      { header: "대상자", name: "ownNm", align : "center" },
+   ];
+
+   const gridP1 = () => (
+      <div className="border rounded-md p-4 space-y-4">
+         <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center text-orange-500 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="">주문 정보</div>
+            </div>           
+         </div>
+
+         <TuiGrid01 gridRef={gridRefP1} columns={columnsP1} handleDblClick={handleDblClick} perPageYn = {false} height={window.innerHeight-650}/>
+      </div>
+   );
+
+   const columnsP2 = [
+     
+      { header: "회사코드", name: "coCd", hidden: true },
+      { header: "거래처코드", name: "bpCd", align : "center"},
+      { header: "거래처명", name: "bpNm" },
+   ];
+
+   const gridP2 = () => (
+      <div className="border rounded-md p-4 space-y-4">
+         <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center text-orange-500 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="">거래처 정보</div>
+            </div>           
+         </div>
+
+         <TuiGrid01 gridRef={gridRefP2} columns={columnsP2} handleDblClick={handleDblClick2} perPageYn = {false} height={window.innerHeight-650}/>
+      </div>
+   );
+
+   const columnsP3 = [
+     
+      { header: "배송지코드", name: "dlvyCd", align: "center", width: 80 },
+      { header: "구분", name: "dlvyDiv", align: "center", width: 80},
+      { header: "배송지명", name: "dlvyNm", width: 180},
+      { header: "주소", name: "addr1" },
+   ];
+
+   const gridP3 = () => (
+      <div className="border rounded-md p-4 space-y-4">
+         <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center text-orange-500 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="">배송지 정보</div>
+            </div>           
+         </div>
+
+         <TuiGrid01 gridRef={gridRefP3} columns={columnsP3} handleDblClick={handleDblClick3} perPageYn = {false} height={window.innerHeight-650}/>
+      </div>
+   );
+
+   const columnsP4 = [
+     
+      { header: "회사코드", name: "coCd", hidden: true },
+      { header: "접수번호", name: "preRcptNo", align : "center"},
+      { header: "신청자", name: "reqNm", align : "center" },
+      { header: "대상자", name: "ownNm", align : "center" },
+      { header: "고객사", name: "bpNm", align : "center" },
+   ];
+
+   const gridP4 = () => (
+      <div className="border rounded-md p-4 space-y-4">
+         <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center text-orange-500 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="">사전상담 접수정보</div>
+            </div>           
+         </div>
+
+         <TuiGrid01 gridRef={gridRefP4} columns={columnsP4} handleDblClick={handleDblClick4} perPageYn = {false} height={window.innerHeight-650}/>
       </div>
    );
 
    const handleTabIndex = async (index: number) => {
       await setTabIndex(index);
-      await refreshGrid(gridRef2);
-      await refreshGrid(gridRef3);
-      await refreshGrid(gridRef4);
    };
 
    const tabLabels = ['상품정보', '발주정보', '사전상담', '결제처리', '메모정보', '재고이동', '주문확정'];
@@ -806,6 +1719,56 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                                  ${tabIndex === index ? "text-white bg-sky-900  " : "text-gray-500"}
                               `}
                               onClick={() => {
+                                 if (index === 0 && gridRef3.current) {
+                                    const gridInstance = gridRef3.current.getInstance();
+                                    gridInstance.blur();
+                                    const data = gridInstance.getData(); // 올바르게 데이터를 가져옴
+                                    setGridDatas2(data);
+                                    setGridDatas7(data);
+                                    setGridDatas8(data);
+                                  } else if (index === 1 && gridRef2.current) {
+
+                                    const gridInstance = gridRef2.current.getInstance();
+                                    gridInstance.blur();
+                                    const data = gridInstance.getData(); // 올바르게 데이터를 가져옴
+                                    setGridDatas3(data);
+                                    setGridDatas7(data);
+                                    setGridDatas8(data);
+                                  } else if (index === 2 && gridRef4.current) {
+
+                                    const gridInstance = gridRef4.current.getInstance();
+                                    gridInstance.blur();
+                                    const data = gridInstance.getData(); // 올바르게 데이터를 가져옴
+                                    setGridDatas4(data);
+                                  } else if (index === 3 && gridRef5.current) {
+
+                                    const gridInstance = gridRef5.current.getInstance();
+                                    gridInstance.blur();
+                                    const data = gridInstance.getData(); // 올바르게 데이터를 가져옴
+                                    setGridDatas5(data);
+                                  } else if (index === 4 && gridRef6.current) {
+
+                                    const gridInstance = gridRef6.current.getInstance();
+                                    gridInstance.blur();
+                                    const data = gridInstance.getData(); // 올바르게 데이터를 가져옴
+                                    setGridDatas6(data);
+                                  } else if (index === 5 && gridRef7.current) {
+
+                                    const gridInstance = gridRef7.current.getInstance();
+                                    gridInstance.blur();
+                                    const data = gridInstance.getData(); // 올바르게 데이터를 가져옴
+                                    setGridDatas2(data);
+                                    setGridDatas3(data);
+                                    setGridDatas7(data);
+                                    setGridDatas8(data);
+                                  } else if (index === 6 && gridRef8.current) {
+
+                                    const gridInstance = gridRef8.current.getInstance();
+                                    gridInstance.blur();
+                                    const data = gridInstance.getData(); // 올바르게 데이터를 가져옴                                    
+                                    setGridDatas8(data);
+                                  }
+
                                  handleTabIndex(index);
                               }}
                            >
@@ -818,21 +1781,31 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                   </div>
                   <div className={`w-full ${tabIndex === 1 ? " " : "hidden"}`} ref={gridContainerRef3}>{grid3()}</div>
                   <div className={`w-full ${tabIndex === 2 ? " " : "hidden"}`} ref={gridContainerRef4}>{grid4()}</div>
-                  {/* <div className={` ${tabIndex === 3 ? " " : "hidden"}`} ref={gridContainerRef5}>{grid5()}</div> */}
-                  <div className="w-full flex space-x-2 p-2">
-                     {/* <div className={`w-1/3 ${tabIndex === 4 ? " " : "hidden"}`} ref={gridContainerRef6}>{grid6()}</div> */}
-                     <div className={`w-full ${tabIndex === 4 ? " " : "hidden"}`} ref={gridContainerRef2}>{grid2()}</div>
+                  <div className="w-full flex space-x-2">
+                     <div className={`w-2/5 ${tabIndex === 3 ? " " : "hidden"}`} ref={gridContainerRef5}>{grid5()}</div>
+                     <div className={`w-3/5 ${tabIndex === 3 ? " " : "hidden"}`}>{currentInputDiv} </div>
                   </div>
+                  <div className={`w-full ${tabIndex === 4 ? " " : "hidden"}`} ref={gridContainerRef6}>{grid6()}</div>
+                  <div className={`w-full ${tabIndex === 5 ? " " : "hidden"}`} ref={gridContainerRef7}>{grid7()}</div>
+                  <div className={`w-full ${tabIndex === 6 ? " " : "hidden"}`} ref={gridContainerRef8}>{grid8()}</div>
                </div>
          </div>
          </div>
          <CommonModal isOpen={isOpen} size="md" onClose={() => setIsOpen(false)} title="">
-            {modalSearchDiv2()}
-            {grid4()}
+            {modalSearchDiv()}
+            {gridP1()}
          </CommonModal>
          <CommonModal isOpen={isOpen2} size="md" onClose={() => setIsOpen2(false)} title="">
-            {modalSearchDiv()}
-            {grid3()}
+            {modalSearchDiv2()}
+            {gridP2()}
+         </CommonModal>
+         <CommonModal isOpen={isOpen3} size="md" onClose={() => setIsOpen3(false)} title="">
+            {modalSearchDiv3()}
+            {gridP3()}
+         </CommonModal>
+         <CommonModal isOpen={isOpen4} size="md" onClose={() => setIsOpen4(false)} title="">
+            {modalSearchDiv4()}
+            {gridP4()}
          </CommonModal>
       </div>
    );

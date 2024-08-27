@@ -145,6 +145,7 @@ const Mm0403 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          const param = {
             coCd: userInfo.coCd,
             bpDiv: poBpDiv,            
+            bpNm: '999',            
          };
 
          const data = JSON.stringify(param);
@@ -270,6 +271,16 @@ const Mm0403 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       let code = grid1Row.code;
       if (code) {
          await MM0403_S02({ siGunGu: code });
+
+         // 여기에서 poBp 필터를 풀고 전체 데이터를 다시 설정
+        let gridInstance = GridRef2.current.getInstance();
+        if (gridInstance) {
+            let column = gridInstance.getColumn("dlvyCd");
+            if (column) { // 컬럼이 존재하는지 확인
+               column.editor.options.listItems = poBp;  // poBp의 전체 데이터를 다시 설정
+               gridInstance.refreshLayout();
+            }
+         }
       }
 
 
@@ -310,6 +321,38 @@ const Mm0403 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       }
    };
 
+   const handleClick2 = async (ev: any) => {      
+      let gridInstance = GridRef2.current.getInstance();
+      let { rowKey, columnName } = ev;
+      let rowData = ev.instance.getRow(rowKey);
+
+      // rowData가 null인지 확인
+      if (!rowData) {
+         console.error("Row data is null or undefined.");
+         return;  // rowData가 null이면 함수를 종료
+      }
+  
+      // GridRef2의 데이터가 비어있으면 기본 행 추가
+      if (gridInstance.getRowCount() === 0) {
+          gridInstance.appendRow({
+              coCd: '100',
+              siGunGu: rowData.siGunGu, // 클릭된 행의 siGunGu 값 사용
+              dlvyDiv: 'ZZ0189',
+              status: 'I',
+              useYn: 'Y',
+          });
+          gridInstance.appendRow({
+              coCd: '100',
+              siGunGu: rowData.siGunGu, // 클릭된 행의 siGunGu 값 사용
+              dlvyDiv: 'ZZ0193',
+              status: 'I',
+              useYn: 'Y',
+          });
+      }
+
+      // 첫 번째 행에 포커스 설정
+      gridInstance.focusAt(0, 0, true);
+  };
 
    //검색 창 클릭 또는 엔터시 조회
    const handleCallSearch = async () => {
@@ -383,7 +426,7 @@ const Mm0403 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>            
          </div>
 
-         <TuiGrid01 columns={grid1Columns} handleFocusChange={handleMajorFocusChange} gridRef={GridRef1} />
+         <TuiGrid01 columns={grid1Columns} handleClick={handleClick2} handleFocusChange={handleMajorFocusChange} gridRef={GridRef1} />
       </div>
    );
 
