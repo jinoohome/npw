@@ -1119,52 +1119,55 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <div className="grid gap-3 px-6">
-            <div className="space-y-3">
+         <div className="px-3 space-y-2">
+            <div className="grid grid-cols-1 gap-y-2">
                {/* <InputSearchComp display="flex" title="배송지" value={inputValues.dlvyCd} target="dlvyCd" onKeyDown={handleInputSearch2} onIconClick={handleInputSearch3} */}
-               <InputSearchComp title="배송지" value={inputValues.dlvyNm} layout="flex" target="dlvyNm" minWidth="60px" onKeyDown={handleInputSearch4} onIconClick={handleInputSearch5}
+               <InputSearchComp title="배송지" value={inputValues.dlvyNm} minWidth="100px"  layout="flex" target="dlvyNm" onKeyDown={handleInputSearch4} onIconClick={handleInputSearch5}
                                  onChange={(e) => {
                                     onInputChange('dlvyNm', e);                           
                                 }} />
-               <InputComp value={inputValues.dlvyAddr} title="상세주소" layout="flex" minWidth="60px" target="dlvyAddr" 
+               <InputComp value={inputValues.dlvyAddr} title="상세주소"  minWidth="100px"  layout="flex" target="dlvyAddr" 
                           onChange={(e) => {
                            onInputChange('dlvyAddr', e);                           
                         }}   />
             </div>
-            <div className="grid grid-cols-2 gap-3  justify-around items-center pb-1">
-               <InputComp value={inputValues.roomNo} title="호실" target="roomNo" 
+            <div className="grid grid-cols-2 gap-3  justify-around items-center">
+               <InputComp value={inputValues.roomNo} title="호실" target="roomNo"  minWidth="100px" layout="flex"
                           onChange={(e) => {
                            onInputChange('roomNo', e);                           
                         }}   />
-               <InputComp value={inputValues.reqNm} title="주문자" target="reqNm" 
+               <InputComp value={inputValues.reqNm} title="주문자" target="reqNm"  minWidth="100px" layout="flex"
                            onChange={(e) => {
                               onInputChange('reqNm', e);                      
                            }} />
-               <InputComp value={inputValues.reqTelNo} title="연락처" target="reqTelNo" 
+               <InputComp value={inputValues.reqTelNo} title="연락처" target="reqTelNo"   minWidth="100px" layout="flex"
                            onChange={(e) => {
                               onInputChange('reqTelNo', e);                      
                            }} />
-               <InputComp value={inputValues.dNm} title="고인명" target="dNm" 
+               <InputComp value={inputValues.dNm} title="고인명" target="dNm"  minWidth="100px" layout="flex"
                            onChange={(e) => {
                               onInputChange('dNm', e);                      
                            }} />
             </div>
             <div className="">
-               <InputComp title="의전배송메모" layout="flex" minWidth="60px" value={inputValues.memo} target="memo"
+               <InputComp title="의전배송메모" layout="flex" minWidth="100px" value={inputValues.memo} target="memo"
                                  onChange={(e) => {
                                     onInputChange('memo', e);                           
                                 }} />
             </div>
-            <div className="grid grid-cols-2 gap-y-3 gap-x-1  justify-around items-center pb-2">
-               <InputComp value={inputValues.confirmDt} title="발주확정일시" target="confirmDt" readOnly={true}
+            <div className="grid grid-cols-2 gap-y-3 gap-x-5  pb-2">
+               <InputComp value={inputValues.confirmDt} title="발주확정일시" target="confirmDt" readOnly={true} layout="flex" minWidth="100px"
                           onChange={(e) => {
                            onInputChange('confirmDt', e);                           
                         }}   />
-               <InputSearchComp title="사전상담번호" value={inputValues.preRcptNo} target="preRcptNo" onIconClick={handleInputSearch6} readOnly={true}
+               <InputSearchComp title="사전상담번호" value={inputValues.preRcptNo} target="preRcptNo"  layout="flex" minWidth="100px"
+                           onIconClick={handleInputSearch6} readOnly={true}
                                  onChange={(e) => {
                                     onInputChange('preRcptNo', e);                           
                                 }} />    
-               <Checkbox  title = "패키지 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;진행여부" value={inputValues.pkgYn}  checked={inputValues.pkgYn == 'Y'} 
+               <Checkbox  title = "패키지 진행여부" value={inputValues.pkgYn} layout="flex" 
+                           minWidth="100px"
+                           checked={inputValues.pkgYn == 'Y'} 
                           onChange={(e) => {
                                     onInputChange('pkgYn', e)}} />           
             </div>  

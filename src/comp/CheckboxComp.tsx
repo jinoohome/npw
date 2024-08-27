@@ -201,14 +201,16 @@ interface Props3 {
    value?: string;
    checked?: boolean;
    onChange?: (checked: string) => void;
-   layout?: "horizontal" | "vertical";
+   layout?: "horizontal" | "vertical" | "flex";
    target?: string;
    readOnly?: boolean;
    setChangeGridData?: (target: string, value: string) => void;
+   minWidth?: string;
+   textAlign?: "left" | "right";
 }
 
 const Checkbox = forwardRef<HTMLInputElement, Props3>(
-   ({ title, value = 'N',  checked = false, onChange, layout ='horizontal',readOnly, target, setChangeGridData }, ref) => {
+   ({ title, value = 'N',  checked = false, onChange, layout ='horizontal',readOnly, target, textAlign="right", setChangeGridData, minWidth }, ref) => {
       const [isChecked, setIsChecked] = useState(value === 'Y');
       const uniqueId = useId();
 
@@ -234,9 +236,21 @@ const Checkbox = forwardRef<HTMLInputElement, Props3>(
       return (
          <>
             <style>{checkboxStyles}</style>
-            <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""} `}>
-               <label htmlFor={`${uniqueId}`}  className="col-span-1 text-right cursor-pointer"> {title}  </label>
-               <div className="col-span-2 flex items-center ">
+            <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""}
+                              ${layout === "flex" ? "flex items-center space-x-2" : ""}
+            
+               `}>
+               <label htmlFor={`${uniqueId}`}  
+                     className={` ${layout === "horizontal" ? "col-span-1 text-right" : ""}
+                     ${layout === "flex" ? " w-auto" : ""}
+                     `} 
+                     style={{
+                        ...(minWidth ? { minWidth: minWidth } : {}),
+                        ...(textAlign ? { textAlign: textAlign } : {})
+                     
+                     }}
+                  > {title}  </label>
+               <div className={`${layout === "horizontal" ? "col-span-2" : "flex-grow"}`}>
                   <input
                      ref={ref}
                      id={`${uniqueId}`}

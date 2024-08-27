@@ -4,6 +4,7 @@ import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DatePicker from "tui-date-picker";
 import "tui-date-picker/dist/tui-date-picker.css";
 import "tui-time-picker/dist/tui-time-picker.css";
+import { text } from "stream/consumers";
 
 
 
@@ -20,6 +21,7 @@ interface InputCompProps {
    handleCallSearch?: () => void;
    onChange?: (value: string, event: React.ChangeEvent<HTMLInputElement>) => void;
    onkeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+   textAlign?: "left" | "center" | "right";
 
 }
 
@@ -37,7 +39,8 @@ const InputComp = forwardRef<HTMLInputElement, InputCompProps>(
          onkeyDown,
          layout = "horizontal",
          handleCallSearch,
-         minWidth
+         minWidth,
+         textAlign="right"
       },
       ref
    ) => {
@@ -94,7 +97,12 @@ const InputComp = forwardRef<HTMLInputElement, InputCompProps>(
              `}>
                <label className={` ${layout === "horizontal" ? "col-span-1 text-right" : ""}
                                    ${layout === "flex" ? " w-auto" : ""}
-                           `} style={minWidth ? { minWidth: minWidth } : {}}>{title}</label>
+                           `}   
+                           style={{
+                              ...(minWidth ? { minWidth: minWidth } : {}),
+                              ...(textAlign ? { textAlign: textAlign } : {})
+                           }}>
+                              {title}</label>
                <div className={`${layout === "horizontal" ? "col-span-2" : "flex-grow"}`}>
                   <input
                      ref={ref}
@@ -239,10 +247,11 @@ interface InputSearchCompProps {
    onIconClick?: (value: string) => void;
    layout?: 'horizontal' | 'vertical' | 'flex';
    minWidth?: string;
+   textAlign?: 'left' | 'center' | 'right';
  }
  
  const InputSearchComp = forwardRef<HTMLInputElement, InputSearchCompProps>(
-   ({ title, value = '', layout='horizontal', minWidth, target, readOnly = false, placeholder, onChange, onKeyDown, onIconClick }, ref) => {
+   ({ title, value = '', layout='horizontal', minWidth, target, readOnly = false, placeholder, textAlign ='right', onChange, onKeyDown, onIconClick }, ref) => {
      const inputRef = useRef<HTMLInputElement>(null);
  
      // Combine the forwarded ref with the internal ref
@@ -274,7 +283,10 @@ interface InputSearchCompProps {
             <label className={` ${layout === "horizontal" ? "col-span-1 text-right" : ""}
                                      ${layout === "flex" ? " w-auto" : ""}
 
-                           `}  style={minWidth ? { minWidth: minWidth } : {}}>{title}</label>
+                           `} style={{
+                              ...(minWidth ? { minWidth: minWidth } : {}),
+                              ...(textAlign ? { textAlign: textAlign } : {})
+                           }}>{title}</label>
         <div className={`relative ${layout === "horizontal" ? "col-span-2" : "flex-grow"}
 
         `}>
