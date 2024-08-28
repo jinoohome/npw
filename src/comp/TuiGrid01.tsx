@@ -120,9 +120,62 @@ const getGridCheckedDatas = (gridRef: any) => {
       }
    });
 
-
+ 
 
    return datas;
+};
+
+const getGridCheckedDatas2 = (gridRef: any) => {
+   const grid = gridRef.current.getInstance();
+
+   if (grid.getRowCount() > 0) {
+       grid.blur();
+   }
+
+   const allRows = grid.getData();
+
+
+   const rows = grid.getModifiedRows();
+   const prevDatas = [
+      //...rows.createdRows.map((e: any) => ({ ...e, status: "I" })),
+      ...rows.deletedRows.map((e: any) => ({ ...e, status: "D" })),
+      //...rows.updatedRows.map((e: any) => ({ ...e, status: "I" }))
+   ];
+
+
+   const uncheckedRows = allRows.filter((row: any) => !row._attributes.checked);
+   const checkedRows = allRows.filter((row: any) => row._attributes.checked);
+   
+
+   //기존에 있던 데이터중에 체크가 해제된 데이터는 status를 D로 변경
+   const datas = prevDatas.map((data: any) => {
+      const uncheckedRow = uncheckedRows.find((row: any) => row.rowKey === data.rowKey);
+      return uncheckedRow ? { ...data, status: "D" } : data;
+   });
+
+   //체크가 해제된 데이터중에 기존에 없던 데이터는 추가 (status는 D로 설졍)
+   uncheckedRows.forEach((row: any) => {
+      if (!datas.some((data: any) => data.rowKey === row.rowKey)) {
+         datas.push({ ...row, status: "D" });
+      }
+   });
+
+   checkedRows.forEach((row: any) => {
+      if (!datas.some((data: any) => data.rowKey === row.rowKey)) {
+         datas.push({ ...row, status: "I" });
+      }
+   });
+
+   const updatedDatas = datas.map((data: any) => {
+      const checkedRow = checkedRows.find((row: any) => row.rowKey === data.rowKey);
+      return checkedRow ? { ...data, status: "I" } : data;
+   });
+
+
+   console.log("datas",updatedDatas);
+ 
+
+   return updatedDatas;
 };
 
 const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick, handleDblClick, beforeChange, afterChange, check, uncheck, afterRender, headerHeight = 40,
@@ -228,4 +281,4 @@ const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick,
    return <Grid {...gridProps} />;
 };
 
-export { TuiGrid01, getGridDatas, getGridCheckedDatas, refreshGrid, reSizeGrid };
+export { TuiGrid01, getGridDatas, getGridCheckedDatas,getGridCheckedDatas2, refreshGrid, reSizeGrid };

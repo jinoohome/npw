@@ -2,7 +2,7 @@ import { on } from "events";
 import { React, useEffect, useState, useRef, useCallback, initChoice, 
    updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
    reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp, DateRangePickerComp, date, InputSearchComp, commas,
-    RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, formatCardNumber, formatExpiryDate } from "../../comp/Import";
+    RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, formatCardNumber, formatExpiryDate, getGridCheckedDatas2 } from "../../comp/Import";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 
 interface Props {
@@ -69,7 +69,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       endDate: date(),
       startDate2: date(-1, 'month'),   // 사전상담 팝업
       endDate2: date(),
-      dealType: 'Y',
+      dealType: 'A',
       rcptUserId: "",
    });
 
@@ -140,7 +140,15 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    useEffect(() => {
       if (gridRef2.current && gridDatas2) {
          let grid2 = gridRef2.current.getInstance();
-         grid2.resetData(gridDatas2);
+         // 'MANDATORY_YN' 값이 'Y'인 것만 체크된 상태로 설정
+         let filteredData = gridDatas2.map((row) => ({
+            ...row,
+            _attributes: {
+               checked: row.mandatoryYn === 'Y',
+            }
+         }));
+
+         grid2.resetData(filteredData);
 
          let focusRowKey = grid2.getFocusedCell().rowKey || 0;
 
@@ -358,6 +366,24 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       }
    }
 
+   // 계약품목 조회
+   var SO0201_S10 = async (param : any) => {
+      try {  
+         const data = JSON.stringify(param);
+         const result = await fetchPost(`SO0201_S10`, { data });
+
+         setGridDatas2(result);
+         setGridDatas3(result);
+         setGridDatas7(result);
+         setGridDatas8(result);
+
+         return result;
+      } catch (error) {
+         console.error("SO0201_S10 Error:", error);
+         throw error;
+      }
+   }
+
    // 고객사별 참고사항
    var SO0201_P05 = async (param : any) => {
       try {
@@ -468,18 +494,19 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
    const create = async () => {
       console.log('create');
-      refreshGrid(gridRef4);
    };
 
    const save = async () => {
-      const data = await getGridValues();
-      if (data) {
-         let result = await SO0101_U03(data);
-         if (result) {
-            await returnResult(result);
-         }
-      }
+      // const data = await getGridValues();
+      // if (data) {
+      //    let result = await SO0101_U03(data);
+      //    if (result) {
+      //       await returnResult(result);
+      //    }
+      // }
+      let datas = await getGridCheckedDatas2(gridRef2);
    };
+
    const returnResult = async(result:any) => {     
       search(result.preRcptNoOut);
       alertSwal(result.msgText, result.msgCd, result.msgStatus);
@@ -493,7 +520,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          inputValues.status = 'U';
       }
 
-      console.log(inputValues);
+      //console.log(inputValues);
 
       // let preConsultHdr = [inputValues];
       // let preConsultDtl = await getGridDatas(gridRef2);
@@ -561,6 +588,10 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
       if (result.length === 1) {
          onInputChange('preRcptNo', result[0].preRcptNo);
+
+         // 사전상담
+         let preRcpt = await SO0101_S02({ preRcptNo: result[0].preRcptNo });
+         setGridDatas4(preRcpt);
       }
    };
 
@@ -616,7 +647,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
       // InputSearchComp1에 값 설정
       onInputChange('bpNm', bpNm);
-      onInputChange('bpCd', bpCd);
+      onInputChange('soldToParty', bpCd);
       onInputChange('contNo', contNo);
       onInputChange('mouYn', mouYn);
 
@@ -657,6 +688,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange('dlvyCd', dlvyCd);
       onInputChange('dlvyNm', dlvyNm);
       onInputChange('dlvyAddr', addr1);
+
+      await SO0201_S10({bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: dlvyCd, dealType: inputValues.dealType});
 
       setIsOpen3(false);
    };
@@ -718,7 +751,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
             // InputSearchComp1에 값 설정
             onInputChange('bpNm', bpNm);
-            onInputChange('bpCd', bpCd);
+            onInputChange('soldToParty', bpCd);
             onInputChange('contNo', contNo);
             onInputChange('mouYn', mouYn);
 
@@ -790,6 +823,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             onInputChange('dlvyCd', dlvyCd);
             onInputChange('dlvyNm', dlvyNm);
             onInputChange('dlvyAddr', addr1);
+
+            await SO0201_S10({bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: dlvyCd, dealType: inputValues.dealType});
          } else {
             await setIsOpen3(true);
             setTimeout(() => {
@@ -1074,7 +1109,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                                     onInputChange('hsCd', '');
                                     refs.hsCd.current.setChoiceByValue("");
 
-                                    let hsCdIn = await ZZ_CONT_INFO({ contNo: inputValues.contNo, bpCd: inputValues.bpCd, subCode: value, searchDiv: "HS" });
+                                    let hsCdIn = await ZZ_CONT_INFO({ contNo: inputValues.contNo, bpCd: inputValues.soldToParty, subCode: value, searchDiv: "HS" });
 
                                     if (refs.hsCd.current) {
                                        refs.hsCd.current.updateChoices(
@@ -1091,6 +1126,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                               value={inputValues.hsCd}
                               onChange={async (label, value) => {                                    
                                     onInputChange('hsCd', value);
+
+                                    await SO0201_S10({bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: value, dlvyCd: inputValues.dlvyCd, dealType: inputValues.dealType});
                                  }}
                />
                <InputComp value={inputValues.deptNm} title="부서" target="deptNm" 
@@ -1121,7 +1158,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
          <div className="px-3 space-y-2">
             <div className="grid grid-cols-1 gap-y-2">
-               {/* <InputSearchComp display="flex" title="배송지" value={inputValues.dlvyCd} target="dlvyCd" onKeyDown={handleInputSearch2} onIconClick={handleInputSearch3} */}
                <InputSearchComp title="배송지" value={inputValues.dlvyNm} minWidth="100px"  layout="flex" target="dlvyNm" onKeyDown={handleInputSearch4} onIconClick={handleInputSearch5}
                                  onChange={(e) => {
                                     onInputChange('dlvyNm', e);                           
@@ -1139,6 +1175,10 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                <InputComp value={inputValues.reqNm} title="주문자" target="reqNm"  minWidth="100px" layout="flex"
                            onChange={(e) => {
                               onInputChange('reqNm', e);                      
+                           }} />
+               <InputComp value={inputValues.dlvyCd} title="배송지코드" target="dlvyCd"  minWidth="100px" layout="flex"
+                           onChange={(e) => {
+                              onInputChange('dlvyCd', e);                      
                            }} />
                <InputComp value={inputValues.reqTelNo} title="연락처" target="reqTelNo"   minWidth="100px" layout="flex"
                            onChange={(e) => {
@@ -1354,10 +1394,11 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          <div className="flex justify-between items-center text-sm">
             <div className="flex items-center space-x-1 text-orange-500 ">
                <RadioGroup value={inputValues.dealType} 
-                           options={[ { label: "표준", value: "Y" }, { label: "예외", value: "N" } ]} 
+                           options={[ { label: "표준", value: "A" }, { label: "예외", value: "B" } ]} 
                            layout="horizontal"
                            onChange={(e)=>{
                               onInputChange('dealType', e);  
+                              SO0201_S10({bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: inputValues.dlvyCd, dealType: e});
                            }}  
                            onClick={() => {console.log('onClick')}} />
             </div>
@@ -1622,6 +1663,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "회사코드", name: "coCd", hidden: true },
       { header: "거래처코드", name: "bpCd", align : "center"},
       { header: "거래처명", name: "bpNm" },
+      { header: "계약번호", name: "contNo", align : "center" },
    ];
 
    const gridP2 = () => (
