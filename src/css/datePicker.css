@@ -1,0 +1,92 @@
+/* DatePicker popper의 z-index 설정 */
+.custom-datepicker-popper {
+   z-index: 1050; /* TUI DatePicker와 유사하게 설정 */
+}
+/* DatePicker의 팝업 박스 스타일 */
+.custom-datepicker-popper .react-datepicker {
+   border: 1px solid #e5e5e5;
+   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
+   border-radius: 4px;
+   background-color: #fff;
+   font-family: 'Arial', sans-serif;
+}
+
+/* DatePicker의 헤더 스타일 (예: 달, 년 선택 부분) */
+.custom-datepicker-popper .react-datepicker__header {
+   background-color: #f5f5f5;
+   border-bottom: 1px solid #e5e5e5;
+   padding: 5px 0;
+   border-top-left-radius: 4px;
+   border-top-right-radius: 4px;
+}
+
+/* 주 이름 스타일 (예: 월, 화, 수 등) */
+.custom-datepicker-popper .react-datepicker__day-names {
+   display: grid;
+   grid-template-columns: repeat(7, 1fr);
+   margin-top: 8px;
+   margin-bottom: 2px;
+   text-align: center;
+}
+
+/* 요일 스타일 */
+.custom-datepicker-popper .react-datepicker__day-name {
+   color: #333;
+   font-weight: bold;
+   font-size: 12px;
+   margin-bottom: 4px; /* 날짜와의 간격 조정 */
+}
+
+.custom-datepicker-popper .react-datepicker__day-names {
+   display: grid;
+   grid-template-columns: repeat(7, 1fr);
+   margin-top: 8px;
+   margin-bottom: 8px;
+   text-align: center;
+}
+
+
+.custom-datepicker-popper .react-datepicker__day-name:nth-child(1), /* 일요일 */
+.custom-datepicker-popper .react-datepicker__day:nth-child(1) {
+   color: rgb(255, 81, 0);
+}
+
+.custom-datepicker-popper .react-datepicker__day-name:nth-child(7), /* 토요일 */
+.custom-datepicker-popper .react-datepicker__day:nth-child(7) {
+    color: rgb(73, 137, 255);
+}
+
+
+/* 각 날짜 스타일 */
+.custom-datepicker-popper .react-datepicker__day {
+   color: #333;
+   font-size: 14px;
+   margin: 0.15rem;
+   width: 2rem;
+   height: 2rem;
+   line-height: 2rem;
+   text-align: center;
+   border-radius: 4px;
+}
+
+/* 선택된 날짜 스타일 */
+.custom-datepicker-popper .react-datepicker__day--selected {
+   background-color: #40a9ff;
+   color: #fff;
+   border-radius: 4px;
+}
+
+/* 오늘 날짜 스타일 */
+.custom-datepicker-popper .react-datepicker__day--today {
+   border: 1px solid #40a9ff;
+   background-color: #e6f7ff;
+   color: #1890ff;
+   border-radius: 4px;
+}
+
+/* Hover 상태에서 날짜 스타일 */
+.custom-datepicker-popper .react-datepicker__day:hover {
+   background-color: #e6f7ff;
+   color: #1890ff;
+   border-radius: 4px;
+}

@@ -1,5 +1,5 @@
 import React, { forwardRef, useEffect, useRef, useImperativeHandle, useState  } from "react";
-import { commas, fetchPost } from "./Import";
+import { commas, fetchPost } from "../comp/Import";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DatePicker from "tui-date-picker";
 import "tui-date-picker/dist/tui-date-picker.css";
@@ -7,7 +7,8 @@ import "tui-time-picker/dist/tui-time-picker.css";
 import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { ko } from 'date-fns/locale'; 
-import '../css/datePicker.css';
+
+import { text } from "stream/consumers";
 
 
 
@@ -377,6 +378,229 @@ const InputSearchComp1 = forwardRef<HTMLInputElement, Props3>(({ title, value ='
    );
 });
 
+
+// interface Props4 {
+//    title: string;
+//    value?: string;
+//    format?: string;
+//    timePicker?: boolean;
+//    onChange?: (e: any) => void;
+//    layout?: "horizontal" | "vertical" | "flex";
+//    target?: string;
+//    setChangeGridData?: (target: string, value: string) => void;
+//    minWidth?: string;
+// }
+
+// const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
+//    ({ title, value ='', minWidth, format = 'yyyy-MM-dd', timePicker = false, onChange, layout = "horizontal", target, setChangeGridData }, ref) => {
+//       const inputRef = useRef<HTMLInputElement>(null);
+//       const containerRef = useRef<HTMLDivElement>(null);
+
+//       useEffect(() => {
+//          const inputElement = inputRef.current;
+//          const containerElement = containerRef.current;
+
+//          if (inputElement && containerElement) {
+//             const picker = new DatePicker(containerElement, {
+//                date: value ? new Date(value) : undefined, // 초기 날짜 설정
+//                input: {
+//                   element: inputElement, // 연결할 input 요소
+//                   format: format, // 날짜 포맷
+//                },
+//                timePicker: timePicker,
+//                usageStatistics: false, // 통계 수집 비활성화
+//                language: "ko", // 한글 설정
+//             });
+
+//             picker.on('change', () => {
+//                const formattedDate = inputElement.value;
+
+//                if (setChangeGridData && target) {
+//                   setChangeGridData(target, formattedDate);
+//                }
+//                if (onChange) {
+//                   onChange(formattedDate);
+//                }
+//             });
+
+//             return () => {
+//                picker.destroy();
+//             };
+//          } else {
+//             console.error("DatePicker 초기화에 필요한 요소를 찾을 수 없습니다.");
+//          }
+//       }, [value, onChange]);
+
+//       useEffect(() => {
+//          if (inputRef.current) {
+//             inputRef.current.value = value || ""; // value가 null이나 빈 문자열일 때 빈 값으로 초기화
+//          }
+//       }, [value]);
+
+
+
+//       return (
+//          <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""}
+//                                  ${layout === "flex" ? "flex items-center space-x-2" : ""}
+//                         `}>
+//              <label className={` ${layout === "horizontal" ? "col-span-1 text-right" : ""}
+//                                      ${layout === "flex" ? " w-auto" : ""}
+
+//                            `}  style={minWidth ? { minWidth: minWidth } : {}}>{title}</label>
+//              <div className={`relative ${layout === "horizontal" ? "col-span-2" : "flex-grow"}
+//             `}>
+//                <div className="relative  ">
+//                   <input
+//                      ref={inputRef}
+//                      title={title}
+//                      type="text"
+//                      className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
+//                      autoComplete="off"
+//                      defaultValue={value || ""}
+//                   />
+//                   <span
+//                      className="tui-ico-date absolute top-1/2 right-3 transform -translate-y-1/2 z-10 cursor-pointer"
+//                      onClick={() => {
+//                         inputRef.current?.click();
+//                      }}
+//                   ></span>
+//                   <div ref={containerRef}  className="relative z-50"></div>
+//                </div>
+//             </div>
+//          </div>
+//       );
+//    }
+// );
+
+// interface DateRangePickerCompProps {
+//    startValue: string;
+//    endValue: string;
+//    title: string;
+//    onChange?: (startDate: string, endDate: string) => void;
+//    layout?: "horizontal" | "vertical";
+// }
+
+// const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
+//    startValue = '',
+//    endValue ='',
+//    title,
+//    onChange,
+//    layout = "horizontal"
+// }) => {
+//    const startInputRef = useRef<HTMLInputElement>(null);
+//    const endInputRef = useRef<HTMLInputElement>(null);
+//    const startContainerRef = useRef<HTMLDivElement>(null);
+//    const endContainerRef = useRef<HTMLDivElement>(null);
+//    const startValeIconRef = useRef<HTMLDivElement>(null);
+//    const endDateValueIconRef = useRef<HTMLDivElement>(null);
+
+//    useEffect(() => {
+//       const startInputElement = startInputRef.current;
+//       const endInputElement = endInputRef.current;
+//       const startContainerElement = startContainerRef.current;
+//       const endContainerElement = endContainerRef.current;
+
+//       if (startInputElement && endInputElement && startContainerElement && endContainerElement) {
+//          const picker = DatePicker.createRangePicker({
+//             startpicker: {
+//                date: startValue ? new Date(startValue) : undefined,
+//                input: startInputElement,
+//                container: startContainerElement,
+//             },
+//             endpicker: {
+//                date: endValue ? new Date(endValue) : undefined,
+//                input: endInputElement,
+//                container: endContainerElement,
+//             },
+//             language: "ko",
+//             usageStatistics: false,
+//             format: "yyyy-MM-dd",
+//          });
+
+//          if (startValue && startValeIconRef.current) {
+//             startValeIconRef.current.style.display = 'none';
+//          }
+
+         
+//          if (endValue && endDateValueIconRef.current) {
+//             endDateValueIconRef.current.style.display = 'none';
+//               endInputElement.disabled = false;
+//          }
+
+//          picker.on("change:start", () => {
+//             const startDate = startInputElement.value;
+//             const endDate = endInputElement.value;
+//             if (startDate && startValeIconRef.current) {
+//                startValeIconRef.current.style.display = 'none';
+//             }
+//             if (onChange) {
+//                onChange(startDate, endDate);
+//             }
+//          });
+
+//          picker.on("change:end", () => {
+//             const startDate = startInputElement.value;
+//             const endDate = endInputElement.value;
+//             if (endDate && endDateValueIconRef.current) {
+//                endDateValueIconRef.current.style.display = 'none';
+//             }
+//             if (onChange) {
+//                onChange(startDate, endDate);
+//             }
+//          });
+
+//          return () => {
+//             picker.destroy();
+//          };
+//       }
+//    }, [startValue, endValue, onChange]);
+
+//    return (
+//       <div className={`grid ${layout === "horizontal" ? "grid-cols-3 gap-3 items-center" : "grid-cols-1 gap-2"}`}>
+//          <label className={`col-span-1 ${layout === "vertical" ? "" : "text-right"}`}>{title}</label>
+//          <div className={`col-span-2 flex items-center gap-2 w-full`}>
+//             <div className="relative  w-full">
+//                <input
+//                   ref={startInputRef}
+//                   value={startValue}
+//                   className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
+//                   type="text"
+//                   aria-label="Date"
+//                   autoComplete="off"
+//                   readOnly
+//                />
+//                <span
+//                   ref={startValeIconRef}
+//                   className="tui-ico-date absolute top-1/2 right-3 transform -translate-y-1/2 z-10 cursor-pointer"
+//                   onClick={() => startInputRef.current?.click()}
+//                ></span>
+//                <div ref={startContainerRef}  className="relative z-50"></div>
+//             </div>
+//             <div className="relative  w-full">
+//                <input
+//                   ref={endInputRef}
+//                   value={endValue}
+//                   className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
+//                   type="text"
+//                   aria-label="Date"
+//                   autoComplete="off"
+//                   readOnly
+//                />
+//                <span
+//                   ref={endDateValueIconRef}
+//                   className="tui-ico-date absolute top-1/2 right-3 transform -translate-y-1/2 z-10 cursor-pointer"
+//                   onClick={() => endInputRef.current?.click()}
+//                ></span>
+//                <div ref={endContainerRef} className="relative z-50"></div>
+//             </div>
+//          </div>
+//       </div>
+//    );
+// };
+
+
+
+
 interface Props4 {
    title: string;
    value?: string;
@@ -437,10 +661,8 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
                            showTimeSelect={timePicker}
                            timeFormat="p"
                            timeIntervals={30}
-                           locale={ko}
                            className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
-                           wrapperClassName="w-full z-50"
-                           popperClassName="custom-datepicker-popper"  
+                           wrapperClassName="w-full"
                        />
                    </div>
                </div>
@@ -492,9 +714,6 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
                        dateFormat="yyyy-MM-dd"
                        className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
                        placeholderText={startPlaceholder}
-                       locale={ko}
-                       wrapperClassName="w-full z-50"
-                       popperClassName="custom-datepicker-popper" 
                    />
                </div>
                <div className="relative w-full">
@@ -508,9 +727,6 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
                        dateFormat="yyyy-MM-dd"
                        className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
                        placeholderText={endPlaceholder}
-                       locale={ko}
-                       wrapperClassName="w-full z-50"
-                       popperClassName="custom-datepicker-popper" 
                    />
                </div>
            </div>

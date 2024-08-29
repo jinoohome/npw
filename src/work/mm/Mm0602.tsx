@@ -998,7 +998,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                />
             </div>
             <div className="w-full">
-               <TextArea title="비고" value={inputValues.remark} onChange={(e) => onInputChange("remark", e)} display="flex" labelWidth="1/6" width="5/6" height="50" />
+               <TextArea title="비고" value={inputValues.remark} onChange={(e) => onInputChange("remark", e)} layout="flex" />
             </div>
             
 

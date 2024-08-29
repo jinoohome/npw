@@ -12,9 +12,10 @@ interface TextAreaProps {
   readOnly?: boolean;
   errorMsg?: string;
   type?: string;
-  layout?: "horizontal" | "vertical";
+  layout?: "horizontal" | "vertical" | "flex";
   width?: string;
-  labelWidth?: string;
+  minWidth?: string;
+  textAlign?: "left" | "center" | "right";
   height?: string;
   placeholder?: string;
   display? : "flex" | "grid";
@@ -35,7 +36,8 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
   layout = "horizontal",
   width,
   height,
-  labelWidth,
+  minWidth,
+  textAlign="right",
   placeholder,
   display = "grid",
   onChange,
@@ -74,19 +76,23 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
 
   return (
     <div >
-      <div className={`${layout === "horizontal" && display === "grid"  ? "grid grid-cols-3 gap-3 items-center" : "" } 
-                       ${layout === "horizontal" && display === "flex"  ? "flex w-full" : "" }
-      `}> 
-      <label className={`${layout === "horizontal" && display === "grid" ? "col-span-1 text-right" : "w-full"}
-                         ${layout === "horizontal" && display === "flex" && labelWidth ? `w-${labelWidth} text-right px-3` : ""}
-                         
-                    `}>{title}</label>
+      <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""}
+                        ${layout === "flex" ? "flex items-center space-x-2" : ""}
+                        ${layout === "vertical" ? "flex flex-col" : ""}
+             `}>
+      <label className={` ${layout === "horizontal" ? "col-span-1" : ""}
+                                   ${layout === "flex" ? " w-auto" : ""}
+                           `}   
+                           style={{
+                              ...(minWidth ? { minWidth: minWidth } : {}),
+                              ...(textAlign ? { textAlign: textAlign } : {})
+                           }}>
+                              {title}</label>
         <textarea
             ref={ref}
             className={`
                       p-2 border border-gray-200 rounded-md  focus:outline-orange-300
-                      ${layout === "horizontal"  && display === "grid"  ? "col-span-2" : ""}  
-                      ${layout === "horizontal" && display === "flex" && width ? `w-${width}` : "w-full"}
+                      ${layout === "horizontal" ? "col-span-2" : "flex-grow"}
                       ${height ? `h-[${height}px]` : ""}
             `}
             value={value}

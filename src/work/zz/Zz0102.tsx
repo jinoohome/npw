@@ -266,8 +266,8 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
                 onChange={(e) => { 
                    onInputChange('date', e);  
                   }} 
-               //format="yyyy-MM-dd HH:mm A"
-               //timePicker={true}
+               // format="yyyy-MM-dd HH:mm"
+               timePicker={true}
             />
             <DateRangePickerComp 
                   title="계약기간"
@@ -393,6 +393,7 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
 
             <TextArea title="비고" 
                       layout="vertical"
+                      textAlign="left"
                       value={inputValues.etc2}
                       onChange={(e)=>{onInputChange('etc2', e)}}
                       placeholder="비고를 입력하세요"
