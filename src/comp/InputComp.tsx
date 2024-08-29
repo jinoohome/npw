@@ -517,7 +517,7 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
             startValeIconRef.current.style.display = 'none';
          }
 
-         console.log('endValue', endValue);
+         
          if (endValue && endDateValueIconRef.current) {
             endDateValueIconRef.current.style.display = 'none';
               endInputElement.disabled = false;

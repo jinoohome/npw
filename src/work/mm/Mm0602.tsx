@@ -134,7 +134,44 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       const data = JSON.stringify(param);
       const result = await fetchPost("MM0601_S01", { data });
 
-      let hsTypeDatas=
+      
+      onInputChange("gridDatas1", result);
+      return result;
+   };
+
+   const ZZ_CONT_INFO = async (contNo:any, searchDiv:any) => {  
+
+   
+      const param = {
+         contNo: contNo ,
+         bpCd: inputValues.bpCd ,
+         subCode: inputValues.subCode || '999',
+         searchDiv: searchDiv,
+         hsCd: inputValues.hsCd ,
+      };
+
+     
+      const data = JSON.stringify(param);
+
+      const result = await fetchPost("ZZ_CONT_INFO", { data });
+
+      
+
+      if(searchDiv === 'SUB'){
+       
+         let subCodeDatas =
+         [
+            { value: '', label: '전체' }, // '전체' 항목을 추가
+            ...result.map((item: any) => ({
+               value: item.subCode,
+               label: item.subCodeNm,
+            })),
+      ];
+         onInputChange('subCodeDatas',subCodeDatas);
+         onInputChange('subCode','');
+
+      }else if(searchDiv === 'BP_HS'){
+         let hsTypeDatas=
             [
                { value: '', label: '전체' }, // '전체' 항목을 추가
                ...result.map((item: any) => ({
@@ -143,12 +180,13 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                })),
            ];
     
-      onInputChange('hsTypeDatas',hsTypeDatas);
-      onInputChange("hsType", '');
-      onInputChange("gridDatas1", result);
+         onInputChange('hsTypeDatas',hsTypeDatas);
+         onInputChange("hsType", '');
+      }
+    
+      
       return result;
-   };
-
+   }
 
    
    const MM0601_S03 = async () => {
@@ -160,18 +198,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       const result = await fetchPost("MM0601_S03", { data });
 
  
-        let subCodeDatas =
-            [
-               { value: '', label: '전체' }, // '전체' 항목을 추가
-               ...result.map((item: any) => ({
-                   value: item.subCode,
-                   label: item.subCodeNm,
-               })),
-           ];
-          
-
-      onInputChange('subCodeDatas',subCodeDatas);
-      onInputChange('subCode','');
+       
       onInputChange("gridDatas2", result);
       return result;
    };
@@ -265,6 +292,13 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    }, [inputValues.bpCd]);
 
    useEffect(() => {
+      if (inputValues.contNo) {
+         //setCoCdChange(inputValues.contNo);
+      }
+   }, [inputValues.contNo]);
+
+
+   useEffect(() => {
       if (inputValues.isOpen2) {
          searchBpNmRef.current?.focus();
       }
@@ -273,6 +307,12 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    useEffect(() => {
       handleFilterChange();
    }, [inputValues.hsType, inputValues.subCode]);
+   
+   useEffect(() => {
+      if (inputValues.contNo) {
+         ZZ_CONT_INFO(inputValues.contNo,'BP_HS');
+      }
+   }, [inputValues.subCode]);
 
    //-------------------event--------------------------
    const onInputChange = (name: string, value: any) => {
@@ -327,6 +367,8 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const handleFilterChange = () => {
+     
+
       const filteredData = filterGridData();
    
       if (gridRef4.current) {
@@ -338,14 +380,16 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    const search = async () => {
       const result = await MM0602_S01(inputValues.contNo);
 
-      console.log(result);
+      
       if(result.length == 1){
          Object.entries(result[0]).forEach(([key, value]) => {
             onInputChange(key, value);
          });
+
+         setCoCdChange(inputValues.contNo);
+
       }
 
-      setCoCdChange(inputValues.contNo);
    };
    
 
@@ -440,10 +484,10 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange("isOpen2", true);
    };
 
-   const handleDblClick = (e: any) => {
+   const handleDblClick = async (e: any) => {
       const gridInstance = gridRef5.current.getInstance(); 
       const rowData = gridInstance.getRow(e.rowKey);
-      console.log(rowData);
+     
       if(rowData) {
          Object.entries(rowData).forEach(([key, value]) => {
                onInputChange(key, value);
@@ -461,14 +505,13 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
          onInputChange("bpNm", rowData.bpNm);
          onInputChange("isOpen2", false);
          
-         setBpCdChange(rowData.bpCd);
+        
       }
    };
 
    const searchModalDiv = async () => {
       
       const result = await MM0602_S01(inputValues.searchContNo);
-      console.log(result);
       onInputChange("gridDatas5", result);
     
    }
@@ -485,8 +528,14 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
       const result = await MM0602_S01(inputValues.contNo );
       onInputChange("gridDatas5", result);
+      
       if (result.length === 1) {
-         onInputChange("contNo", result[0].contNo);
+         Object.entries(result[0]).forEach(([key, value]) => {
+            onInputChange(key, value);
+       });
+          
+      setCoCdChange(inputValues.contNo);
+         
       } else {
          onInputChange("isOpen", true);
       }
@@ -501,11 +550,13 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    }
 
 
-   const setCoCdChange = (e: any) => {
+   const setCoCdChange = async (e: any) => {
       MM0602_S02(e);
       MM0601_S01();
       MM0601_S03();
       MM0601_S04();
+      ZZ_CONT_INFO(e,'SUB');
+      ZZ_CONT_INFO(e,'BP_HS');
    };
    
 
@@ -657,10 +708,10 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    const columns4 = [
       { header: "회사코드", name: "coCd",  hidden: true }, // 회사 코드
       { header: "계약번호", name: "contNo", hidden: true }, // 계약 번호
-      { header: "경조구분", name: "hsType", width: 80, align: "center" }, // 경조 구분
-      { header: "경조코드", name: "hsTypeNm", width: 80, align: "center" }, // 경조 구분
       { header: "재직코드", name: "subCode", width: 80, align: "center" }, // 재직 구분
       { header: "재직구분", name: "subCodeNm", width: 80, align: "center" }, // 재직 구분
+      { header: "경조구분", name: "hsType", width: 80, align: "center" }, // 경조 구분
+      { header: "경조코드", name: "hsTypeNm", width: 80, align: "center" }, // 경조 구분
       { header: "순번", name: "seqNo",  hidden: true }, // 순번
       { header: "품목코드", name: "itemCd", width: 100, align: "center"  }, // 품목 코드
       { header: "품목명", name: "itemNm",  }, // 품목 코드
@@ -704,29 +755,28 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                </div> */}
 
                <div className="grid grid-cols-2 gap-4 search">
-                  <SelectSearch
-                     title="경조구분"
-                     value={inputValues.hsType}
-                     onChange={(label, value) => {
-                        console.log(label, value);
-                        onInputChange("hsType", value);
-                        handleFilterChange();
-                      }}
-                      datas={inputValues.hsTypeDatas}
-                      
-                    
-                  />
+                 
+
                   <SelectSearch
                      title="재직구분"
                      value={inputValues.subCode}
                      onChange={(label, value) => {
-                        console.log(label, value);
+
                         onInputChange("subCode", value);
                         handleFilterChange();
                       }}
                       datas={inputValues.subCodeDatas}
-                      
-                     
+                  />
+
+                   <SelectSearch
+                     title="경조구분"
+                     value={inputValues.hsType}
+                     onChange={(label, value) => {
+                        
+                        onInputChange("hsType", value);
+                        handleFilterChange();
+                      }}
+                      datas={inputValues.hsTypeDatas}
                   />
 
                   
@@ -761,7 +811,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       { header: "계약일자", name: "contDt",  width : 120,  align: "center"},
       { header: "시작일", name: "contFrDt",  width : 120,  align: "center"},
       { header: "종료일", name: "contToDt",  width : 120,  align: "center"},
-      { header: "계약종류", name: "contType",  width : 100,  align: "center"},
+      { header: "계약종류", name: "contTypeNm",  width : 100,  align: "center"},
    ];
 
    const grid5= () => (
@@ -831,11 +881,10 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                   { label: "미확정", value: "N" },
                ]}
                onChange={(e) => {
-                  console.log("onChange");
                   onInputChange("confirmYn", e);
                }}
                onClick={() => {
-                  console.log("onClick");
+                  
                }}
             />
 
@@ -848,7 +897,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                title="계약종류"
                value={inputValues.contType}
                onChange={(label, value) => {
-                  console.log(label, value);
+                  
                   onInputChange("contType", value);
                }}
                //초기값 세팅시
@@ -875,8 +924,6 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                onChange={(startDate, endDate) => {
                   onInputChange("contFrDt", startDate);
                   onInputChange("contToDt", endDate);
-                  console.log(startDate);
-                  console.log(endDate);
                }}
             />
 
@@ -884,7 +931,6 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                title="청구조건"
                value={inputValues.payCond}
                onChange={(label, value) => {
-                  console.log(label, value);
                   onInputChange("payCond", value);
                }}
                //초기값 세팅시
@@ -902,16 +948,14 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                title="담당부서"
                value={inputValues.chargeDept}
                onChange={(label, value) => {
-                  console.log(label, value);
-                  onInputChange("payCond", value);
+                  
+                  onInputChange("chargeDept", value);
                }}
 
-             
                //초기값 세팅시
-               // stringify={true}
-               // param={{ coCd: "999", bpDiv: "999", bpNm: "999" }}
-               // procedure="ZZ_B_PO_BP"
-               // dataKey={{ label: "bpNm", value: "coCd" }}
+               param={{ coCd: "999", majorCode: "FU0010", div: "" }}
+               procedure="ZZ_CODE"
+               dataKey={{ label: "codeName", value: "code" }}
             />
          </div>
       </div>
@@ -933,7 +977,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                      onInputChange("compSmsYn", e);
                   }}
                   onClick={() => {
-                     console.log("onClick");
+                     
                   }}
                />
 
@@ -945,11 +989,11 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                      { label: "N", value: "N" },
                   ]}
                   onChange={(e) => {
-                     console.log("onChange");
+                     
                      onInputChange("etcSmsYn", e);
                   }}
                   onClick={() => {
-                     console.log("onClick");
+                     
                   }}
                />
             </div>
@@ -1018,8 +1062,8 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                <div className="w-1/3">{div2()}</div>
             </div>
             <div className="flex w-full space-x-2">
-               <div className="w-2/6">{grid1()}</div>
                <div className="w-2/6">{grid2()}</div>
+               <div className="w-2/6">{grid1()}</div>
                <div className="w-3/6">{grid3()}</div>
             </div>
             <div>{grid4()}</div>

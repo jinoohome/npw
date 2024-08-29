@@ -1,13 +1,19 @@
-const commas = (input: string | number) => {
-   // 입력값이 문자열인 경우 숫자만 남기기
-   const onlyNumbers = input.toString().replace(/\D/g, '');
+const commas = (input: string | number | null | undefined) => {
+  // 입력값이 null 또는 undefined인 경우 빈 문자열 반환
+  if (input === null || input === undefined) {
+      return '';
+  }
 
-   // 숫자가 하나도 없으면 0으로 설정
-   const numberValue = onlyNumbers.length > 0 ? parseInt(onlyNumbers, 10) : 0;
+  // 입력값이 문자열인 경우 숫자만 남기기
+  const onlyNumbers = input.toString().replace(/\D/g, '');
 
-   // 쉼표 추가
-   return numberValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  // 숫자가 하나도 없으면 0으로 설정
+  const numberValue = onlyNumbers.length > 0 ? parseInt(onlyNumbers, 10) : 0;
+
+  // 쉼표 추가
+  return numberValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
+
 
 const date = (offset = 0, unit = 'day', format = 'YYYY-MM-DD') => {
    const currentDate = new Date();
