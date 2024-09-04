@@ -291,11 +291,6 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       }
    }, [inputValues.bpCd]);
 
-   useEffect(() => {
-      if (inputValues.contNo) {
-         //setCoCdChange(inputValues.contNo);
-      }
-   }, [inputValues.contNo]);
 
 
    useEffect(() => {
@@ -316,11 +311,17 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
    //-------------------event--------------------------
    const onInputChange = (name: string, value: any) => {
-      setInputValues((prevValues) => ({
-         ...prevValues,
-         [name]: value,
-      }));
-   };
+      // 현재 상태와 비교하여 동일한 값이 들어오지 않을 경우에만 상태 업데이트
+      setInputValues((prevValues) => {
+          if (prevValues[name] === value) {
+              return prevValues;
+          }
+          return {
+              ...prevValues,
+              [name]: value,
+          };
+      });
+  };
 
    const validateData = (action: string, dataString: any) => {
       // dataString이 문자열이면 JSON.parse()를 사용, 그렇지 않으면 직접 사용

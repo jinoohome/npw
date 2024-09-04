@@ -8,6 +8,8 @@ import DatePicker from "tui-date-picker";
 import { on } from "events";
 import { set } from "date-fns";
 import { Input, Label } from "@headlessui/react";
+import ChoicesEditor from "../../util/ChoicesEditor";
+import { ZZ0101_S02_API } from "../../ts/ZZ0101_S02";
 
 interface Props {
    item: any;
@@ -25,9 +27,13 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
        confirmYn: "N",
        compSmsYn: "N",
        etcSmsYn: "N",
-       coCd: '100',
+       coCd: '200',
        subCodeDatas: [],
        hsTypeDatas: [],
+       zzWorks : [],
+       zzPoBps : [],
+       zzMA0004 : [],
+       zzMA0005 : [],
    });
 
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
@@ -48,6 +54,19 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    const payCondRef = useRef<any>(null);
    const chargeDeptRef = useRef<any>(null);
 
+
+   const setGridData = async () => {
+    try {
+        ZZ_WORKS();
+        ZZ_B_PO_BP();
+        ZZ_CODE('MA0004');
+      
+    } catch (error) {
+    console.error("setGridData Error:", error);
+    }
+};
+
+
    //------------------api--------------------------
 
    const SP0101_S01 = async (soNo: string) => {
@@ -66,8 +85,14 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
            soNo: soNo,
        };
 
+       console.log('param:',param);
+
        const data = JSON.stringify(param);
        const result = await fetchPost("SP0101_S02", { data });
+
+       console.log('result:',result);
+
+       onInputChange("gridDatas1", result);
 
        return result;
    };
@@ -83,15 +108,121 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
        const data = JSON.stringify(param);
        const result = await fetchPost("SP0101_P01", { data });
 
-       console.log(result);
+       
 
        return result;
    };
 
+
+const ZZ_WORKS = async () => {   
+    const param = {
+        coCd: '200',
+    };
+
+    const data = JSON.stringify(param);
+    const result = await fetchPost("ZZ_WORKS", { data });
+
+
+    const formattedResult = result.map((item: any) => ({
+        value: item.workCd,
+        text: item.workNm
+    }));
+
+    console.log('formattedResult:',formattedResult);
+    onInputChange("zzWorks", formattedResult);
+
+    return formattedResult;
+};
+
+const ZZ_B_PO_BP = async () => {   
+    const param = {
+        coCd: '200',
+        bpDiv: '999',
+        bpType: 'ZZ0003',
+        bpNm: '999',
+    };
+
+    const data = JSON.stringify(param);
+    const result = await fetchPost("ZZ_B_PO_BP", { data });
+
+
+    const formattedResult = result.map((item: any) => ({
+        value: item.bpCd,
+        text: item.bpNm
+    }));
+
+    
+
+    console.log('formattedResult:',formattedResult);
+    onInputChange("zzPoBps", formattedResult);
+
+    return formattedResult;
+};
+const ZZ_CODE = async (majorCode:any) => {   
+    const param={ 
+        coCd: "999", 
+        majorCode: majorCode, 
+        div: "999" 
+    };
+
+
+    const result = await fetchPost("ZZ_CODE", param);
+
+    console.log('ZZ_CODE:',result);
+    const formattedResult = result.map((item: any) => ({
+        value: item.code,
+        text: item.codeName
+    }));
+
+    if(majorCode === 'MA0004') onInputChange("zzMA0004", formattedResult);
+    
+    
+
+    return formattedResult;
+};
+
+useEffect(() => {
+
+    if (inputValues.zzWorks) {
+       let gridInstance = gridRef.current.getInstance();
+       let column = gridInstance.getColumn("workCd");
+       let zzWorks = inputValues.zzWorks.filter((item:any) => item.value !== "999");
+       column.editor.options.listItems = zzWorks;
+       gridInstance.refreshLayout();
+    }
+ }, [inputValues.zzWorks]);
+ 
+useEffect(() => {
+
+    if (inputValues.zzPoBps) {
+       let gridInstance = gridRef.current.getInstance();
+       let column = gridInstance.getColumn("poBpCd");
+       let zzPoBps = inputValues.zzPoBps.filter((item:any) => item.value !== "999");
+       column.editor.options.listItems = zzPoBps;
+       gridInstance.refreshLayout();
+    }
+ }, [inputValues.zzPoBps]);
+ 
+useEffect(() => {
+
+    if (inputValues.zzMA0004) {
+       let gridInstance = gridRef.current.getInstance();
+       let column = gridInstance.getColumn("workDiv");
+       let zzMA0004 = inputValues.zzMA0004.filter((item:any) => item.value !== "999");
+       column.editor.options.listItems = zzMA0004;
+       gridInstance.refreshLayout();
+    }
+ }, [inputValues.zzMA0004]);
+
+ 
+
    //------------------useEffect--------------------------
    useEffect(() => {
+        setGridData();
        reSizeGrid({ ref: gridRef, containerRef: gridContainerRef, sec: 200 });
        reSizeGrid({ ref: gridRef2, containerRef: gridContainerRef2, sec: 200 });
+
+      
    }, []);
 
    useEffect(() => {
@@ -109,9 +240,12 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
        if (gridRef2.current && inputValues.gridDatas2) {
            let grid = gridRef2.current.getInstance();
            grid.resetData(inputValues.gridDatas2);
+        
            if (inputValues.gridDatas2.length > 0) {
                grid.focusAt(0, 0, true);
            }
+
+           refreshGrid(gridRef2);
        }
    }, [inputValues.gridDatas2]);
 
@@ -130,11 +264,13 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const addGridRow = () => {
+      if(!inputValues.bpCd) 
+        return alertSwal("사업장을 선택해주세요.", "error", "error");   
+
        let grid = gridRef.current.getInstance();
+       grid.appendRow({ useYn: "Y", coCd: "200",soNo : inputValues.soNo, workStatus : 'MA0001'}, {focus: true} );
 
-       grid.appendRow({ useYn: "Y", coCd: "100", isNew: true }, { at: 0 });
-
-       grid.focusAt(0, 1, true);
+       
    };
 
    //grid 삭제버튼
@@ -177,19 +313,24 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const save = async () => {
-       let datas = await getGridCheckedDatas(gridRef);
-       inputValues.gridDatas4 = datas;
-       inputValues.contNo ? inputValues.status = 'U' : inputValues.status = 'I';
+       let datas = await getGridDatas(gridRef);
+       
+       inputValues.gridDatas = datas;
+       inputValues.soNo ? inputValues.status = 'U' : inputValues.status = 'I';
+      
+       console.log('datas:',datas);
 
        let data = {
-           contHdr: JSON.stringify(inputValues),
-           contDtl: JSON.stringify(inputValues.gridDatas4),
-           menuId: activeComp.menuId,
-           insrtUserId: userInfo.usrId,
+            oilSoHdr: JSON.stringify(inputValues),
+            oilSoDtl: JSON.stringify(inputValues.gridDatas),
+            menuId: activeComp.menuId,
+            insrtUserId: userInfo.usrId,
        };
 
-       const result = await fetchPost(`MM0602_U03`, data);
-       returnResult(result);
+       console.log('data:',data);
+
+        const result = await fetchPost(`SP0101_U03`, data);
+    //    returnResult(result);
    };
 
    const del = async () => {
@@ -222,6 +363,9 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    const handleDblClick = async (e: any) => {
        const gridInstance = gridRef2.current.getInstance();
        const rowData = gridInstance.getRow(e.rowKey);
+       SP0101_S02(rowData.soNo);
+
+
 
        if (rowData) {
            Object.entries(rowData).forEach(([key, value]) => {
@@ -239,11 +383,12 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const handleSoNoOnKeyDown = async (e: any) => {
        const target = e.target as HTMLInputElement;
-       onInputChange("contNo", target.value);
-       onInputChange("searchContNo", target.value);
+       onInputChange("soNo", target.value);
+       onInputChange("searchSoNo", target.value);
 
        const result = await SP0101_S01(target.value);
-       onInputChange("gridDatas5", result);
+       const result2 = await SP0101_S02(target.value);
+       onInputChange("gridDatas1", result2);
 
        if (result.length === 1) {
            Object.entries(result[0]).forEach(([key, value]) => {
@@ -265,20 +410,32 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    const columns = [
        { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
        { header: "계약번호", name: "soNo", hidden: true }, // SO_NO: 수주 번호
-       { header: "순번", name: "soSeq", width: 80, align: "center" }, // SO_SEQ: 수주 순번
-       { header: "작업코드", name: "workCd", width: 100, align: "center" }, // WORK_CD: 작업 코드
-       { header: "발주처코드", name: "poBpCd", width: 100, align: "center" }, // PO_BP_CD: 발주처 코드
-       { header: "희망일", name: "hopeDt", width: 100, align: "center" }, // HOPE_DT: 희망 일자
-       { header: "요청일", name: "reqDt", width: 100, align: "center" }, // REQ_DT: 요청 일자
-       { header: "예정일", name: "expectDt", width: 100, align: "center" }, // EXPECT_DT: 예정 일자
-       { header: "완료일", name: "finishDt", width: 100, align: "center" }, // FINISH_DT: 완료 일자
+       { header: "순번", name: "soSeq", width: 80, align: "center",  hidden: true }, // SO_SEQ: 수주 순번
+       { header: "작업코드", name: "workCd", width: 170, align: "center",
+       formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: inputValues.zzWorks  } } 
+        }, // WORK_CD: 작업 코드
+       
+       { header: "협력업체", name: "poBpCd", width: 180, align: "center",
+       formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: inputValues.zzPoBps  } } 
+        }, // PO_BP_CD: 발주처 코드
+       { header: "희망일", name: "hopeDt", width: 120, align: "center",    
+        editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },  
+       { header: "요청일", name: "reqDt", width: 120, align: "center" ,
+       editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },  
+       { header: "예정일", name: "expectDt", width: 120, align: "center",
+       editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },  
+       { header: "완료일", name: "finishDt", width: 120, align: "center",
+       editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },  
        { header: "수량", name: "qty", width: 80, align: "right", editor: 'text',
            formatter: function (e: any) { if (e.value) { return commas(e.value); } }
        }, // QTY: 수량
-       { header: "작업구분", name: "workDiv", width: 100, align: "center" }, // WORK_DIV: 작업 구분
-       { header: "작업유형", name: "workType", width: 100, align: "center" }, // WORK_TYPE: 작업 유형
-       { header: "작업상태", name: "workStatus", width: 100, align: "center" }, // WORK_STATUS: 작업 상태
-       { header: "비고", name: "remark", width: 300, editor: 'text' }, // REMARK: 비고
+       { header: "작업구분", name: "workDiv", width: 100, align: "center",
+       formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: inputValues.zzMM0001  } } 
+       }, 
+       { header: "작업유형", name: "workType", width: 100, align: "center", hidden: true }, // WORK_TYPE: 작업 유형
+       { header: "진행상태", name: "workStatus", width: 100, align: "center",  hidden: true}, // WORK_STATUS: 작업 상태
+       { header: "진행상태", name: "workStatusNm", width: 100, align: "center"}, // WORK_STATUS: 작업 상태
+       { header: "비고", name: "remark", editor: 'text' }, // REMARK: 비고
    ];
 
    const grid = () => (
@@ -305,7 +462,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
            </div>
 
            <TuiGrid01 gridRef={gridRef} columns={columns} headerHeight={30}
-               handleFocusChange={() => { }} perPageYn={false} height={window.innerHeight - 640} />
+               handleFocusChange={() => { }} perPageYn={false} height={window.innerHeight } />
        </div>
    );
 
@@ -315,8 +472,9 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
        { header: "고객사", name: "bpNmS", width: 300 }, // BP_NM_S: 고객사 (BP 코드와 이름의 조합)
        { header: "수주일자", name: "orderDt", width: 120, align: "center" }, // ORDER_DT: 수주 일자
        { header: "요청일자", name: "reqDt", width: 120, align: "center" }, // REQ_DT: 요청 일자
-       { header: "수주상태", name: "orderStatus", width: 100, align: "center" }, // ORDER_STATUS: 수주 상태
-       { header: "요청자", name: "reqUserId", width: 100, align: "center" }, // REQ_USER_ID: 요청자 ID
+       { header: "수주상태", name: "orderStatus", width: 100, align: "center", hidden: true  }, // ORDER_STATUS: 수주 상태
+       { header: "수주상태", name: "orderStatusNm", width: 100, align: "center" }, // ORDER_STATUS: 수주 상태
+       { header: "요청자", name: "reqUserId", width: 100, align: "center",  hidden: true }, // REQ_USER_ID: 요청자 ID
        { header: "연락처", name: "reqTelNo", width: 150, align: "center" }, // REQ_TEL_NO: 요청자 연락처
        { header: "주소코드1", name: "addrCd1", hidden: true }, // ADDR_CD1: 주소 코드 1
        { header: "주소코드2", name: "addrCd2", hidden: true }, // ADDR_CD2: 주소 코드 2
@@ -360,13 +518,25 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                        onKeyDown={handleSoNoOnKeyDown}
                        onIconClick={handleSoNoOnIconClick} />
 
-                   <SelectSearch
+                    <SelectSearch
                        title="진행상태"
                        value={inputValues.orderStatus}
                        onChange={(label, value) => {
                            onInputChange("orderStatus", value);
                        }}
-                   />
+
+                       param={{ coCd: "999", majorCode: "MA0001", div: "" }}
+                       procedure="ZZ_CODE"
+                       dataKey={{ label: "codeName", value: "code" }}
+                       readonly={true}
+                   /> 
+
+                   
+                    {/* <InputComp title="진행상태"
+                       value={inputValues.orderStatus}
+                       onChange={(e) => onInputChange("orderStatus", e)}
+                       readOnly={true}
+                   /> */}
 
                    <DatePickerComp
                        title="신청일자"
@@ -382,6 +552,11 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                        onChange={(label, value) => {
                            onInputChange("bpCd", value);
                        }}
+
+                       stringify={true}
+                       param={{ coCd: "200",bpType : "ZZ0002", bpNm : '999', bpDiv: '999' }}
+                       procedure="ZZ_B_PO_BP"
+                       dataKey={{ label: "bpNm", value: "bpCd" }}
                    />
 
                    <InputComp title="신청담당자"
@@ -396,17 +571,26 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
                    <SelectSearch
                        title="지본"
-                       value={inputValues.addr1}
+                       value={inputValues.addrCd1}
                        onChange={(label, value) => {
-                           onInputChange("addr1", value);
+                           onInputChange("addrCd1", value);
                        }}
+
+                       param={{ coCd: "999", majorCode: "MA0002", div: "" }}
+                       procedure="ZZ_CODE"
+                       dataKey={{ label: "codeName", value: "code" }}
+
                    />
                    <SelectSearch
                        title="시군지부"
-                       value={inputValues.addr2}
+                       value={inputValues.addrCd2}
                        onChange={(label, value) => {
-                           onInputChange("addr2", value);
+                           onInputChange("addrCd2", value);
                        }}
+                       param={{ coCd: "999", majorCode: "MA0003", div: "" }}
+                       procedure="ZZ_CODE"
+                       dataKey={{ label: "codeName", value: "code" }}
+
                    />
                </div>
                <div>

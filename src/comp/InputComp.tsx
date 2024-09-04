@@ -441,6 +441,7 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
                            className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
                            wrapperClassName="w-full z-50"
                            popperClassName="custom-datepicker-popper"  
+                           showIcon
                        />
                    </div>
                </div>
@@ -454,7 +455,7 @@ interface DateRangePickerCompProps {
    startValue: string;
    endValue: string;
    title: string;
-   onChange?: (startDate: Date | undefined, endDate: Date | undefined) => void;
+   onChange?: (startDate: string | undefined, endDate: string | undefined) => void;
    layout?: 'horizontal' | 'vertical';
    startPlaceholder?: string;
    endPlaceholder?: string;
@@ -473,10 +474,25 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
    const [endDate, setEndDate] = useState<Date | undefined>(endValue ? new Date(endValue) : undefined);
 
    useEffect(() => {
-       if (onChange) {
-           onChange(startDate, endDate);
-       }
-   }, [startDate, endDate, onChange]);
+      if (onChange) {
+         let formattedStartDate: string | undefined = undefined;
+         let formattedEndDate: string | undefined = undefined;
+
+         if (startDate) {
+            // 날짜를 "YYYY-MM-DD" 형식으로 변환
+            formattedStartDate = startDate.toISOString().substring(0, 10);
+          
+         }
+
+         if (endDate) {
+            // 날짜를 "YYYY-MM-DD" 형식으로 변환
+            formattedEndDate = endDate.toISOString().substring(0, 10);
+          
+         }
+
+         onChange(formattedStartDate, formattedEndDate);
+      }
+   }, [startDate, endDate]);
 
    return (
        <div className={`grid ${layout === 'horizontal' ? 'grid-cols-3 gap-3 items-center' : 'grid-cols-1 '}`}>

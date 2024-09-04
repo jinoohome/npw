@@ -336,6 +336,7 @@ interface SelectSearchProps {
    stringify?: boolean;
    minWidth?: string;
    datas?: any[];
+   readonly?: boolean; 
  }
  
  // react-select에 맞게 forwardRef를 사용하지 않음.
@@ -353,33 +354,40 @@ interface SelectSearchProps {
    stringify,
    minWidth,
    datas,
+   readonly = false, 
  }: SelectSearchProps) => {
    const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
  
    useEffect(() => {
-     // 데이터를 로드하고 옵션을 설정
-     if (datas && datas.length > 0) {
-       const items = datas.map((item) => ({
-         value: dataKey ? item[dataKey.value] : item.value,
-         label: dataKey ? item[dataKey.label] : item.label,
-       }));
-       setOptions(items);
-     } else if (procedure && param && dataKey) {
-       getData(procedure, param)
-         .then((result) => {
-           if (Array.isArray(result)) {
-             const items = result.map((item: any) => ({
-               value: item[dataKey.value],
-               label: item[dataKey.label],
-             }));
-             setOptions(items);
-           }
-         })
-         .catch((error) => {
-           console.error("데이터 로드 중 오류 발생:", error);
-         });
-     }
-   }, [datas, procedure, param, dataKey]);
+      let isMounted = true; // 컴포넌트가 마운트된 상태인지 추적하는 변수
+    
+      // 데이터가 있을 때 옵션 설정
+      if (datas && datas.length > 0) {
+        const items = datas.map((item) => ({
+          value: dataKey ? item[dataKey.value] : item.value,
+          label: dataKey ? item[dataKey.label] : item.label,
+        }));
+        setOptions(items);
+      } else if (procedure && param && dataKey) {
+        getData(procedure, param)
+          .then((result) => {
+            if (isMounted && Array.isArray(result)) {
+              const items = result.map((item: any) => ({
+                value: item[dataKey.value],
+                label: item[dataKey.label],
+              }));
+              setOptions(items);
+            }
+          })
+          .catch((error) => {
+            console.error("데이터 로드 중 오류 발생:", error);
+          });
+      }
+    
+      return () => {
+        isMounted = false; // cleanup 시점에 마운트 상태를 false로 설정
+      };
+    }, [datas, procedure, param, dataKey]);
  
    const getData = async (procedure: string, param: any) => {
      try {
@@ -438,6 +446,7 @@ interface SelectSearchProps {
            className=" focus:outline-orange-300"
            placeholder=""
            styles={customStyles}
+           isDisabled={readonly}
          />
        </div>
      </div>
