@@ -166,7 +166,7 @@ interface SelectSearchCompRef extends HTMLSelectElement {
 }
 
 const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
-  ({ title, value, handleCallSearch, minWidth, onChange, procedure, param, dataKey, stringify, layout = "horizontal", target, setChangeGridData, datas }, ref) => {
+  ({ title, value = '', handleCallSearch, minWidth, onChange, procedure, param, dataKey, stringify, layout = "horizontal", target, setChangeGridData, datas }, ref) => {
      const localRef = useRef<HTMLSelectElement>(null);
      const choicesInstanceRef = useRef<Choices | null>(null);
 

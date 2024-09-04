@@ -71,7 +71,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const SP0101_S01 = async (soNo: string) => {
        const param = {
-           soNo: soNo,
+           soNo: soNo || '999',
        };
 
        const data = JSON.stringify(param);
@@ -85,12 +85,12 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
            soNo: soNo,
        };
 
-       console.log('param:',param);
+       
 
        const data = JSON.stringify(param);
        const result = await fetchPost("SP0101_S02", { data });
 
-       console.log('result:',result);
+       
 
        onInputChange("gridDatas1", result);
 
@@ -104,6 +104,8 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
            startDt: inputValues.startDt || '999',
            endDt: inputValues.endDt || '999',
        };
+
+       
 
        const data = JSON.stringify(param);
        const result = await fetchPost("SP0101_P01", { data });
@@ -128,7 +130,7 @@ const ZZ_WORKS = async () => {
         text: item.workNm
     }));
 
-    console.log('formattedResult:',formattedResult);
+    
     onInputChange("zzWorks", formattedResult);
 
     return formattedResult;
@@ -153,7 +155,7 @@ const ZZ_B_PO_BP = async () => {
 
     
 
-    console.log('formattedResult:',formattedResult);
+    
     onInputChange("zzPoBps", formattedResult);
 
     return formattedResult;
@@ -168,7 +170,7 @@ const ZZ_CODE = async (majorCode:any) => {
 
     const result = await fetchPost("ZZ_CODE", param);
 
-    console.log('ZZ_CODE:',result);
+    
     const formattedResult = result.map((item: any) => ({
         value: item.code,
         text: item.codeName
@@ -239,6 +241,7 @@ useEffect(() => {
    useEffect(() => {
        if (gridRef2.current && inputValues.gridDatas2) {
            let grid = gridRef2.current.getInstance();
+           
            grid.resetData(inputValues.gridDatas2);
         
            if (inputValues.gridDatas2.length > 0) {
@@ -251,17 +254,23 @@ useEffect(() => {
 
    //-------------------event--------------------------
    const onInputChange = (name: string, value: any) => {
-       // 현재 상태와 비교하여 동일한 값이 들어오지 않을 경우에만 상태 업데이트
-       setInputValues((prevValues) => {
-           if (prevValues[name] === value) {
-               return prevValues;
-           }
-           return {
-               ...prevValues,
-               [name]: value,
-           };
-       });
-   };
+    setInputValues((prevValues) => {
+        // null, undefined, ""을 하나의 빈 값으로 취급
+        const currentValue = prevValues[name] ?? "";
+        const newValue = value ?? "";
+
+        // 동일한 값일 경우 상태를 업데이트하지 않음
+        if (currentValue === newValue) {
+            return prevValues;
+        }
+
+        return {
+            ...prevValues,
+            [name]: newValue,
+        };
+    });
+    };
+
 
    const addGridRow = () => {
       if(!inputValues.bpCd) 
@@ -303,7 +312,8 @@ useEffect(() => {
    };
 
    const search = async () => {
-       const result = await SP0101_S01(inputValues.contNo);
+       const result = await SP0101_S01(inputValues.soNo);
+        
 
        if (result.length == 1) {
            Object.entries(result[0]).forEach(([key, value]) => {
@@ -318,7 +328,6 @@ useEffect(() => {
        inputValues.gridDatas = datas;
        inputValues.soNo ? inputValues.status = 'U' : inputValues.status = 'I';
       
-       console.log('datas:',datas);
 
        let data = {
             oilSoHdr: JSON.stringify(inputValues),
@@ -327,7 +336,6 @@ useEffect(() => {
             insrtUserId: userInfo.usrId,
        };
 
-       console.log('data:',data);
 
         const result = await fetchPost(`SP0101_U03`, data);
     //    returnResult(result);
@@ -377,7 +385,8 @@ useEffect(() => {
    };
 
    const searchModalDiv = async () => {
-       const result = await SP0101_S01(inputValues.searchContNo);
+       
+       const result = await SP0101_P01(inputValues.searchSoNo);
        onInputChange("gridDatas2", result);
    }
 
@@ -400,7 +409,7 @@ useEffect(() => {
    }
 
    const handleSoNoOnIconClick = async (e: any) => {
-       onInputChange("searchContNo", e);
+       onInputChange("searchSoNo", e);
        const result = await SP0101_P01(e);
        onInputChange("gridDatas2", result);
        onInputChange("isOpen", true);
@@ -514,6 +523,7 @@ useEffect(() => {
                <div className="grid grid-cols-3 gap-y-2 justify-start ">
                    <InputSearchComp title="수주번호"
                        value={inputValues.soNo}
+                       readOnly={true}
                        onChange={(e) => onInputChange("soNo", e)}
                        onKeyDown={handleSoNoOnKeyDown}
                        onIconClick={handleSoNoOnIconClick} />

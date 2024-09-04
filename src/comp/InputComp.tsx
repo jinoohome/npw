@@ -396,10 +396,13 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
        useEffect(() => {
            if (value) {
                setSelectedDate(new Date(value));
+           }else{
+               setSelectedDate(null);
            }
        }, [value]);
 
        const handleChange = (date: Date | null) => {
+         console.log('date:', date);
            if (date) {
                const formattedDate = timePicker
                    ? date.toISOString().slice(0, 16).replace('T', ' ')
@@ -410,6 +413,7 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
                    onChange(formattedDate);
                }
            } else if (onChange) {
+               setSelectedDate(null); 
                onChange(null); // 날짜가 선택되지 않은 경우 null 전달
            }
        };
@@ -473,7 +477,28 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
    const [startDate, setStartDate] = useState<Date | undefined>(startValue ? new Date(startValue) : undefined);
    const [endDate, setEndDate] = useState<Date | undefined>(endValue ? new Date(endValue) : undefined);
 
+
    useEffect(() => {
+
+      if (startValue) {
+         setStartDate(new Date(startValue));
+      }else{
+         setStartDate(undefined);
+      }
+   }, [startValue]);
+
+   useEffect(() => {
+
+      if (endValue) {
+         setEndDate(new Date(endValue));
+      }else{
+         setEndDate(undefined);
+      }
+   }, [endValue]);
+
+
+   useEffect(() => {
+     
       if (onChange) {
          let formattedStartDate: string | undefined = undefined;
          let formattedEndDate: string | undefined = undefined;

@@ -311,14 +311,19 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
    //-------------------event--------------------------
    const onInputChange = (name: string, value: any) => {
-      // 현재 상태와 비교하여 동일한 값이 들어오지 않을 경우에만 상태 업데이트
       setInputValues((prevValues) => {
-          if (prevValues[name] === value) {
+          // null, undefined, ""을 하나의 빈 값으로 취급
+          const currentValue = prevValues[name] ?? "";
+          const newValue = value ?? "";
+  
+          // 동일한 값일 경우 상태를 업데이트하지 않음
+          if (currentValue === newValue) {
               return prevValues;
           }
+  
           return {
               ...prevValues,
-              [name]: value,
+              [name]: newValue,
           };
       });
   };
@@ -381,6 +386,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    const search = async () => {
       const result = await MM0602_S01(inputValues.contNo);
 
+      console.log(result);
       
       if(result.length == 1){
          Object.entries(result[0]).forEach(([key, value]) => {
