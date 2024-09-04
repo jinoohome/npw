@@ -49,6 +49,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       hsCd: useRef<any>(null),  
       rcptMeth: useRef<any>(null),  
       payYn: useRef<any>(null),  
+      dlvyHopeDtTime: useRef<any>(null),  
+      dlvyHopeDtMin: useRef<any>(null),  
    };
 
    const [gridDatas1, setGridDatas1] = useState<any[]>();       // 고객사별 참고사항
@@ -71,14 +73,20 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       endDate2: date(),
       dealType: 'A',
       rcptUserId: "",
+      rcptMeth: "FU0007",
    });
 
    const onInputChange = (name: string, value: any) => {
-      setInputValues((prevValues) => ({
-          ...prevValues,
-          [name]: value,
-      }));
-    
+      // 현재 상태와 비교하여 동일한 값이 들어오지 않을 경우에만 상태 업데이트
+      setInputValues((prevValues) => {
+          if (prevValues[name] === value) {
+              return prevValues;
+          }
+          return {
+              ...prevValues,
+              [name]: value !== null ? value : "", // null 대신 빈 문자열
+          };
+      });
   };
 
    const [focusRow, setFocusRow] = useState<any>(0);
@@ -100,6 +108,34 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       reSizeGrid({ ref: gridRef7, containerRef: gridContainerRef7, sec: 200 });
       reSizeGrid({ ref: gridRef8, containerRef: gridContainerRef7, sec: 200 });
    }, []);
+
+   useEffect(() => {
+      if (gridRef2.current && gridDatas2) {
+         let grid2 = gridRef2.current.getInstance();
+         
+         // grid가 존재하는지 확인
+         if (!grid2) return;
+   
+         grid2.on('click', (e:any) => {
+            console.log(inputValues.dealType);          
+            if (e.columnName === 'poBpBtn') {
+               if(inputValues.dealType === 'B') {
+                  console.log('지점 버튼 클릭됨:', e.rowKey);
+               } else {
+                  alertSwal("", "표준일때는 선택할 수 없습니다. 예외일때만 가능합니다.", "warning");
+               }
+            } else if (e.columnName === 'itemBtn') {
+               if(inputValues.dealType === 'B') {
+                  console.log('품목 버튼 클릭됨:', e.rowKey);
+               } else {
+                  alertSwal("", "표준일때는 선택할 수 없습니다. 예외일때만 가능합니다.", "warning");
+               }
+            }
+         });
+      }
+   }, [inputValues.dealType, gridDatas2]);
+   
+  
 
    //--------------------init---------------------------
 
@@ -145,8 +181,11 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             ...row,
             _attributes: {
                checked: row.mandatoryYn === 'Y',
-            }
+            },
+           
          }));
+
+   
 
          grid2.resetData(filteredData);
 
@@ -262,7 +301,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    useEffect(() => {
       if (gridRefP2.current && gridDatasP2) {
          let gridP2 = gridRefP2.current.getInstance();
-         gridP2.resetData(gridDatasP2);
+      
+         gridP2.resetData(gridP2);
          refreshGrid(gridRefP2);
          let focusRowKey = gridP2.getFocusedCell().rowKey || 0;
 
@@ -397,12 +437,12 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       }
    }
 
-   const SO0101_U03 = async (data: any) => {
+   const SO0201_U05 = async (data: any) => {
       try {
-         const result = await fetchPost(`SO0101_U03`, data);
+         const result = await fetchPost(`SO0201_U05`, data);
          return result;
       } catch (error) {
-         console.error("SO0101_U03 Error:", error);
+         console.error("SO0201_U05 Error:", error);
          throw error;
       }
    };
@@ -415,6 +455,11 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       };
       const data = JSON.stringify(param);
       const result = await fetchPost("SO0201_S01", {data});
+
+      // 조회된 값이 없으면 함수 종료
+      if (!result || result.length === 0) {
+         return;
+      }
 
       let subCodeIn = await ZZ_CONT_INFO({ contNo: result[0].contNo, bpCd: result[0].soldToParty, subCode: result[0].subCode, searchDiv: "SUB" });
 
@@ -462,6 +507,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       setGridDatas6(memo);
 
       // InputSearchComp1에 값 설정      
+      onInputChange('coCd', result[0].coCd);
       onInputChange('soNo', result[0].soNo);
       onInputChange('rcptMeth', result[0].rcptMeth);
       refs.rcptMeth.current.setChoiceByValue(result[0].rcptMeth);
@@ -470,7 +516,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       refs.rcptUserId.current.setChoiceByValue(result[0].rcptUserId);
       onInputChange('ownNm', result[0].ownNm);
       onInputChange('ownTelNo', result[0].ownTelNo);
-      onInputChange('bpCd', result[0].soldToParty);
+      onInputChange('soldToParty', result[0].soldToParty);
       onInputChange('bpNm', result[0].bpNm);
       onInputChange('contNo', result[0].contNo);
       onInputChange('subCode', result[0].subCode);
@@ -478,6 +524,12 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange('hsCd', result[0].hsCd);
       refs.hsCd.current.setChoiceByValue(result[0].hsCd);
       onInputChange('deptNm', result[0].deptNm);
+      onInputChange('roleNm', result[0].roleNm);
+      onInputChange('dlvyHopeDt', result[0].dlvyHopeDt);
+      onInputChange('dlvyHopeDtTime', result[0].dlvyHopeDtTime);
+      refs.dlvyHopeDtTime.current.setChoiceByValue(result[0].dlvyHopeDtTime);
+      onInputChange('dlvyHopeDtMin', result[0].dlvyHopeDtMin);
+      refs.dlvyHopeDtMin.current.setChoiceByValue(result[0].dlvyHopeDtMin);
       onInputChange('roleNm', result[0].roleNm);
       onInputChange('dlvyCd', result[0].dlvyCd);
       onInputChange('dlvyNm', result[0].dlvyNm);
@@ -490,6 +542,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange('confirmDt', result[0].confirmDt);
       onInputChange('preRcptNo', result[0].preRcptNo);
       onInputChange('pkgYn', result[0].pkgYn);
+      onInputChange('dealType', result[0].dealType);
    };
 
    const create = async () => {
@@ -497,61 +550,98 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const save = async () => {
-      // const data = await getGridValues();
-      // if (data) {
-      //    let result = await SO0101_U03(data);
-      //    if (result) {
-      //       await returnResult(result);
-      //    }
-      // }
-      let datas = await getGridCheckedDatas2(gridRef2);
+      const data = await getGridValues();
+      console.log(data);
+      if (data) {
+         let result = await SO0201_U05(data);
+         if (result) {
+            await returnResult(result);
+         }
+      }
+      
    };
 
    const returnResult = async(result:any) => {     
-      search(result.preRcptNoOut);
+      search(result.soNoOut);
       alertSwal(result.msgText, result.msgCd, result.msgStatus);
    };
 
    // 모든 grid Data 내용을 가져옴
    const getGridValues = async () => {
-      if (!inputValues.preRcptNo) {
+      if (!inputValues.soNo) {
          inputValues.status = 'I';
       } else {
          inputValues.status = 'U';
       }
 
-      //console.log(inputValues);
+      let sSoHdr = [inputValues];
+      let sSoDtl = await getGridCheckedDatas2(gridRef2);
+      let sSoPay = await getGridDatas(gridRef5);
+      let sSoMemo = await getGridDatas(gridRef6);
+      let soNo = inputValues.soNo;
 
-      // let preConsultHdr = [inputValues];
-      // let preConsultDtl = await getGridDatas(gridRef2);
-      // let preRcptNo = inputValues.preRcptNo;
+      let data = {
+         menuId: activeComp.menuId,
+         insrtUserId: userInfo.usrId,
+         soNo: soNo,
+         sSoHdr: JSON.stringify(sSoHdr),
+         sSoDtl: JSON.stringify(sSoDtl),
+         sSoPay: JSON.stringify(sSoPay),
+         sSoMemo: JSON.stringify(sSoMemo),
+      };
 
-      // let data = {
-      //    menuId: activeComp.menuId,
-      //    insrtUserId: userInfo.usrId,
-      //    preRcptNo: preRcptNo,
-      //    preConsultHdr: JSON.stringify(preConsultHdr),
-      //    preConsultDtl: JSON.stringify(preConsultDtl),
-      // };
-
-      return '';
+      return data;
    };
 
-   //grid 추가버튼
+   //grid 추가버튼 상품정보
    const addGridRow = () => {
       let grid = gridRef2.current.getInstance();
 
-      grid.appendRow({  useYn: "Y", coCd: "100", isNew: true}, { at: 0 });
-
+      grid.appendRow({ useYn: "Y", coCd: "100", isNew: true, mandatoryYn: "Y" }, { at: 0 });
       grid.focusAt(0, 1, true);
-   };
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      grid.check(rowKey);
+   }; 
 
-   //grid 삭제버튼
+   //grid 삭제버튼 상품정보
    const delGridRow = () => {
-      let grid = gridRef2.current.getInstance();
-      const { rowKey } = grid.getFocusedCell();
+      let grid = gridRef2.current.getInstance();      
+
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+      
+      // 행을 삭제
       grid.removeRow(rowKey, {});
-   };
+
+      // 남은 행이 있는 경우에만 포커스를 맞춤
+      if (grid.getRowCount() > 0) {
+         grid.focusAt(rowIndex, 1, true);
+      }
+  };      
+
+  //grid 추가버튼 결제처리
+  const addGridRow2 = () => {
+      let grid = gridRef5.current.getInstance();
+
+      grid.appendRow({ useYn: "Y", coCd: "100", isNew: true, payType: "FU0019" }, { at: 0 });
+      grid.focusAt(0, 1, true);
+   }; 
+
+//grid 삭제버튼 결제처리
+   const delGridRow2 = () => {
+      let grid = gridRef5.current.getInstance();      
+
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+      
+      // 행을 삭제
+      grid.removeRow(rowKey, {});
+
+      // 남은 행이 있는 경우에만 포커스를 맞춤
+      if (grid.getRowCount() > 0) {
+         grid.focusAt(rowIndex, 1, true);
+      }
+   };      
 
    //주문 팝업조회
    const handleCallSearch2 = async () => {
@@ -678,20 +768,38 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
    // 배송지팝업 더블클릭
    const handleDblClick3 = async () => {
-      const gridInstance = gridRefP3.current.getInstance();
-      const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
+      const grid = gridRef2.current.getInstance();
+      const firstRow = grid.getRow(0); // 첫 번째 행 가져오기
 
-      const dlvyCd = gridInstance.getValue(rowKey, "dlvyCd"); // 해당 rowKey에서 soNo 값을 가져옴
-      const dlvyNm = gridInstance.getValue(rowKey, "dlvyNm"); // 해당 rowKey에서 soNo 값을 가져옴
-      const addr1 = gridInstance.getValue(rowKey, "addr1"); // 해당 rowKey에서 soNo 값을 가져옴
+      const updateHSCode = async () => {
+         const gridInstance = gridRefP3.current.getInstance();
+         const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
+
+         const dlvyCd = gridInstance.getValue(rowKey, "dlvyCd"); // 해당 rowKey에서 soNo 값을 가져옴
+         const dlvyNm = gridInstance.getValue(rowKey, "dlvyNm"); // 해당 rowKey에서 soNo 값을 가져옴
+         const addr1 = gridInstance.getValue(rowKey, "addr1"); // 해당 rowKey에서 soNo 값을 가져옴
+         
+         onInputChange('dlvyCd', dlvyCd);
+         onInputChange('dlvyNm', dlvyNm);
+         onInputChange('dlvyAddr', addr1);
+
+         await SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: dlvyCd, dealType: inputValues.dealType});
+
+         setIsOpen3(false);
+      };
+
+      if (firstRow && firstRow.chkYn === 'Y') {
+         alertSwal("상품조회", "계약조건이 변경되어 상품정보가 삭제 후 다시 조회 됩니다. 계속 하시겠습니까?", "warning", true).then(async (result) => {
+         if (result.isConfirmed) {
+            await updateHSCode();
+         } else if (result.isDismissed) {
+            return;
+         }
+         });
+      } else {
+         await updateHSCode();
+      }
       
-      onInputChange('dlvyCd', dlvyCd);
-      onInputChange('dlvyNm', dlvyNm);
-      onInputChange('dlvyAddr', addr1);
-
-      await SO0201_S10({bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: dlvyCd, dealType: inputValues.dealType});
-
-      setIsOpen3(false);
    };
 
    // 사전상담 팝업 더블클릭
@@ -824,7 +932,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             onInputChange('dlvyNm', dlvyNm);
             onInputChange('dlvyAddr', addr1);
 
-            await SO0201_S10({bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: dlvyCd, dealType: inputValues.dealType});
+            await SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: dlvyCd, dealType: inputValues.dealType});
          } else {
             await setIsOpen3(true);
             setTimeout(() => {
@@ -1053,7 +1161,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          </div>
 
          <div className="space-y-5">
-            <div className="grid grid-cols-2  gap-3  justify-around items-center pr-2 pb-14">
+            <div className="grid grid-cols-2  gap-3  justify-around items-center pr-2 pb-[69px]">
                <InputSearchComp1 value={inputValues.soNo} readOnly={true} title="주문번호" target="soNo" handleInputSearch={handleInputSearch} />
                <SelectSearchComp title="접수구분" 
                               ref={refs.rcptMeth}
@@ -1080,7 +1188,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                               stringify={true}
                               param={ { coCd : '100',
                                        usrId : '999',
-                                       usrDiv : 'ZZ0186',
+                                       usrDiv : '999',
                                        useYn : '999' }}
                               procedure="ZZ_USER_LIST"  dataKey={{ label: 'usrNm2', value: 'usrId' }} 
                />
@@ -1106,6 +1214,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                               value={inputValues.subCode}
                               onChange={async (label, value) => {
                                     onInputChange('subCode', value);
+                                    onInputChange('subCodeNm', label);
                                     onInputChange('hsCd', '');
                                     refs.hsCd.current.setChoiceByValue("");
 
@@ -1124,11 +1233,48 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                <SelectSearchComp title="신청사유" 
                               ref={refs.hsCd}
                               value={inputValues.hsCd}
-                              onChange={async (label, value) => {                                    
+                              onChange={async (label, value) => {    
+                                 const grid = gridRef2.current.getInstance();
+                                 const firstRow = grid.getRow(0); // 첫 번째 행 가져오기
+
+                                 const updateHSCode = async (value:any) => {
                                     onInputChange('hsCd', value);
 
-                                    await SO0201_S10({bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: value, dlvyCd: inputValues.dlvyCd, dealType: inputValues.dealType});
-                                 }}
+                                    let hsCode = await ZZ_CONT_INFO({ 
+                                    contNo: inputValues.contNo, 
+                                    bpCd: inputValues.soldToParty, 
+                                    subCode: inputValues.subCode, 
+                                    searchDiv: "HS" 
+                                    });
+
+                                    const foundItem = hsCode.find((item: { hsCode: string; }) => item.hsCode === value);
+                                    const foundhsType = foundItem ? foundItem.hsType : null;
+
+                                    onInputChange('hsType', foundhsType);
+
+                                    await SO0201_S10({
+                                    soNo: inputValues.soNo, 
+                                    bpCd: inputValues.soldToParty,
+                                    contNo: inputValues.contNo,
+                                    subCode: inputValues.subCode,
+                                    hsCd: value,
+                                    dlvyCd: inputValues.dlvyCd,
+                                    dealType: inputValues.dealType
+                                    });
+                                 };
+
+                                 if (firstRow && firstRow.chkYn === 'Y') {
+                                    alertSwal("상품조회", "계약조건이 변경되어 상품정보가 삭제 후 다시 조회 됩니다. 계속 하시겠습니까?", "warning", true).then(async (result) => {
+                                    if (result.isConfirmed) {
+                                       await updateHSCode(value);
+                                    } else if (result.isDismissed) {
+                                       refs.hsCd.current.setChoiceByValue(inputValues.hsCd);
+                                    }
+                                    });
+                                 } else {
+                                    await updateHSCode(value);
+                                 }
+                              }}
                />
                <InputComp value={inputValues.deptNm} title="부서" target="deptNm" 
                           onChange={(e) => {
@@ -1157,6 +1303,49 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          </div>
 
          <div className="px-3 space-y-2">
+            <div className="grid grid-cols-3 gap-y-2">
+               <DatePickerComp 
+                  title="배송희망일시"
+                  value = {inputValues.dlvyHopeDt}
+                  target="dlvyHopeDt" 
+                  onChange={(e) => { 
+                     onInputChange('dlvyHopeDt', e);  
+                     }} 
+                  layout="flex"
+                  minWidth="100px"
+                  // format="yyyy-MM-dd HH:mm"
+                  // timePicker={true}
+
+                  //datas={[{value : 'Y', label : '결제완료'},{value : 'N', label : '미결제'}]}
+                              //초기값 세팅시
+                              // param={{ coCd: "999", majorCode: "FU0008", div: "-999" }}
+                              // procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
+               />
+               <SelectSearchComp title="" 
+                              value={inputValues.dlvyHopeDtTime}
+                              ref={refs.dlvyHopeDtTime}
+                              onChange={(label, value) => {
+                                    onInputChange('dlvyHopeDtTime', value);
+                                 }}
+                              
+                                 datas={Array.from({ length: 24 }, (_, i) => ({
+                                    value: i.toString().padStart(2, '0'),
+                                    label: i.toString().padStart(2, '0')
+                                  }))}                          
+               />
+               <SelectSearchComp title="" 
+                              value={inputValues.dlvyHopeDtMin}
+                              ref={refs.dlvyHopeDtMin}
+                              onChange={(label, value) => {
+                                    onInputChange('dlvyHopeDtMin', value);
+                                 }}
+                              
+                                 datas={[10, 20, 30, 40, 50].map((min) => ({
+                                    value: min.toString().padStart(2, '0'),
+                                    label: min.toString().padStart(2, '0')
+                                  }))}                          
+               />
+            </div>
             <div className="grid grid-cols-1 gap-y-2">
                <InputSearchComp title="배송지" value={inputValues.dlvyNm} minWidth="100px"  layout="flex" target="dlvyNm" onKeyDown={handleInputSearch4} onIconClick={handleInputSearch5}
                                  onChange={(e) => {
@@ -1175,10 +1364,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                <InputComp value={inputValues.reqNm} title="주문자" target="reqNm"  minWidth="100px" layout="flex"
                            onChange={(e) => {
                               onInputChange('reqNm', e);                      
-                           }} />
-               <InputComp value={inputValues.dlvyCd} title="배송지코드" target="dlvyCd"  minWidth="100px" layout="flex"
-                           onChange={(e) => {
-                              onInputChange('dlvyCd', e);                      
                            }} />
                <InputComp value={inputValues.reqTelNo} title="연락처" target="reqTelNo"   minWidth="100px" layout="flex"
                            onChange={(e) => {
@@ -1376,9 +1561,19 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "주문번호", name: "soNo", hidden: true },
       { header: "순번", name: "soSeq", hidden: true },
       { header: "구분", name: "dealType", hidden: true },
+      { header: "CHK", name: "chkYn", hidden: true},
       { header: "품목코드", name: "itemCd", width: 100, align: "center" },
       { header: "품목명", name: "itemNm", width: 300 },
+      { header: "품목선택", name: "itemBtn", width: 80, align: "center", formatter: () => {
+         return `<button class="bg-blue-500 text-white text-xs  rounded-md px-2 py-1  shadow"}>선택</button>`;
+      }},
       { header: "지점명", name: "poBpCd", width: 200, editor: "text"},
+      // { header: "지점선택", name: "poBpBtn", width: 80, align: "center", formatter: () => {
+      //    return `<button class="bg-blue-500 text-white text-xs  rounded-md px-2 py-1  shadow"}>선택</button>`;
+      // }},
+      { header: "지점선택", name: "poBpBtn", width: 80, align: "center", formatter: () => {
+         return `<button class="bg-blue-500 text-white text-xs rounded-md px-2 py-1 shadow custom-button">선택</button>`;
+      }},
       { header: "수량", name: "soQty", width: 60, align:"center", editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
       { header: "가용재고", name: "invQty", width: 80, align:"center"},
       { header: "단가", name: "soPrice", width: 90, align:"right", editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
@@ -1386,7 +1581,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "공급가액", name: "netAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
       { header: "부가세액", name: "vatAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
       { header: "유/무상", name: "payDiv", width: 120, editor: "text"},
-      { header: "무상사유", name: "reason", editor: "text"},
+      { header: "무상사유", name: "reason", editor: "text"},      
    ];
 
    const grid2 = () => (
@@ -1398,20 +1593,36 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                            layout="horizontal"
                            onChange={(e)=>{
                               onInputChange('dealType', e);  
-                              SO0201_S10({bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: inputValues.dlvyCd, dealType: e});
+                              const grid = gridRef2.current.getInstance();
+                              const firstRow = grid.getRow(0); // 첫 번째 행 가져오기
+
+                              if (firstRow && firstRow.chkYn === 'Y') {
+                                 alertSwal("상품조회", "계약조건이 변경되어 상품정보가 삭제 후 다시 조회 됩니다. 계속 하시겠습니까?", "warning", true).then((result) => {
+                                    if (result.isConfirmed) {
+                                       SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: inputValues.dlvyCd, dealType: e});
+                                    } else if (result.isDismissed) {
+                                       const newDealType = e === 'A' ? 'B' : 'A';
+                                       onInputChange('dealType', newDealType);
+                                    }
+                                });
+                              } else {
+                                 SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: inputValues.dlvyCd, dealType: e});
+                              }                            
                            }}  
                            onClick={() => {console.log('onClick')}} />
             </div>
-            <div className="flex space-x-1">
-               <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
-                  <PlusIcon className="w-5 h-5" />
-                  추가
-               </button>
-               <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
-                  <MinusIcon className="w-5 h-5" />
-                  삭제
-               </button>
-            </div>
+            {inputValues.dealType === 'B' && (
+               <div className="flex space-x-1">
+                  <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+                     <PlusIcon className="w-5 h-5" />
+                     추가
+                  </button>
+                  <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+                     <MinusIcon className="w-5 h-5" />
+                     삭제
+                  </button>
+               </div>
+            )}
          </div>
 
          <TuiGrid01 gridRef={gridRef2} columns={columns2} rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-750}             
@@ -1508,11 +1719,11 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                               }}/>            
             </div>
             <div className="flex pt-2 space-x-2">
-               <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+               <button type="button" onClick={addGridRow2} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
                   <PlusIcon className="w-5 h-5" />
                   추가
                </button>
-               <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+               <button type="button" onClick={delGridRow2} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
                   <MinusIcon className="w-5 h-5" />
                   삭제
                </button>
@@ -1597,7 +1808,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "공급가액", name: "netAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
       { header: "부가세액", name: "vatAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
       { header: "유/무상", name: "payDiv", width: 80},
-      { header: "무상사유", name: "reason"},
+      { header: "무상사유", name: "reason"},      
    ];
 
    const grid8 = () => (
