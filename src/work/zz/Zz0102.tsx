@@ -266,7 +266,7 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
                 onChange={(e) => { 
                    onInputChange('date', e);  
                   }} 
-               // format="yyyy-MM-dd HH:mm"
+                format="yyyy-MM-dd HH:mm"
                timePicker={true}
             />
             <DateRangePickerComp 
