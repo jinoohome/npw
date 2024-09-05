@@ -53,6 +53,8 @@ class CustomSelectEditor {
          removeItemButton: false,
          shouldSort: false,
          itemSelectText: "",
+         position: 'auto',
+         
       });
 
       this.choices.setChoices(
