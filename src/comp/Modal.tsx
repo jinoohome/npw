@@ -6,7 +6,7 @@ interface CommonModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 const CommonModal = ({ isOpen, onClose, title, children, size = 'lg' }: CommonModalProps) => {
@@ -36,7 +36,8 @@ const CommonModal = ({ isOpen, onClose, title, children, size = 'lg' }: CommonMo
   const sizeClass = {
     sm: 'w-1/3',
     md: 'w-1/2',
-    lg: 'w-9/12',
+    lg: 'w-7/12',
+    xl: 'w-9/12',
   };
 
   return (
