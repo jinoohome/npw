@@ -11,6 +11,7 @@ import '../css/datePicker.css';
 
 
 
+
 interface InputCompProps {
    title: string;
    value?: string; // value prop 추가
@@ -377,6 +378,8 @@ const InputSearchComp1 = forwardRef<HTMLInputElement, Props3>(({ title, value ='
    );
 });
 
+
+
 interface Props4 {
    title: string;
    value?: string;
@@ -387,14 +390,16 @@ interface Props4 {
    target?: string;
    setChangeGridData?: (target: string, value: string) => void;
    minWidth?: string;
+   textAlign?: "left" | "center" | "right";
 }
 
 const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
-   ({ title, value = '', format = 'yyyy-MM-dd', timePicker = false, onChange, layout = 'horizontal', minWidth }, ref) => {
+   ({ title, value = '', format = 'yyyy-MM-dd', timePicker = false,textAlign="right", onChange, layout = 'horizontal', minWidth }, ref) => {
        const [selectedDate, setSelectedDate] = useState<Date | null>(value ? new Date(value) : null);
 
        useEffect(() => {
            if (value) {
+            console.log('value', value)
                setSelectedDate(new Date(value));
            }else{
                setSelectedDate(null);
@@ -402,21 +407,40 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
        }, [value]);
 
        const handleChange = (date: Date | null) => {
-         console.log('date:', date);
-           if (date) {
-               const formattedDate = timePicker
-                   ? date.toISOString().slice(0, 16).replace('T', ' ')
-                   : date.toISOString().substring(0, 10); // `timePicker`가 true면 시간까지 포함된 형식으로 변환
-               setSelectedDate(date);
-
-               if (onChange) {
-                   onChange(formattedDate);
-               }
-           } else if (onChange) {
-               setSelectedDate(null); 
-               onChange(null); // 날짜가 선택되지 않은 경우 null 전달
-           }
-       };
+         if (date) {
+             let formattedDate;
+     
+             if (timePicker) {
+                 // 시간까지 포함된 형식으로 변환 (로컬 시간 기준)
+                 const year = date.getFullYear();
+                 const month = (date.getMonth() + 1).toString().padStart(2, '0'); // 월은 0부터 시작하므로 +1 필요
+                 const day = date.getDate().toString().padStart(2, '0');
+                 const hours = date.getHours().toString().padStart(2, '0');
+                 const minutes = date.getMinutes().toString().padStart(2, '0');
+     
+                 formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+             } else {
+                 // 날짜만 처리 (로컬 시간 기준)
+                 const year = date.getFullYear();
+                 const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                 const day = date.getDate().toString().padStart(2, '0');
+     
+                 formattedDate = `${year}-${month}-${day}`;
+             }
+     
+             setSelectedDate(date);
+             console.log('date', date);
+             console.log('formattedDate', formattedDate);
+     
+             if (onChange) {
+                 onChange(formattedDate);
+             }
+         } else if (onChange) {
+             setSelectedDate(null);
+             onChange(null); // 날짜가 선택되지 않은 경우 null 전달
+         }
+     };
+     
 
        return (
            <div
@@ -428,8 +452,10 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
                    className={` ${layout === 'horizontal' ? 'col-span-1 text-right' : ''} ${
                        layout === 'flex' ? 'w-auto' : ''
                    }`}
-                   style={minWidth ? { minWidth: minWidth } : {}}
-               >
+                   style={{
+                     ...(minWidth ? { minWidth: minWidth } : {}),
+                     ...(textAlign ? { textAlign: textAlign } : {})
+                  }}>
                    {title}
                </label>
                <div className={`${layout === 'horizontal' ? 'col-span-2' : 'flex-grow'}`}>
@@ -446,7 +472,9 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
                            wrapperClassName="w-full z-50"
                            popperClassName="custom-datepicker-popper"  
                            showIcon
+                     
                        />
+                        
                    </div>
                </div>
            </div>
@@ -463,6 +491,7 @@ interface DateRangePickerCompProps {
    layout?: 'horizontal' | 'vertical';
    startPlaceholder?: string;
    endPlaceholder?: string;
+   handleCallSearch?: () => void;
 }
 
 const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
@@ -472,7 +501,8 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
    onChange,
    layout = 'horizontal',
    startPlaceholder,
-   endPlaceholder
+   endPlaceholder,
+   handleCallSearch
 }) => {
    const [startDate, setStartDate] = useState<Date | undefined>(startValue ? new Date(startValue) : undefined);
    const [endDate, setEndDate] = useState<Date | undefined>(endValue ? new Date(endValue) : undefined);
@@ -519,6 +549,27 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
       }
    }, [startDate, endDate]);
 
+   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter" && handleCallSearch) {
+         console.log('enter')
+         handleCallSearch();
+      }
+    
+   };
+
+   const CustomInput = forwardRef<HTMLInputElement, any>(({ value, onClick, onKeyDown, placeholder }, ref) => (
+      <input
+        ref={ref}
+        onClick={onClick}
+        onKeyDown={onKeyDown}
+        value={value}
+        placeholder={placeholder}
+        className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
+        readOnly
+      />
+    ));
+
+
    return (
        <div className={`grid ${layout === 'horizontal' ? 'grid-cols-3 gap-3 items-center' : 'grid-cols-1 '}`}>
            <label className={`col-span-1 ${layout === 'vertical' ? '' : 'text-right'}`}>{title}</label>
@@ -536,6 +587,9 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
                        locale={ko}
                        wrapperClassName="w-full z-50"
                        popperClassName="custom-datepicker-popper" 
+                       showIcon = {!startDate}
+                       customInput={<CustomInput onKeyDown={handleKeyDown} placeholder={startPlaceholder} />}
+                      
                    />
                </div>
                <div className="relative w-full">
@@ -552,6 +606,9 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
                        locale={ko}
                        wrapperClassName="w-full z-50"
                        popperClassName="custom-datepicker-popper" 
+                       showIcon = {!endDate}
+                       customInput={<CustomInput onKeyDown={handleKeyDown} placeholder={startPlaceholder} />}
+                       
                    />
                </div>
            </div>
