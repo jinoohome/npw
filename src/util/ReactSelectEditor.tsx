@@ -105,7 +105,9 @@ class CustomMUISelectEditor {
   }
 
   beforeDestroy() {
-    ReactDOM.unmountComponentAtNode(this.el);
+    if (this.el && this.el.parentNode) {
+      ReactDOM.unmountComponentAtNode(this.el);
+    }
   }
 }
 
