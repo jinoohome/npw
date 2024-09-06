@@ -1,0 +1,78 @@
+/* Autocomplete의 select input 크기 및 스타일 조정 */
+.custom-mui-select-editor {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+}
+
+/* Autocomplete 루트 및 주변 요소 */
+.custom-mui-select-editor .MuiAutocomplete-root,
+.custom-mui-select-editor .MuiAutocomplete-root.MuiAutocomplete-hasClearIcon.MuiAutocomplete-hasPopupIcon {
+  width: 100%;
+  height: 100%; /* Autocomplete 컨테이너에 전체 높이를 적용 */
+}
+
+/* TextField input의 높이를 그리드 셀에 맞춤 */
+.custom-mui-select-editor .MuiInputBase-root {
+  height: 100%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+ 
+}
+
+/* TextField 내부 input 필드 크기 맞춤 */
+.custom-mui-select-editor .MuiAutocomplete-inputRoot,
+.custom-mui-select-editor .MuiInputBase-input.MuiOutlinedInput-input.MuiAutocomplete-input.MuiAutocomplete-inputFocused {
+  height: 100%; /* 입력 필드에 전체 높이를 적용 */
+  padding: 0 8px; /* 내부 패딩 최소화 */
+  
+}
+
+/* Autocomplete 메뉴 팝업 높이 및 스크롤 조정 */
+.custom-mui-select-editor .MuiAutocomplete-listbox {
+  max-height: 200px;
+  overflow-y: auto;
+
+  /* 스크롤바 스타일을 세련되게 변경 */
+  scrollbar-width: thin; /* Firefox에서 스크롤바 너비 */
+  scrollbar-color: #642e2e transparent; /* Firefox 스크롤바 색상 */
+}
+
+/* Chrome, Safari, Edge에서 스크롤바 스타일링 */
+.custom-mui-select-editor .MuiAutocomplete-listbox::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-mui-select-editor .MuiAutocomplete-listbox::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-mui-select-editor .MuiAutocomplete-listbox::-webkit-scrollbar-thumb {
+  background-color: #888; /* 스크롤바 색상 */
+  border-radius: 10px; /* 둥근 스크롤바 */
+}
+
+.custom-mui-select-editor .MuiAutocomplete-listbox::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* 스크롤바 Hover 시 색상 변경 */
+}
+
+/* Autocomplete의 기본 선택 옵션 문구 숨기기 */
+.custom-mui-select-editor .MuiAutocomplete-popupIndicator {
+  display: none;
+}
+
+/* 테두리의 모서리를 둥글게 만들지 않음 */
+.custom-mui-select-editor .MuiOutlinedInput-notchedOutline {
+  border-radius: 0;
+  height: 100%;
+}
+
+/* FormControl, TextField 높이 조정 */
+.custom-mui-select-editor .MuiFormControl-root,
+.custom-mui-select-editor .MuiTextField-root {
+  height: 100%;
+}
