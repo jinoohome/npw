@@ -4,14 +4,16 @@ const commas = (input: string | number | null | undefined) => {
       return '';
   }
 
-  // 입력값이 문자열인 경우 숫자만 남기기
-  const onlyNumbers = input.toString().replace(/\D/g, '');
+  // 입력값이 문자열인 경우 숫자로 변환
+  const numberValue = typeof input === 'string' ? parseFloat(input) : input;
 
-  // 숫자가 하나도 없으면 0으로 설정
-  const numberValue = onlyNumbers.length > 0 ? parseInt(onlyNumbers, 10) : 0;
+  // 숫자가 아니라면 0으로 처리
+  if (isNaN(numberValue)) {
+    return '0';
+  }
 
-  // 쉼표 추가
-  return numberValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  // 음수와 양수 모두에 쉼표 추가
+  return numberValue.toLocaleString('en', { maximumFractionDigits: 0 });
 }
 
 

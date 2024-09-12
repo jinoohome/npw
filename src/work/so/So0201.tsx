@@ -4,6 +4,7 @@ import { React, useEffect, useState, useRef, useCallback, initChoice,
    reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp, DateRangePickerComp, date, InputSearchComp, commas,
     RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, formatCardNumber, formatExpiryDate, getGridCheckedDatas2 } from "../../comp/Import";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import ChoicesEditor from "../../util/ReactSelectEditor";
 
 interface Props {
    item: any;
@@ -78,6 +79,9 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       dealType: 'A',
       rcptUserId: "",
       rcptMeth: "FU0007",
+      zzFU0004 : [], // 청구구분
+      zzFU0005 : [], // 유무상구분
+      zzFU0006 : [], // 무상사유
    });
 
    const onInputChange = (name: string, value: any) => {
@@ -93,6 +97,17 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       });
   };
 
+  const setGridData = async () => {
+      try {
+          ZZ_CODE('FU0004');
+          ZZ_CODE('FU0005');
+          ZZ_CODE('FU0006');
+      
+      } catch (error) {
+      console.error("setGridData Error:", error);
+      }
+   };
+
    const [focusRow, setFocusRow] = useState<any>(0);
    const [isOpen, setIsOpen] = useState(false);       // 주문정보 팝업
    const [isOpen2, setIsOpen2] = useState(false);     // 고객사 팝업
@@ -105,6 +120,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
    // 첫 페이지 시작시 실행
    useEffect(() => {
+      setGridData();
       reSizeGrid({ ref: gridRef1, containerRef: gridContainerRef1, sec: 200 });
       reSizeGrid({ ref: gridRef2, containerRef: gridContainerRef2, sec: 200 });
       reSizeGrid({ ref: gridRef3, containerRef: gridContainerRef3, sec: 200 });
@@ -138,6 +154,50 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    useEffect(() => {
       //console.log(inputValues);
    }, [inputValues]);
+
+   //Grid SELECT 설정
+   useEffect(() => {
+
+      if (inputValues.zzFU0004) {
+         let gridInstance = gridRef2.current.getInstance();
+         let column = gridInstance.getColumn("condType");
+         let zzFU0004 = inputValues.zzFU0004.filter((item:any) => item.value !== "999");
+         column.editor.options.listItems = zzFU0004;
+         gridInstance.refreshLayout();
+      }
+   }, [inputValues.zzFU0004]);
+
+   useEffect(() => {
+
+      if (inputValues.zzFU0005) {
+         let gridInstance = gridRef2.current.getInstance();
+         let column = gridInstance.getColumn("payDiv");
+         let zzFU0005 = inputValues.zzFU0005.filter((item:any) => item.value !== "999");
+         column.editor.options.listItems = zzFU0005;
+         gridInstance.refreshLayout();
+
+         let gridInstance2 = gridRef8.current.getInstance();
+         let column2 = gridInstance2.getColumn("payDiv");
+         column2.editor.options.listItems = zzFU0005;
+         gridInstance2.refreshLayout();
+      }
+   }, [inputValues.zzFU0005]);
+
+   useEffect(() => {
+
+      if (inputValues.zzFU0006) {
+         let gridInstance = gridRef2.current.getInstance();
+         let column = gridInstance.getColumn("reason");
+         let zzFU0006 = inputValues.zzFU0006.filter((item:any) => item.value !== "999");
+         column.editor.options.listItems = zzFU0006;
+         gridInstance.refreshLayout();
+
+         let gridInstance2 = gridRef8.current.getInstance();
+         let column2 = gridInstance2.getColumn("reason");
+         column2.editor.options.listItems = zzFU0006;
+         gridInstance2.refreshLayout();
+      }
+   }, [inputValues.zzFU0006]);
 
    //Grid 데이터 설정
    useEffect(() => {
@@ -188,7 +248,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                   alertSwal("", "표준일때는 선택할 수 없습니다. 예외일때만 가능합니다.", "warning");
                }
             } else if (e.columnName === 'itemBtn') {
-               console.log(inputValues.dealType); 
                if(inputValues.dealType === 'B') {  
                   handleCallSearch7();
             
@@ -209,17 +268,29 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    useEffect(() => {
       if (gridRef2.current) {
          const gridInstance = gridRef2.current.getInstance();
+         const gridInstance2 = gridRef3.current.getInstance();
+         const gridInstance3 = gridRef8.current.getInstance();
    
          if (inputValues.dealType === 'B') {
             gridInstance.enableColumn('soQty');
             gridInstance.enableColumn('soPrice');
             gridInstance.enableColumn('payDiv');
             gridInstance.enableColumn('reason');
+            gridInstance.enableColumn('condType');
+            gridInstance2.enableColumn('soQty');
+            gridInstance2.enableColumn('poPrice');
+            gridInstance3.enableColumn('payDiv');
+            gridInstance3.enableColumn('reason');
          } else if (inputValues.dealType === 'A') {
             gridInstance.disableColumn('soQty');
             gridInstance.disableColumn('soPrice');
             gridInstance.disableColumn('payDiv');
             gridInstance.disableColumn('reason');
+            gridInstance.disableColumn('condType');
+            gridInstance2.disableColumn('soQty');
+            gridInstance2.disableColumn('poPrice');
+            gridInstance3.disableColumn('payDiv');
+            gridInstance3.disableColumn('reason');
          }
       }
    }, [inputValues.dealType, gridDatas2]);
@@ -227,18 +298,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    useEffect(() => {
       if (gridRef2.current && gridDatas2) {
          let grid2 = gridRef2.current.getInstance();
-         // 'MANDATORY_YN' 값이 'Y'인 것만 체크된 상태로 설정
-         let filteredData = gridDatas2.map((row) => ({
-            ...row,
-            _attributes: {
-               checked: row.mandatoryYn === 'Y',
-            },
-           
-         }));
-
-   
-
-         grid2.resetData(filteredData);
+         grid2.resetData(gridDatas2);         
 
          let focusRowKey = grid2.getFocusedCell().rowKey || 0;
 
@@ -388,7 +448,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       if (gridRefP2.current && gridDatasP2) {
          let gridP2 = gridRefP2.current.getInstance();
       
-         gridP2.resetData(gridP2);
+         gridP2.resetData(gridDatasP2);
          refreshGrid(gridRefP2);
          let focusRowKey = gridP2.getFocusedCell().rowKey || 0;
 
@@ -456,6 +516,29 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    }, [gridDatasP6]);
 
    //---------------------- api -----------------------------
+   const ZZ_CODE = async (majorCode:any) => {   
+         const param={ 
+            coCd: "999", 
+            majorCode: majorCode, 
+            div: "-999" 
+         };
+   
+   
+         const result = await fetchPost("ZZ_CODE", param);
+   
+         
+         const formattedResult = result.map((item: any) => ({
+            value: item.code,
+            text: item.codeName
+         }));
+   
+         if(majorCode === 'FU0004') onInputChange("zzFU0004", formattedResult);
+         if(majorCode === 'FU0005') onInputChange("zzFU0005", formattedResult);
+         if(majorCode === 'FU0006') onInputChange("zzFU0006", formattedResult);         
+   
+         return formattedResult;
+   };
+   
    var ZZ_CONT_INFO = async (param : any) => {
       try {
          const data = JSON.stringify(param);
@@ -526,12 +609,21 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          const data = JSON.stringify(param);
          const result = await fetchPost(`SO0201_S10`, { data });
 
-         setGridDatas2(result);
-         setGridDatas3(result);
-         setGridDatas7(result);
-         setGridDatas8(result);
+         // 'MANDATORY_YN' 값이 'Y'인 것만 체크된 상태로 설정
+         let filteredData = result.map((row:any) => ({
+            ...row,
+            _attributes: {
+               checked: row.mandatoryYn === 'Y',
+            },
+           
+         }));
 
-         return result;
+         setGridDatas2(filteredData);
+         setGridDatas3(filteredData);
+         setGridDatas7(filteredData);
+         setGridDatas8(filteredData);
+
+         return filteredData;
       } catch (error) {
          console.error("SO0201_S10 Error:", error);
          throw error;
@@ -564,12 +656,24 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       }
    }
 
+   // 주문저장
    const SO0201_U05 = async (data: any) => {
       try {
          const result = await fetchPost(`SO0201_U05`, data);
          return result;
       } catch (error) {
          console.error("SO0201_U05 Error:", error);
+         throw error;
+      }
+   };
+
+   // 주문확정, 취소, 삭제
+   const SO0201_U06 = async (data: any) => {
+      try {
+         const result = await fetchPost(`SO0201_U06`, data);
+         return result;
+      } catch (error) {
+         console.error("SO0201_U06 Error:", error);
          throw error;
       }
    };
@@ -587,6 +691,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       if (!result || result.length === 0) {
          return;
       }
+
+      handleTabIndex(0);
 
       let subCodeIn = await ZZ_CONT_INFO({ contNo: result[0].contNo, bpCd: result[0].soldToParty, subCode: result[0].subCode, searchDiv: "SUB" });
 
@@ -616,10 +722,20 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
       // 상품정보
       let itemInfo = await SO0201_S02({ soNo: result[0].soNo });
-      setGridDatas2(itemInfo);
-      setGridDatas3(itemInfo);
-      setGridDatas7(itemInfo);
-      setGridDatas8(itemInfo);
+
+      // 'MANDATORY_YN' 값이 'Y'인 것만 체크된 상태로 설정
+      let filteredData = itemInfo.map((row:any) => ({
+         ...row,
+         _attributes: {
+            checked: row.mandatoryYn === 'Y',
+         },
+        
+      }));
+
+      setGridDatas2(filteredData);
+      setGridDatas3(filteredData);
+      setGridDatas7(filteredData);
+      setGridDatas8(filteredData);
 
       // 사전상담
       let preRcpt = await SO0101_S02({ preRcptNo: result[0].preRcptNo });
@@ -667,10 +783,30 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange('preRcptNo', result[0].preRcptNo);
       onInputChange('pkgYn', result[0].pkgYn);
       onInputChange('dealType', result[0].dealType);
+      onInputChange('payAmt', result[0].payAmt);      
    };
 
    const create = async () => {
-      console.log('create');
+      setInputValues([]);
+      refs.rcptMeth.current.setChoiceByValue('FU0007');
+      refs.rcptUserId.current.setChoiceByValue('');
+      refs.subCode.current.setChoiceByValue('');
+      refs.hsCd.current.setChoiceByValue('');
+      
+      onInputChange('startDate', date(-1, 'month'));
+      onInputChange('endDate', date());
+      onInputChange('startDate2', date(-1, 'month'));
+      onInputChange('endDate2', date());
+      onInputChange('dealType', 'A');     
+
+      setGridDatas1([]);
+      setGridDatas2([]);
+      setGridDatas3([]);
+      setGridDatas4([]);
+      setGridDatas5([]);
+      setGridDatas6([]);
+      setGridDatas7([]);
+      setGridDatas8([]);
    };
 
    const save = async () => {
@@ -680,7 +816,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       gridInstance2.blur();
       
       const data = await getGridValues();
-      console.log(data);
+
       if (data) {
          let result = await SO0201_U05(data);
          if (result) {
@@ -722,11 +858,12 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       return data;
    };
 
+   //---------------------button--------------------------
    //grid 추가버튼 상품정보
    const addGridRow = () => {
       let grid = gridRef2.current.getInstance();
 
-      grid.appendRow({ useYn: "Y", coCd: "100", isNew: true, mandatoryYn: "Y" }, { at: 0 });
+      grid.appendRow({ useYn: "Y", coCd: "100", condType: "FU0011", payDiv: "FU0014", isNew: true, mandatoryYn: "Y" }, { at: 0 });
       grid.focusAt(0, 1, true);
       let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
       grid.check(rowKey);
@@ -780,6 +917,81 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       grid.focusAt(0, 1, true);
    }; 
 
+   // 주문취소
+   const fnCancel = async () => {
+      alertSwal("주문취소", "주문 취소하시겠습니까?", "warning", true).then(async (result) => {
+         if (result.isConfirmed) {
+            let soNo = inputValues.soNo;
+
+            let data = {
+               menuId: activeComp.menuId,
+               insrtUserId: userInfo.usrId,
+               soNo: soNo,
+               div: "CANCEL"
+            };
+
+            if (data) {
+               let result = await SO0201_U06(data);
+               if (result) {
+                  await returnResult(result);
+               }
+            }
+         } else if (result.isDismissed) {
+            return;
+         }
+      });      
+   }; 
+
+   // 주문삭제
+   const fnDel = async () => {
+      alertSwal("주문삭제", "주문 삭제하시겠습니까?", "warning", true).then(async (result) => {
+         if (result.isConfirmed) {
+            let soNo = inputValues.soNo;
+
+            let data = {
+               menuId: activeComp.menuId,
+               insrtUserId: userInfo.usrId,
+               soNo: soNo,
+               div: "DEL"
+            };
+
+            if (data) {
+               let result = await SO0201_U06(data);
+               if (result) {
+                  await returnResult(result);
+               }
+            }
+         } else if (result.isDismissed) {
+            return;
+         }
+      });   
+   }; 
+
+   // 주문확정
+   const fnConfirm = async () => {
+      alertSwal("주문확정", "주문 확정하시겠습니까?", "warning", true).then(async (result) => {
+         if (result.isConfirmed) {
+            let soNo = inputValues.soNo;
+
+            let data = {
+               menuId: activeComp.menuId,
+               insrtUserId: userInfo.usrId,
+               soNo: soNo,
+               div: "CONFIRM"
+            };
+
+            if (data) {
+               let result = await SO0201_U06(data);
+               if (result) {
+                  await returnResult(result);
+               }
+            }
+         } else if (result.isDismissed) {
+            return;
+         }
+      });   
+   }; 
+
    //주문 팝업조회
    const handleCallSearch2 = async () => {
       const param = {    
@@ -799,6 +1011,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          coCd: '100',
          bpNm: searchRef2.current?.value || '999',
          bpDiv: 'ZZ0188',
+         bpType: '999',
       };
       const data = JSON.stringify(param);
       const result = await fetchPost("ZZ_B_PO_BP", { data });
@@ -1069,6 +1282,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          coCd: '100',
          bpNm: target.value || '999',
          bpDiv: 'ZZ0188',
+         bpType: '999',
       };
       const data = JSON.stringify(param);
       const result = await fetchPost("ZZ_B_PO_BP", { data });
@@ -1126,11 +1340,13 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          coCd: '100',
          bpNm: e || '999',
          bpDiv: 'ZZ0188',
+         bpType: '999',
       };
 
       onInputChange('bpNmS', e);
       const data = JSON.stringify(param);
       const result = await fetchPost("ZZ_B_PO_BP", { data });
+
       setGridDatasP2(result);
       
       await setIsOpen2(true);
@@ -1285,6 +1501,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             gridInstance2.setValue(rowKey, 'vatAmt', vatAmt);
          }
       });
+
+      setPayAmt();
    };
 
    //gridRef3 발주가 적용
@@ -1316,7 +1534,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
             // poAmt 계산 (수량 * 단가)
             const poAmt = Math.round(soQty * poPrice); // 반올림하여 소수점 제거
-   
+
             // 각각의 값들을 grid에 업데이트
             gridInstance2.setValue(rowKey, 'soQty', soQty);
             gridInstance2.setValue(rowKey, 'soAmt', soAmt);
@@ -1324,6 +1542,9 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             gridInstance2.setValue(rowKey, 'vatAmt', vatAmt);
             gridInstance2.setValue(rowKey, 'poPrice', poPrice);
             gridInstance2.setValue(rowKey, 'poAmt', poAmt);
+            gridInstance3.setValue(rowKey, 'soAmt', soAmt);
+            gridInstance3.setValue(rowKey, 'netAmt', netAmt);
+            gridInstance3.setValue(rowKey, 'vatAmt', vatAmt);
             gridInstance3.setValue(rowKey, 'poAmt', poAmt);
          }
       });
@@ -1365,6 +1586,25 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange('expDt', formattedValue);
    };
 
+   // 결제대상금액
+  const setPayAmt = () => {
+      // 전체 행의 체크된 행 중에서 COND_TYPE이 'FU0010' 또는 'FU0012'인 항목의 soAmt 합계 계산
+      const gridInstance2 = gridRef2.current.getInstance();
+      const allRows = gridInstance2.getData();
+
+      const totalSoAmt = allRows.reduce((sum: number, row: any) => {
+         const isChecked = gridInstance2.getCheckedRows().some((checkedRow: any) => checkedRow.rowKey === row.rowKey); // 체크 여부 확인
+         const condType = row.condType; // COND_TYPE 값 확인
+
+         if (isChecked && (condType === 'FU0010' || condType === 'FU0012')) {
+            return sum + (row.soAmt || 0);
+         }
+         return sum;
+      }, 0);
+
+      // 합계 금액을 onInputChange로 설정
+      onInputChange('payAmt', totalSoAmt);
+   }
    //-------------------div--------------------------
    //주문 팝업 div
    const modalSearchDiv = () => (
@@ -1897,8 +2137,9 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "순번", name: "soSeq", hidden: true },
       { header: "구분", name: "dealType", hidden: true },
       { header: "CHK", name: "chkYn", hidden: true},
+      { header: "구분", name: "condType", width: 80, align: "center", formatter: "listItemText",  editor: { type: 'select', options: { listItems: inputValues.zzFU0004  } }  },
       { header: "품목코드", name: "itemCd", width: 100, align: "center" },
-      { header: "품목명", name: "itemNm", width: 300 },
+      { header: "품목명", name: "itemNm", width: 250 },
       { header: "품목선택", name: "itemBtn", width: 80, align: "center", formatter: () => {
          return `<button class="bg-blue-500 text-white text-xs  rounded-md px-2 py-1  shadow"}>선택</button>`;
       }},
@@ -1916,8 +2157,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "금액", name: "soAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
       { header: "공급가액", name: "netAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
       { header: "부가세액", name: "vatAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
-      { header: "유/무상", name: "payDiv", width: 120, editor: "text"},
-      { header: "무상사유", name: "reason", editor: "text"},     
+      { header: "유/무상", name: "payDiv", width: 70, align:"center", formatter: "listItemText",  editor: { type: 'select', options: { listItems: inputValues.zzFU0005  } }  },
+      { header: "무상사유", name: "reason", formatter: "listItemText",  editor: { type: 'select', options: { listItems: inputValues.zzFU0006  } }  },     
       { header: "", name: "cfmFlag", hidden: true}, 
       { header: "", name: "poPrice", hidden: true}, 
       { header: "", name: "poAmt", hidden: true}, 
@@ -1980,6 +2221,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "지점명", name: "poBpNm", align : "center", width: 300 },
       { header: "수량", name: "soQty", align:"center", width: 60, editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value)}}},
       { header: "가용재고", name: "invQty", align:"center", width: 80, formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "판매단가", name: "soPrice", hidden: true, align:"right", width: 90, editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
       { header: "발주단가", name: "poPrice", align:"right", width: 90, editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
       { header: "발주금액", name: "poAmt", align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
    ];
@@ -2151,8 +2393,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "금액", name: "soAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
       { header: "공급가액", name: "netAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
       { header: "부가세액", name: "vatAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
-      { header: "유/무상", name: "payDiv", width: 80},
-      { header: "무상사유", name: "reason"},      
+      { header: "유/무상", name: "payDiv", width: 70, align:"center", formatter: "listItemText",  editor: { type: 'select', options: { listItems: inputValues.zzFU0005  } }  },
+      { header: "무상사유", name: "reason", formatter: "listItemText",  editor: { type: 'select', options: { listItems: inputValues.zzFU0006  } }  },      
    ];
 
    const grid8 = () => (
@@ -2171,15 +2413,15 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                </div>
             </div>                 
             <div className="flex p-2 space-x-2">
-               <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+               <button type="button" onClick={fnCancel} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
                   <PlusIcon className="w-5 h-5" />
                   주문취소
                </button>
-               <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+               <button type="button" onClick={fnDel} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
                   <MinusIcon className="w-5 h-5" />
                   주문삭제
                </button>
-               <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+               <button type="button" onClick={fnConfirm} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
                   <MinusIcon className="w-5 h-5" />
                   주문확정
                </button>
