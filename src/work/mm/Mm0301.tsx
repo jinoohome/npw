@@ -137,12 +137,15 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
 
       let grid = gridRef.current.getInstance();
       const focusRow = grid.getFocusedCell().rowKey? grid.getFocusedCell().rowKey : 0;
-      let rowKey = grid.getValue(focusRow, "isNew")? 0 : focusRow; 
-
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey);
       setFocusRow(rowKey);
+
+
     
       const data = await getGridValues();
 
+      console.log(data)
     
       if (data) {
          let result = await MM0301_U01(data);
@@ -167,7 +170,7 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
    // 모든 grid Data 내용을 가져옴
    const getGridValues = async () => {
      // let datas = await getGridDatas(gridRef);
-     let datas = await getGridCheckedDatas(gridRef); 
+     let datas = await getGridDatas(gridRef); 
       if(datas){
          let data = {
             data: JSON.stringify(datas),
@@ -191,13 +194,11 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
    //grid 삭제버튼
    const delMajorGridRow = () => {
       let grid = gridRef.current.getInstance();
-      const { rowKey } = grid.getFocusedCell();
-      grid.removeRow(rowKey, {});
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
 
-      // console.log(rowKey)
-      // if (rowKey > 0) {
-      //    grid.focusAt(rowKey-1, 1, true);
-      // }
+      grid.removeRow(rowKey, {});
+      grid.focusAt(rowIndex, 1, true);
    };
 
    //grid 포커스변경시

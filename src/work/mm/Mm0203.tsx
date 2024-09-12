@@ -90,7 +90,7 @@ const Mm0203 = ({ item, activeComp, userInfo }: Props) => {
 
    const setGridData = async () => {
       try {
-         let cd0004Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0004", div: "999" });
+         let cd0004Data = await ZZ_CODE({ coCd: "999", majorCode: "MA0006", div: "999" });
          if (cd0004Data != null) {
             setCd0004(cd0004Data);
 
@@ -100,7 +100,7 @@ const Mm0203 = ({ item, activeComp, userInfo }: Props) => {
             setCd0004Input(cd0004IntupData);
          }
 
-         let cd0005Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0005", div: "999" });
+         let cd0005Data = await ZZ_CODE({ coCd: "999", majorCode: "MA0007", div: "999" });
          if (cd0005Data != null) {
             setCd0005(cd0005Data);
 
@@ -248,7 +248,7 @@ const Mm0203 = ({ item, activeComp, userInfo }: Props) => {
    const MM0203_S01 = async () => {
       try {
          const param = {
-            coCd: userInfo.coCd,
+            coCd: '200',
             itemNm: searchRef1.current?.value || "999",
             workCd: searchRef2.current?.value || "999",
             itemGrp: searchRef3.current?.value || "999",
@@ -258,6 +258,7 @@ const Mm0203 = ({ item, activeComp, userInfo }: Props) => {
 
          const data = JSON.stringify(param);
          const result = await fetchPost(`MM0203_S01`, { data });
+      
          setGridDatas(result);
          return result;
       } catch (error) {
@@ -287,6 +288,8 @@ const Mm0203 = ({ item, activeComp, userInfo }: Props) => {
 
          const data = JSON.stringify(param);
          const result = await fetchPost(`ZZ_WORKS`, { data });   
+
+         console.log("ZZ_WORKS", result);
 
          let formattedResult = Array.isArray(result)
             ? result.map(({ workCd, workNm, ...rest }) => ({
@@ -342,11 +345,11 @@ const Mm0203 = ({ item, activeComp, userInfo }: Props) => {
    const save = async () => {
       setErrorMsgs({});
       let grid = gridRef.current.getInstance();
-      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
-      let rowIndex = grid.getIndexOfRow(rowKey);
+      let focusedCell = grid.getFocusedCell();
+      let rowKey = focusedCell ? focusedCell.rowKey : 0;
+      let rowIndex = focusedCell ? grid.getIndexOfRow(rowKey) : 0;
       setFocusRow(rowKey); // 저장 후에는 추가Row가 맨마지막으로 이동하므로 rowkey로 지정
 
- 
       const data = await getGridValues();
 
    
@@ -386,7 +389,7 @@ const Mm0203 = ({ item, activeComp, userInfo }: Props) => {
    const addMajorGridRow = () => {
       let grid = gridRef.current.getInstance();
 
-      grid.appendRow({ coCd: userInfo.coCd, itemGrp: "", itemDiv: "", taxYn: "N", pkgItemYn: "N", subsYn: "N", deduYn: "N", useYn: "Y" }, { at: 0 });
+      grid.appendRow({ coCd: '200', workCd :""  ,itemGrp: "", itemDiv: "", taxYn: "N", pkgItemYn: "N", subsYn: "N", deduYn: "N", useYn: "Y" }, { at: 0 });
       grid.getPagination().movePageTo(0);
       grid.focusAt(0, 1, true);
    };
@@ -396,9 +399,9 @@ const Mm0203 = ({ item, activeComp, userInfo }: Props) => {
       let grid = gridRef.current.getInstance();
       let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
       let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
-
+    
       grid.removeRow(rowKey, {});
-      grid.focusAt(rowIndex, 1, true);
+      if(rowIndex > -1) grid.focusAt(rowIndex, 1, true);
    };
 
    const handleFocusChange = async ({ rowKey }: any) => {

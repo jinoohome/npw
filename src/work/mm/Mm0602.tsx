@@ -296,6 +296,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    useEffect(() => {
       if (inputValues.isOpen2) {
          searchBpNmRef.current?.focus();
+         searchBpNmRef.current?.select();
       }
    }, [inputValues.isOpen2]);
 
@@ -554,6 +555,12 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       const result =  await MM0602_S01(e);
       onInputChange("gridDatas5", result);
       onInputChange("isOpen", true);
+
+      setTimeout(() => {
+         searchContNoRef.current?.focus();
+         searchContNoRef.current?.select();
+     }, 100);
+
    }
 
 
@@ -818,7 +825,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       { header: "계약일자", name: "contDt",  width : 120,  align: "center"},
       { header: "시작일", name: "contFrDt",  width : 120,  align: "center"},
       { header: "종료일", name: "contToDt",  width : 120,  align: "center"},
-      { header: "계약종류", name: "contTypeNm",  width : 100,  align: "center"},
+      { header: "계약종류", name: "contTypeNm",   align: "center"},
    ];
 
    const grid5= () => (
@@ -873,6 +880,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
          <div className="grid grid-cols-3 gap-y-2 justify-start ">
             <InputSearchComp title="계약번호" 
                value={inputValues.contNo} 
+               readOnly={true}
                onChange={(e) => onInputChange("contNo", e)}
                onKeyDown={handleContNoOnKeyDown} 
                onIconClick={handleContNoOnIconClick} />
@@ -1075,7 +1083,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
             </div>
             <div>{grid4()}</div>
          </div>
-         <CommonModal isOpen={inputValues.isOpen} size="md" onClose={() => {onInputChange("isOpen", false); contNoRef.current?.focus()}} title="">
+         <CommonModal isOpen={inputValues.isOpen} size="lg" onClose={() => {onInputChange("isOpen", false); contNoRef.current?.focus()}} title="">
             <div>{modalDiv()}</div>
          </CommonModal>
          <CommonModal isOpen={inputValues.isOpen2} size="sm" onClose={() => {onInputChange("isOpen2", false); bpNmRef.current?.focus()}} title="">

@@ -8,7 +8,9 @@ import DatePicker from "tui-date-picker";
 import { on } from "events";
 import { set } from "date-fns";
 import { Input, Label } from "@headlessui/react";
-import ChoicesEditor from "../../util/ChoicesEditor";
+//import ChoicesEditor from "../../util/ReactSelect";
+import ChoicesEditor from "../../util/ReactSelectEditor";
+
 import { ZZ0101_S02_API } from "../../ts/ZZ0101_S02";
 
 interface Props {
@@ -18,7 +20,7 @@ interface Props {
 }
 
 const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
-   const breadcrumbItem = [{ name: "기준정보" }, { name: "계약관리" }, { name: "계약등록" }];
+   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "수주등록" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
        gridDatas1: [],
        gridDatas2: [],
@@ -285,8 +287,11 @@ useEffect(() => {
    //grid 삭제버튼
    const delGridRow = () => {
        let grid = gridRef.current.getInstance();
-       const { rowKey } = grid.getFocusedCell();
+       let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+       let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+ 
        grid.removeRow(rowKey, {});
+       grid.focusAt(rowIndex, 1, true);
    };
 
    const validateData = (action: string, dataString: any) => {
@@ -312,14 +317,15 @@ useEffect(() => {
    };
 
    const search = async () => {
-       const result = await SP0101_S01(inputValues.soNo);
-        
+         const result = await SP0101_S01(inputValues.soNo);
+        SP0101_S02(inputValues.soNo);
 
-       if (result.length == 1) {
-           Object.entries(result[0]).forEach(([key, value]) => {
-               onInputChange(key, value);
-           });
-       }
+    //     console.log(result);
+    //    if (result.length == 1) {
+    //        Object.entries(result[0]).forEach(([key, value]) => {
+    //            onInputChange(key, value);
+    //        });
+    //    }
    };
 
    const save = async () => {
@@ -338,21 +344,20 @@ useEffect(() => {
 
 
         const result = await fetchPost(`SP0101_U03`, data);
-    //    returnResult(result);
+        returnResult(result);
    };
 
    const del = async () => {
-       let datas = await getGridCheckedDatas(gridRef);
-       inputValues.gridDatas4 = datas;
+       let datas = await getGridDatas(gridRef);
+       inputValues.gridDatas1 = datas;
        inputValues.status = 'D';
        let data = {
-           contHdr: JSON.stringify(inputValues),
-           contDtl: JSON.stringify(inputValues.gridDatas4),
-           menuId: activeComp.menuId,
-           insrtUserId: userInfo.usrId,
-       };
-
-       const result = await fetchPost(`MM0602_U03`, data);
+            oilSoHdr: JSON.stringify(inputValues),
+            oilSoDtl: JSON.stringify(inputValues.gridDatas),
+            menuId: activeComp.menuId,
+            insrtUserId: userInfo.usrId,
+    };
+       const result = await fetchPost(`SP0101_U03`, data);
        returnResult(result);
    };
 
@@ -360,7 +365,21 @@ useEffect(() => {
        alertSwal(result.msgText, result.msgCd, result.msgStatus);
        if (result.msgCd === "1") {
            if (inputValues.status === 'D') {
-               // 삭제 처리 후 초기화
+            setInputValues((prevValues) => ({
+                ...prevValues, // 유지해야 할 데이터는 그대로 두고
+                gridDatas1: [], // 초기화할 필드들
+                gridDatas2: [],
+                bpCd: '',
+                soNo: '',
+                reqUserId: '',
+                reqTelNo: '',
+                addrCd1: '',
+                addrCd2: '',
+                remark: '',
+                orderStatus: '',
+                reqDt: '',
+
+            }));
            } else {
                inputValues.contNo = result.contNoOut;
                search();
@@ -413,6 +432,13 @@ useEffect(() => {
        const result = await SP0101_P01(e);
        onInputChange("gridDatas2", result);
        onInputChange("isOpen", true);
+
+       setTimeout(() => {
+            searchSoNoRef.current?.focus();
+            searchSoNoRef.current?.select();
+        }, 100);
+
+     
    }
 
    //-------------------grid----------------------------
@@ -660,7 +686,9 @@ useEffect(() => {
 
                <div>{grid()}</div>
            </div>
-           <CommonModal isOpen={inputValues.isOpen} size="lg" onClose={() => { onInputChange("isOpen", false); contNoRef.current?.focus() }} title="">
+           <CommonModal isOpen={inputValues.isOpen} size="lg" 
+           
+           onClose={() => { onInputChange("isOpen", false); contNoRef.current?.focus() }} title="">
                <div>{modalDiv()}</div>
            </CommonModal>
 

@@ -1,19 +1,19 @@
-import React, { useState } from "react";
-import ReactDOM from "react-dom";
+import React from "react";
+import { createRoot } from "react-dom/client";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import "../css/gridSelectjs.css";
 
 interface SelectOption {
+  text: string;
   value: string;
-  label: string;
 }
 
 interface CustomMUISelectEditorProps {
   columnInfo: {
     editor: {
       options: {
-        listItems: Array<{ text: string; value: string }>;
+        listItems: Array<SelectOption>; // Choices.js와 동일한 구조로 유지
         onChange?: (value: string) => void;
       };
     };
@@ -26,17 +26,16 @@ class CustomMUISelectEditor {
   value: string;
   listItems: Array<SelectOption>;
   onChange?: (value: string) => void;
+  root: any;
 
   constructor(props: CustomMUISelectEditorProps) {
     this.el = document.createElement("div");
     this.el.className = "custom-mui-select-editor";
     const { columnInfo, value } = props;
-    this.listItems = columnInfo.editor.options.listItems.map((item) => ({
-      value: item.value,
-      label: item.text,
-    }));
+    this.listItems = columnInfo.editor.options.listItems;
     this.value = value;
     this.onChange = columnInfo.editor.options.onChange;
+    this.root = null;
   }
 
   getElement(): HTMLElement {
@@ -49,9 +48,8 @@ class CustomMUISelectEditor {
   }
 
   mounted() {
-    // 함수형 컴포넌트 내부에서 상태를 관리
     const MUIAutocompleteComponent = () => {
-      const [selectedOption, setSelectedOption] = useState<SelectOption | null>(
+      const [selectedOption, setSelectedOption] = React.useState<SelectOption | null>(
         this.listItems.find((option) => option.value === this.value) || null
       );
 
@@ -67,10 +65,11 @@ class CustomMUISelectEditor {
 
       return (
         <Autocomplete
+        
           value={selectedOption || null}
           onChange={handleChange}
           options={this.listItems}
-          getOptionLabel={(option) => option.label}
+          getOptionLabel={(option) => option.text} // text와 value 구조 유지
           renderInput={(params) => (
             <TextField
               {...params}
@@ -78,37 +77,43 @@ class CustomMUISelectEditor {
               fullWidth
               InputProps={{
                 ...params.InputProps,
-                style: { height: "100%", padding: 0 }, // 입력창 높이를 그리드 셀에 맞춤
-                endAdornment: null, // X 아이콘을 없앰
+                style: { height: "100%", padding: 0 },
+                endAdornment: null,
               }}
               inputProps={{
                 ...params.inputProps,
-                style: { padding: "0 8px", fontSize: "12px" }, // 입력창 패딩 및 폰트 크기 조정
+                style: { padding: "0 8px", fontSize: "12px" },
               }}
-              
             />
           )}
           autoHighlight
-          openOnFocus // 포커스를 얻었을 때 자동으로 드롭다운 열림
-
-          renderOption={(props, option) => (
-            <li {...props} style={{ fontSize: '12px' }}> {/* 드롭다운 항목 글자 크기 설정 */}
-              {option.label}
-            </li>
-          )}
+          openOnFocus
+          renderOption={(props, option) => {
+            const { key, ...rest } = props; // props에서 key를 제거
+          
+            return (
+              <li key={option.value} {...rest} style={{ fontSize: "12px" }}>
+                {option.text}
+              </li>
+            );
+          }}
         />
       );
     };
 
-    // React 컴포넌트를 DOM에 렌더링
-    ReactDOM.render(<MUIAutocompleteComponent />, this.el);
+    this.root = createRoot(this.el);
+    this.root.render(<MUIAutocompleteComponent />);
   }
 
   beforeDestroy() {
-    if (this.el && this.el.parentNode) {
-      ReactDOM.unmountComponentAtNode(this.el);
+
+    if (this.root) {
+    this.root.unmount(); // Ensure the root is unmounted
+    this.el.remove();    // Remove the element after unmounting
+    this.root = null;
     }
   }
 }
+
 
 export default CustomMUISelectEditor;

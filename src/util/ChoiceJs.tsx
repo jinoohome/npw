@@ -21,9 +21,13 @@ const initChoice = (
       shouldSort: false,
       itemSelectText: "",
       allowHTML: true,
+      searchEnabled: true,
+      
     });
 
     setChoice(newChoices);
+
+   
 
     if (initialChoices && initialChoices.length > 0) {
       newChoices.setChoices(initialChoices, "value", "label", false);

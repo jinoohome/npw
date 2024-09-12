@@ -92,6 +92,14 @@ interface Props2 {
    onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 const SelectComp2 = forwardRef<HTMLSelectElement, Props2>(({ title, target, setChangeGridData, onChange }, ref) => {
+   const handleKeyDown = (event: React.KeyboardEvent<HTMLSelectElement>) => {
+      console.log('Arrow key pressed:', event.key);
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+         event.preventDefault(); // 기본 동작 차단
+         // 검색이나 다른 기능 처리 추가 가능
+      }
+   };
+  
    return (
       <div>
          <label>{title}</label>
@@ -106,6 +114,7 @@ const SelectComp2 = forwardRef<HTMLSelectElement, Props2>(({ title, target, setC
                      onChange(event);
                   }
                }}
+               onKeyDown={handleKeyDown} 
                className="border rounded-md h-3 p-2 w-full focus:outline-orange-300"
             ></select>
          </div>

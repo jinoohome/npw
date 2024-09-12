@@ -5,7 +5,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  
 }
 
 /* Autocomplete 루트 및 주변 요소 */
@@ -21,7 +20,6 @@
   padding: 0;
   display: flex;
   align-items: center;
- 
 }
 
 /* TextField 내부 input 필드 크기 맞춤 */
@@ -29,7 +27,6 @@
 .custom-mui-select-editor .MuiInputBase-input.MuiOutlinedInput-input.MuiAutocomplete-input.MuiAutocomplete-inputFocused {
   height: 100%; /* 입력 필드에 전체 높이를 적용 */
   padding: 0 8px; /* 내부 패딩 최소화 */
-  
 }
 
 /* Autocomplete 메뉴 팝업 높이 및 스크롤 조정 */
@@ -38,26 +35,26 @@
   overflow-y: auto;
 
   /* 스크롤바 스타일을 세련되게 변경 */
-  scrollbar-width: thin; /* Firefox에서 스크롤바 너비 */
-  scrollbar-color: #642e2e transparent; /* Firefox 스크롤바 색상 */
+  scrollbar-width: thin!important; /* Firefox에서 스크롤바 너비 */
+  scrollbar-color: #c0c0c0 transparent!important; /* Firefox 스크롤바 색상 */
 }
 
 /* Chrome, Safari, Edge에서 스크롤바 스타일링 */
 .custom-mui-select-editor .MuiAutocomplete-listbox::-webkit-scrollbar {
-  width: 8px;
+  width: 8px!important; /* 스크롤바 너비 */
 }
 
 .custom-mui-select-editor .MuiAutocomplete-listbox::-webkit-scrollbar-track {
-  background: transparent;
+  background: transparent!important; /* 스크롤바 트랙 배경색 */
 }
 
 .custom-mui-select-editor .MuiAutocomplete-listbox::-webkit-scrollbar-thumb {
-  background-color: #888; /* 스크롤바 색상 */
-  border-radius: 10px; /* 둥근 스크롤바 */
+  background-color: #b3b3b3!important; /* 스크롤바 색상 */
+  border-radius: 10px!important; /* 스크롤바 모서리 둥글게 */
 }
 
 .custom-mui-select-editor .MuiAutocomplete-listbox::-webkit-scrollbar-thumb:hover {
-  background-color: #555; /* 스크롤바 Hover 시 색상 변경 */
+  background-color: #8c8c8c!important; /* 스크롤바 Hover 시 색상 변경 */
 }
 
 /* Autocomplete의 기본 선택 옵션 문구 숨기기 */
