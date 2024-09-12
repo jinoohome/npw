@@ -346,6 +346,7 @@ interface SelectSearchProps {
    minWidth?: string;
    datas?: any[];
    readonly?: boolean; 
+   addData?: any;
  }
  
  // react-select에 맞게 forwardRef를 사용하지 않음.
@@ -364,27 +365,42 @@ interface SelectSearchProps {
    minWidth,
    datas,
    readonly = false, 
+   addData,
  }: SelectSearchProps) => {
    const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
  
    useEffect(() => {
       let isMounted = true; // 컴포넌트가 마운트된 상태인지 추적하는 변수
+
+      const addCustomOption = (items: { value: string; label: string }[]) => {
+         // additionalOption에 value가 999인 값이 있으면 추가
+         if (addData && addData === '999') {
+           return [
+              { value: '999', label: '전체' }, // value가 999인 label 추가
+             ...items,
+           ];
+         }
+         return items;
+       };
     
       // 데이터가 있을 때 옵션 설정
       if (datas && datas.length > 0) {
-        const items = datas.map((item) => ({
+        let items = datas.map((item) => ({
           value: dataKey ? item[dataKey.value] : item.value,
           label: dataKey ? item[dataKey.label] : item.label,
         }));
+        items = addCustomOption(items); 
         setOptions(items);
       } else if (procedure && param && dataKey) {
         getData(procedure, param)
           .then((result) => {
             if (isMounted && Array.isArray(result)) {
-              const items = result.map((item: any) => ({
+              let items = result.map((item: any) => ({
                 value: item[dataKey.value],
                 label: item[dataKey.label],
               }));
+              items = addCustomOption(items);
+              console.log('items:', items);
               setOptions(items);
             }
           })
@@ -396,7 +412,7 @@ interface SelectSearchProps {
       return () => {
         isMounted = false; // cleanup 시점에 마운트 상태를 false로 설정
       };
-    }, [datas, procedure, param, dataKey]);
+    }, [datas, procedure, param, dataKey, addData]);
  
    const getData = async (procedure: string, param: any) => {
      try {
