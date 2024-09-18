@@ -279,7 +279,7 @@ useEffect(() => {
         return alertSwal("사업장을 선택해주세요.", "error", "error");   
 
        let grid = gridRef.current.getInstance();
-       grid.appendRow({ useYn: "Y", coCd: "200",soNo : inputValues.soNo, workStatus : 'MA0001'}, {focus: true} );
+       grid.appendRow({ useYn: "Y", coCd: "200",soNo : inputValues.soNo, workStatus : 'MA0015'}, {focus: true} );
 
        
    };

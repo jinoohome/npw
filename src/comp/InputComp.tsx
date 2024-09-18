@@ -8,6 +8,7 @@ import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { ko } from 'date-fns/locale'; 
 import '../css/datePicker.css';
+import { read } from "fs";
 
 
 
@@ -379,73 +380,74 @@ const InputSearchComp1 = forwardRef<HTMLInputElement, Props3>(({ title, value ='
 });
 
 
-
 interface Props4 {
    title: string;
    value?: string;
    format?: string;
    timePicker?: boolean;
    onChange?: (value: string | null) => void;
+   onClick?: () => void;
    layout?: 'horizontal' | 'vertical' | 'flex';
    target?: string;
    setChangeGridData?: (target: string, value: string) => void;
    minWidth?: string;
    textAlign?: "left" | "center" | "right";
+   readonly?: boolean;
 }
 
 const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
-   ({ title, value = '', format = 'yyyy-MM-dd', timePicker = false,textAlign="right", onChange, layout = 'horizontal', minWidth }, ref) => {
+   ({ title, value = '', format = 'yyyy-MM-dd', timePicker = false, readonly =false, textAlign = "right", onChange, onClick, layout = 'horizontal', minWidth }, ref) => {
        const [selectedDate, setSelectedDate] = useState<Date | null>(value ? new Date(value) : null);
 
        useEffect(() => {
            if (value) {
-            console.log('value', value)
                setSelectedDate(new Date(value));
-           }else{
+           } else {
                setSelectedDate(null);
            }
        }, [value]);
 
        const handleChange = (date: Date | null) => {
-         if (date) {
-             let formattedDate;
-     
-             if (timePicker) {
-                 // 시간까지 포함된 형식으로 변환 (로컬 시간 기준)
-                 const year = date.getFullYear();
-                 const month = (date.getMonth() + 1).toString().padStart(2, '0'); // 월은 0부터 시작하므로 +1 필요
-                 const day = date.getDate().toString().padStart(2, '0');
-                 const hours = date.getHours().toString().padStart(2, '0');
-                 const minutes = date.getMinutes().toString().padStart(2, '0');
-     
-                 formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
-             } else {
-                 // 날짜만 처리 (로컬 시간 기준)
-                 const year = date.getFullYear();
-                 const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                 const day = date.getDate().toString().padStart(2, '0');
-     
-                 formattedDate = `${year}-${month}-${day}`;
-             }
-     
-             setSelectedDate(date);
-             console.log('date', date);
-             console.log('formattedDate', formattedDate);
-     
-             if (onChange) {
-                 onChange(formattedDate);
-             }
-         } else if (onChange) {
-             setSelectedDate(null);
-             onChange(null); // 날짜가 선택되지 않은 경우 null 전달
-         }
-     };
-     
+           if (date) {
+               let formattedDate;
+
+               if (timePicker) {
+                   const year = date.getFullYear();
+                   const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                   const day = date.getDate().toString().padStart(2, '0');
+                   const hours = date.getHours().toString().padStart(2, '0');
+                   const minutes = date.getMinutes().toString().padStart(2, '0');
+
+                   formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+               } else {
+                   const year = date.getFullYear();
+                   const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                   const day = date.getDate().toString().padStart(2, '0');
+
+                   formattedDate = `${year}-${month}-${day}`;
+               }
+
+               setSelectedDate(date);
+
+               if (onChange) {
+                   onChange(formattedDate);
+               }
+           } else if (onChange) {
+               setSelectedDate(null);
+               onChange(null);
+           }
+       };
+
+       const handleClick = () => {
+           if (onClick) {
+               onClick(); // onClick 함수가 전달되면 실행
+           }
+       };
 
        return (
            <div
                className={` ${layout === 'horizontal' ? 'grid grid-cols-3 gap-3 items-center' : ''} ${
-                   layout === 'flex' ? 'flex items-center space-x-2' : ''
+                   layout === 'flex' ? 'flexbg-gray-100 items-center space-x-2' : ''
                }`}
            >
                <label
@@ -463,18 +465,20 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
                        <ReactDatePicker
                            selected={selectedDate}
                            onChange={handleChange}
+                           onInputClick={handleClick}
                            dateFormat={format}
                            showTimeSelect={timePicker}
                            timeFormat="p"
+                           readOnly = {readonly}
                            timeIntervals={30}
                            locale={ko}
-                           className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
+                           className={`border rounded-md h-8 p-2 w-full focus:outline-orange-300
+                                       ${readonly ? "bg-gray-100" : ""}
+                                    `}
                            wrapperClassName="w-full z-50"
                            popperClassName="custom-datepicker-popper"  
                            showIcon
-                     
                        />
-                        
                    </div>
                </div>
            </div>

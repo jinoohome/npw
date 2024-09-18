@@ -93,7 +93,7 @@ interface Props2 {
 }
 const SelectComp2 = forwardRef<HTMLSelectElement, Props2>(({ title, target, setChangeGridData, onChange }, ref) => {
    const handleKeyDown = (event: React.KeyboardEvent<HTMLSelectElement>) => {
-      console.log('Arrow key pressed:', event.key);
+      
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
          event.preventDefault(); // 기본 동작 차단
          // 검색이나 다른 기능 처리 추가 가능
@@ -336,6 +336,7 @@ interface SelectSearchProps {
    value?: string; // 초기 선택 값
    handleCallSearch?: () => void;
    onChange?: (label: string, value: string) => void;
+   onClick?: () => void;
    procedure?: string;
    param?: any;
    dataKey?: { value: string; label: string };
@@ -355,6 +356,7 @@ interface SelectSearchProps {
    value,
    handleCallSearch,
    onChange,
+   onClick,
    procedure,
    param,
    dataKey,
@@ -400,7 +402,7 @@ interface SelectSearchProps {
                 label: item[dataKey.label],
               }));
               items = addCustomOption(items);
-              console.log('items:', items);
+              
               setOptions(items);
             }
           })
@@ -427,6 +429,12 @@ interface SelectSearchProps {
      } catch (error) {
        console.error(`${procedure}:`, error);
        throw error;
+     }
+   };
+
+   const handleClick = () => {
+      if (onClick) {
+         onClick(); // onClick 함수가 전달되면 실행
      }
    };
  
@@ -466,6 +474,7 @@ interface SelectSearchProps {
          <Select
            value={options.find((option) => option.value === value) || null}
            onChange={handleChange}
+           onMenuOpen={handleClick}
            options={options}
            classNamePrefix="react-select"
            className=" focus:outline-orange-300"

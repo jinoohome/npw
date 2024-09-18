@@ -18,8 +18,8 @@ interface Props {
    userInfo: any;
 }
 
-const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
-   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "발주등록" }];
+const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
+   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "발주확인" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
       gridDatas2: [],
@@ -33,9 +33,12 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       hsTypeDatas: [],
       zzWorks: [],
       zzPoBps: [],
+      zzMA0001: [],
       zzMA0004: [],
       zzMA0005: [],
       zzItmes: [],
+      focusKey: 0,
+      searchWorkStatus :'MA0016'
    });
 
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
@@ -48,6 +51,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const gridRef3 = useRef<any>(null);
    const gridContainerRef3 = useRef(null);
+   
 
 
    const bpNmRef = useRef<HTMLInputElement>(null);
@@ -66,6 +70,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
          ZZ_WORKS();
          ZZ_B_PO_BP();
          ZZ_CODE("MA0004");
+         ZZ_CODE("MA0005");
          ZZ_ITEMS();
       } catch (error) {
          console.error("setGridData Error:", error);
@@ -101,18 +106,20 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       return result;
    };
 
-   const SP0103_P01 = async (soNo: string) => {
+   const SP0105_S01 = async (soNo: string) => {
       const param = {
          soNo: soNo || "999",
          bpNm: inputValues.searchBpNm || "999",
          startDt: inputValues.startDt || "999",
          endDt: inputValues.endDt || "999",
          poBpNm: inputValues.searchPoBpNm || "999",
+         poBpCd: userInfo.coCd,
          workNm: inputValues.searchWorkNm || "999",
+         workStatus: inputValues.searchWorkStatus ,
       };
 
       const data = JSON.stringify(param);
-      const result = await fetchPost("SP0103_P01", { data });
+      const result = await fetchPost("SP0105_S01", { data });
 
       
       return result;
@@ -196,12 +203,20 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
       const result = await fetchPost("ZZ_CODE", param);
 
-      const formattedResult = result.map((item: any) => ({
+      let formattedResult = result.map((item: any) => ({
          value: item.code,
          text: item.codeName,
+         label : item.codeName,
       }));
 
       if (majorCode === "MA0004") onInputChange("zzMA0004", formattedResult);
+      if (majorCode === "MA0005"){
+         formattedResult = formattedResult.filter(
+            (item: any) => item.value !== "MA0015" 
+        ); 
+      onInputChange("zzMA0005", formattedResult);
+      
+      }
 
       return formattedResult;
    };
@@ -242,7 +257,15 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       reSizeGrid({ ref: gridRef, containerRef: gridContainerRef, sec: 200 });
       reSizeGrid({ ref: gridRef2, containerRef: gridContainerRef2, sec: 200 });
       reSizeGrid({ ref: gridRef3, containerRef: gridContainerRef3, sec: 200 });
+
+      handleSoNoOnIconClick('999')
+      
    }, []);
+
+   useEffect(() => {
+        search();
+    }, [inputValues.searchWorkStatus]);
+    
 
    useEffect(() => {
       if (gridRef.current && inputValues.gridDatas1) {
@@ -260,6 +283,9 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
          let grid = gridRef2.current.getInstance();
 
          grid.resetData(inputValues.gridDatas2);
+         if (inputValues.gridDatas2.length > 0) {
+            grid.focusAt(inputValues.focusKey, 0, true);
+         }
 
          refreshGrid(gridRef2);
       }
@@ -347,21 +373,9 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const search = async () => {
-      if (!inputValues.soNo) {
-         alertSwal("수주번호를 입력해주세요.", "", "warning");
-         return;
-      }
 
-      const result = await SP0103_S01(inputValues.soNo, inputValues.soSeq);
-      SP0103_S02(inputValues.soNo, inputValues.soSeq);
-
-      if (result) {
-         Object.entries(result[0]).forEach(([key, value]) => {
-            onInputChange(key, value);
-         });
-
-         onInputChange("isOpen", false);
-      }
+      const result = await SP0105_S01(inputValues.searchSoNo);
+      onInputChange("gridDatas2", result);
    };
 
    const save = async () => {
@@ -375,10 +389,10 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       inputValues.gridDatas = datas;
       inputValues.soNo ? (inputValues.status = "U") : (inputValues.status = "I");
 
-      if(inputValues.cfmFlag === "Y") {
-         inputValues.workStatus = "MA0016"
+      if(inputValues.workReqDt) {
+         inputValues.workStatus = "MA0017"
       } else {
-         inputValues.workStatus = "MA0015"
+         inputValues.workStatus = "MA0016"
       }
       
 
@@ -437,7 +451,22 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
             onInputChange(key, value);
          });
 
-         onInputChange("isOpen", false);
+        
+      }
+   };
+   const handleFocusChange = async (e: any) => {
+      const gridInstance = gridRef2.current.getInstance();
+      const rowData = gridInstance.getRow(e.rowKey);
+      onInputChange("soSeq", rowData.soSeq);
+      SP0103_S02(rowData.soNo, rowData.soSeq);
+
+      if (rowData) {
+         Object.entries(rowData).forEach(([key, value]) => {
+            
+            onInputChange(key, value);
+         });
+
+        
       }
    };
 
@@ -549,63 +578,62 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const handleGridChange = (ev: any) => {
-      const { columnName, rowKey, value } = ev.changes[0];
-      const gridInstance = gridRef.current.getInstance();
-      const rowData = gridInstance.getRow(rowKey);
+      if (ev.changes && ev.changes.length > 0) {
+          const { columnName, rowKey, value } = ev.changes[0];
+          const gridInstance = gridRef.current.getInstance();
+          const rowData = gridInstance.getRow(rowKey);
   
-     
-      if (columnName === "soPrice" ) {
-          const qty = rowData.qty ;
-          const soPrice = rowData.soPrice;  
-          const soAmt = qty * soPrice;
-          const soNetAmt = soAmt / 1.1;
-          const soVatAmt = soAmt - soNetAmt;
-
-         
-          gridInstance.setValue(rowKey, "soAmt", Math.round(soAmt));
-          gridInstance.setValue(rowKey, "soNetAmt", Math.round(soNetAmt));
-          gridInstance.setValue(rowKey, "soVatAmt",Math.round(soVatAmt));
+          if (columnName === "soPrice" ) {
+              const qty = rowData.qty ;
+              const soPrice = rowData.soPrice;  
+              const soAmt = qty * soPrice;
+              const soNetAmt = soAmt / 1.1;
+              const soVatAmt = soAmt - soNetAmt;
+  
+              gridInstance.setValue(rowKey, "soAmt", Math.round(soAmt));
+              gridInstance.setValue(rowKey, "soNetAmt", Math.round(soNetAmt));
+              gridInstance.setValue(rowKey, "soVatAmt", Math.round(soVatAmt));
+          }
+  
+          if (columnName === "poPrice" ) {
+              const qty = rowData.qty;
+              const poPrice = rowData.poPrice; 
+              const poAmt = qty * poPrice;
+              const poNetAmt = poAmt / 1.1;
+              const poVatAmt = poAmt - poNetAmt;
+  
+              gridInstance.setValue(rowKey, "poAmt", Math.round(poAmt));
+              gridInstance.setValue(rowKey, "poNetAmt", Math.round(poNetAmt));
+              gridInstance.setValue(rowKey, "poVatAmt", Math.round(poVatAmt));
+          }
+  
+          if (columnName === "qty" ) {
+              const qty = rowData.qty;
+  
+              const soPrice = rowData.soPrice;  
+              const soAmt = qty * soPrice;
+              const soNetAmt = soAmt / 1.1;
+              const soVatAmt = soAmt - soNetAmt;
+  
+              gridInstance.setValue(rowKey, "soAmt", Math.round(soAmt));
+              gridInstance.setValue(rowKey, "soNetAmt", Math.round(soNetAmt));
+              gridInstance.setValue(rowKey, "soVatAmt", Math.round(soVatAmt));
+  
+              const poPrice = rowData.poPrice; 
+              const poAmt = qty * poPrice;
+              const poNetAmt = poAmt / 1.1;
+              const poVatAmt = poAmt - poNetAmt;
+  
+              gridInstance.setValue(rowKey, "poAmt", Math.round(poAmt));
+              gridInstance.setValue(rowKey, "poNetAmt", Math.round(poNetAmt));
+              gridInstance.setValue(rowKey, "poVatAmt", Math.round(poVatAmt));
+          }
       }
-  
-    
-      if (columnName === "poPrice" ) {
-          const qty = rowData.qty;
-          const poPrice = rowData.poPrice; 
-          const poAmt = qty * poPrice;
-          const poNetAmt = poAmt / 1.1;
-          const poVatAmt = poAmt - poNetAmt;
-
-  
-          gridInstance.setValue(rowKey, "poAmt", Math.round(poAmt));
-          gridInstance.setValue(rowKey, "poNetAmt", Math.round(poNetAmt));
-          gridInstance.setValue(rowKey, "poVatAmt", Math.round(poVatAmt));
-      }
-
-      if (columnName === "qty" ) {
-         const qty = rowData.qty;
-
-         const soPrice = rowData.soPrice;  
-         const soAmt = qty * soPrice;
-         const soNetAmt = soAmt / 1.1;
-         const soVatAmt = soAmt - soNetAmt;
- 
-         gridInstance.setValue(rowKey, "soAmt", Math.round(soAmt));
-         gridInstance.setValue(rowKey, "soNetAmt", Math.round(soNetAmt));
-         gridInstance.setValue(rowKey, "soVatAmt", Math.round(soVatAmt));
-
-         const poPrice = rowData.poPrice; 
-         const poAmt = qty * poPrice;
-         const poNetAmt = poAmt / 1.1;
-         const poVatAmt = poAmt - poNetAmt;
- 
-         gridInstance.setValue(rowKey, "poAmt", Math.round(poAmt));
-         gridInstance.setValue(rowKey, "poNetAmt", Math.round(poNetAmt));
-         gridInstance.setValue(rowKey, "poVatAmt", Math.round(poVatAmt));
-     }
   };
+  
 
-   const searchModalDiv = async () => {
-      const result = await SP0103_P01(inputValues.searchSoNo);
+   const searchModalDiv =  () => {
+      const result =  SP0105_S01(inputValues.searchSoNo);
       onInputChange("gridDatas2", result);
    };
    const searchModalDiv2 = async () => {
@@ -639,15 +667,11 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const handleSoNoOnIconClick = async (e: any) => {
-      onInputChange("searchSoNo", e);
-      const result = await SP0103_P01(e);
+     
+      const result = await SP0105_S01(e);
       onInputChange("gridDatas2", result);
-      onInputChange("isOpen", true);
+    
 
-      setTimeout(() => {
-         searchSoNoRef.current?.focus();
-         searchSoNoRef.current?.select();
-      }, 100);
    };
 
    //-------------------grid----------------------------
@@ -656,8 +680,8 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
     { header: "수주번호", name: "soNo", width: 100, align: "center", hidden: true  },
     { header: "수주 순번", name: "soSeq", width: 80, align: "center", hidden: true  }, 
     { header: "품목 순번", name: "itemSeq", width: 100, align: "center", hidden: true  }, 
-    { header: "품목코드", name: "itemCd", width: 120, align: "center" }, 
-    { header: "품목명", name: "itemNm", width: 250}, 
+    { header: "품목코드", name: "itemCd", width: 100, align: "center" }, 
+    { header: "품목명", name: "itemNm", width: 200}, 
     { header: "품목그룹", name: "itemGrp", width: 120, align: "center", hidden: true }, 
     { header: "퓸목구분", name: "itemDiv", width: 120, align: "center", hidden: true },
     { header: "작업코드", name: "workCd", width: 250, align: "center", hidden: true  }, 
@@ -666,36 +690,36 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
        formatter: function (e: any) { return commas(e.value);},
     }, // QTY: 수량
     {
-       header: "판매단가", name: "soPrice", width: 100, align: "right", editor: "text",
+       header: "판매단가", name: "soPrice", width: 100, align: "right", editor: "text", hidden: true,
        formatter: function (e: any) { return commas(e.value); },
     }, // SO_PRICE: 수주 가격
     {
-       header: "금액", name: "soAmt", width: 120, align: "right", 
+       header: "금액", name: "soAmt", width: 120, align: "right", hidden: true,
        formatter: function (e: any) { return commas(e.value); },
     }, // SO_AMT: 수주 금액
     {
-       header: "공급가액", name: "soNetAmt", width: 120, align: "right",
+       header: "공급가액", name: "soNetAmt", width: 120, align: "right", hidden: true,
        formatter: function (e: any) {  return commas(e.value); },
        
     }, // SO_NET_AMT: 수주 순 금액
     {
-       header: "부가세", name: "soVatAmt", width: 120, align: "right", 
+       header: "부가세", name: "soVatAmt", width: 120, align: "right", hidden: true,
        formatter: function (e: any) { return commas(e.value); },
     }, // SO_VAT_AMT: 수주 부가세
     {
-       header: "발주단가", name: "poPrice", width: 100, align: "right", editor: "text",
+       header: "단가", name: "poPrice", width: 80, align: "right", editor: "text",
        formatter: function (e: any) {  return commas(e.value); },
     }, // PO_PRICE: 발주 가격
     {
-       header: "발주금액", name: "poAmt", width: 120, align: "right", 
+       header: "금액", name: "poAmt", width: 80, align: "right", 
        formatter: function (e: any) {  return commas(e.value); },
     }, // PO_AMT: 발주 금액
     {
-       header: "공급금액", name: "poNetAmt", width: 120, align: "right",
+       header: "공급금액", name: "poNetAmt", width: 100, align: "right",
        formatter: function (e: any) {  return commas(e.value); },
     }, // PO_NET_AMT: 발주 순 금액
     {
-       header: "부가세", name: "poVatAmt", width: 120, align: "right", 
+       header: "부가세", name: "poVatAmt", width: 100, align: "right", 
        formatter: function (e: any) {  return commas(e.value);  },
     }, // PO_VAT_AMT: 발주 부가세
    { header: "비고", name: "remark", editor: "text", width: 250 }, // REMARK: 비고
@@ -711,7 +735,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                <div className="min-w-[100px]">품목리스트</div>
             </div>
             <div className="flex items-center justify-end w-full">
-               <div className="flex pt-2 space-x-2">
+               {/* <div className="flex pt-2 space-x-2">
                   <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
                      <PlusIcon className="w-5 h-5" />
                      추가
@@ -720,31 +744,33 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                      <MinusIcon className="w-5 h-5" />
                      삭제
                   </button>
-               </div>
+               </div> */}
             </div>
          </div>
 
          <TuiGrid01 gridRef={gridRef} columns={columns} headerHeight={30} 
             handleFocusChange={() => {}} handleAfterChange={handleGridChange} 
-            perPageYn={false} height={window.innerHeight-550} />
+            perPageYn={false} height={window.innerHeight-650} />
       </div>
    );
 
    const columns2 = [
       { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
-      { header: "수주번호", name: "soNo", width: 120, align: "center", rowSpan: false }, // SO_NO: 수주 번호
+      { header: "수주번호", name: "soNo", width: 120, align: "center", rowSpan: false,  hidden: true  }, // SO_NO: 수주 번호
       { header: "구분번호", name: "soSeq", width: 120, align: "center", hidden: true }, // SO_NO: 수주 번호
-      { header: "사업장", name: "bpNm", width: 300, rowSpan: false }, 
+      { header: "사업장", name: "bpNm", width: 150, rowSpan: false }, 
       { header: "사업장", name: "bpCd", width: 300,   hidden: true }, 
       { header: "작업명", name: "workCd", width: 250,  hidden: true }, 
-      { header: "작업명", name: "workNm", width: 250 }, 
+      { header: "작업명", name: "workNm", width: 100 }, 
       { header: "협력업체", name: "poBpCd", width: 300,  hidden: true }, 
-      { header: "협력업체", name: "poBpNm", width: 300 }, 
-      { header: "신청일자", name: "orderDt", width: 120, align: "center" }, // ORDER_DT: 수주 일자
+      { header: "협력업체", name: "poBpNm", width: 100 }, 
+      { header: "신청일자", name: "orderDt", width: 120, align: "center",  hidden: true }, // ORDER_DT: 수주 일자
       { header: "요청일자", name: "reqDt", width: 120, align: "center" }, // REQ_DT: 요청 일자
       { header: "수주상태", name: "orderStatus", width: 100, align: "center", hidden: true }, // 
-      { header: "진행상태", name: "orderStatusNm", width: 100, align: "center" }, // 
+      { header: "진행상태", name: "workStatus", width: 100, align: "center", hidden: true }, // 
+      { header: "진행상태", name: "workStatusNm", width: 100, align: "center",  }, // 
       { header: "설치희망일", name: "hopeDt", width: 100, align: "center",  hidden: true }, // 
+      { header: "설치요청일", name: "workReqDt", width: 100, align: "center",  hidden: true }, // 
       { header: "설치예정일", name: "expectDt", width: 100, align: "center",  hidden: true }, //
       { header: "설치완료일", name: "finishDt", width: 100, align: "center", hidden: true }, // 
       { header: "수량", name: "qty", width: 100, align: "center",  hidden: true }, // 
@@ -757,7 +783,18 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const grid2 = () => (
       <div className="border rounded-md p-2 space-y-2 w-full">
-         <TuiGrid01 gridRef={gridRef2} columns={columns2} headerHeight={30} handleFocusChange={() => {}} handleDblClick={handleDblClick} perPageYn={false} height={window.innerHeight - 640} />
+           <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center space-x-1 text-orange-500 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="min-w-[100px]">발주리스트</div>
+            </div>
+     
+         </div>
+
+         <TuiGrid01 gridRef={gridRef2} columns={columns2} headerHeight={30} handleFocusChange={handleFocusChange} 
+         handleDblClick={handleDblClick} perPageYn={false} height={window.innerHeight - 410} />
       </div>
    );
 
@@ -801,10 +838,10 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const buttonDiv = () => (
       <div className="flex justify-end space-x-2">
-         <button type="button" onClick={del} className="bg-rose-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+         {/* <button type="button" onClick={del} className="bg-rose-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
             <TrashIcon className="w-5 h-5 mr-1" />
             삭제
-         </button>
+         </button> */}
          <button type="button" onClick={search} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
             <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
             조회
@@ -818,35 +855,45 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const div1 = () => (
       <div className="bg-gray-100 rounded-lg p-3 search text-sm search h-full">
-         <div className="space-y-2 w-[70%]">
-            <div className="grid grid-cols-4 gap-y-2 justify-start ">
-               <InputSearchComp title="수주번호" value={inputValues.soNo} readOnly={true} onChange={(e) => onInputChange("soNo", e)} onKeyDown={handleSoNoOnKeyDown} onIconClick={handleSoNoOnIconClick} />
-
-               
+         <div className="space-y-2 ">
+            <div className="grid grid-cols-3 gap-y-2 justify-start ">
+               <InputComp title="수주번호" value={inputValues.soNo} readOnly={true} onChange={(e) => onInputChange("soNo", e)} />
 
                <SelectSearch
                   title="진행상태"
-                  value={inputValues.orderStatus}
+                  value={inputValues.workStatus}
                   onChange={(label, value) => {
-                     onInputChange("orderStatus", value);
+                     onInputChange("workStatus", value);
                   }}
-                  param={{ coCd: "999", majorCode: "MA0001", div: "" }}
+                  param={{ coCd: "999", majorCode: "MA0005", div: "" }}
                   procedure="ZZ_CODE"
                   dataKey={{ label: "codeName", value: "code" }}
                   readonly={true}
                />
 
-            
-
                <DatePickerComp
                   title="신청일자"
                   value={inputValues.reqDt}
                   onChange={(e) => {onInputChange("reqDt", e); }}
+                  readonly={true}
                  
                />
 
                <SelectSearch
-                  title="사업장"
+                  title="협력업체"
+                  value={inputValues.poBpCd}
+                  onChange={(label, value) => {
+                     onInputChange("poBpCd", value);
+                  }}
+                  stringify={true}
+                  param={{ coCd: "200", bpType: "ZZ0003", bpNm: "999", bpDiv: "999" }}
+                  procedure="ZZ_B_PO_BP"
+                  dataKey={{ label: "bpNm", value: "bpCd" }}
+                  readonly={true}
+               />
+
+               <SelectSearch
+                  title="지점명"
                   value={inputValues.bpCd}
                   onChange={(label, value) => {
                      onInputChange("bpCd", value);
@@ -855,6 +902,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                   param={{ coCd: "200", bpType: "ZZ0002", bpNm: "999", bpDiv: "999" }}
                   procedure="ZZ_B_PO_BP"
                   dataKey={{ label: "bpNm", value: "bpCd" }}
+                  readonly={true}
                />
                <SelectSearch
                   title="작업명"
@@ -866,54 +914,11 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                   param={{ coCd: "200" }}
                   procedure="ZZ_WORKS"
                   dataKey={{ label: "workNm", value: "workCd" }}
-               />
-               <SelectSearch
-                  title="협력업체"
-                  value={inputValues.poBpCd}
-                  onChange={(label, value) => {
-                     onInputChange("poBpCd", value);
-                  }}
-                  stringify={true}
-                  param={{ coCd: "200", bpType: "ZZ0003", bpNm: "999", bpDiv: "999" }}
-                  procedure="ZZ_B_PO_BP"
-                  dataKey={{ label: "bpNm", value: "bpCd" }}
-               />
-
-               <DatePickerComp
-                  title="설치희망일"
-                  value={inputValues.hopeDt}
-                  onChange={(e) => {
-                     onInputChange("hopeDt", e);
-                  }}
-               />
-
-               <DatePickerComp
-                  title="설치요청일"
-                  value={inputValues.workReqDt}
-                  onChange={(e) => {
-                     onInputChange("workReqDt", e);
-                  }}
-               />
-
-               
-               <DatePickerComp
-                  title="설치예정일"
-                  value={inputValues.expectDt}
-                  onChange={(e) => {
-                     onInputChange("expectDt", e);
-                  }}
-               />
-
-               <DatePickerComp
-                  title="설치완료일"
-                  value={inputValues.finishDt}
-                  onChange={(e) => {
-                     onInputChange("finishDt", e);
-                  }}
+                  readonly={true}
                />
 
                <InputComp title="수량" value={inputValues.qty} 
-                          type="number"
+                          type="number"  readOnly={true}
                onChange={(e) => onInputChange("qty", e)} />
 
                <SelectSearch
@@ -925,59 +930,122 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                   param={{ coCd: "999", majorCode: "MA0004", div: "" }}
                   procedure="ZZ_CODE"
                   dataKey={{ label: "codeName", value: "code" }}
+                  readonly={true}
                />
-            </div>
-            <div className="flex justify-between w-full">
-               <div className="w-5/6">
-                  <TextArea title="비고" value={inputValues.remarkDtl} onChange={(e) => onInputChange("remarkDtl", e)} layout="flex" minWidth="90px" />
-               </div>
 
-               <div className="self-end">
-                  <Checkbox title="발주확정" 
-                  layout="flex"
-                  value={inputValues.cfmFlag} 
-                  onChange={(e) => onInputChange("cfmFlag", e)} />
-               </div>
+          
+            </div>
+
+             
+            <div className="grid grid-cols-1 w-full justify-start">
+               <TextArea title="비고" value={inputValues.remarkDtl}  readonly={true}
+               onChange={(e) => onInputChange("remarkDtl", e)} layout="flex" minWidth="100px"
+            
+               />
+           
+            </div>
+
+            <div className="grid grid-cols-3 gap-y-2 justify-start">
+               <DatePickerComp
+                  title="설치예정일"
+                  value={inputValues.expectDt}
+                  onChange={(e) => {
+                     onInputChange("expectDt", e);
+                  }}
+               />
+               <DatePickerComp
+                  title="설치요청일"
+                  value={inputValues.workReqDt}
+                  readonly={true}
+                  onChange={(e) => {
+                     onInputChange("workReqDt", e);
+                  }}
+               />
+
+                   {/* <DatePickerComp
+                  title="설치희망일"
+                  value={inputValues.hopeDt}
+                  onChange={(e) => {
+                     onInputChange("hopeDt", e);
+                  }}
+               /> */}
+
+               
+               {/* 
+               <DatePickerComp
+                  title="설치완료일"
+                  value={inputValues.finishDt}
+                  onChange={(e) => {
+                     onInputChange("finishDt", e);
+                  }}
+               /> */}
             </div>
          </div>
       </div>
    );
 
-   const modalDiv = () => (
-      <div className="space-y-3">
-         <div className="bg-gray-100 rounded-lg p-3 search text-sm search h-full">
-            <div className="w-full flex justify-between">
-               <div className="grid grid-cols-3 gap-y-2  justify-start ">
-                  <InputComp title="수주번호" ref={searchSoNoRef} value={inputValues.searchSoNo} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchSoNo", e)} />
-
-                  <InputComp title="고객사" ref={searchBpNmRef} value={inputValues.searchBpNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchBpNm", e)} />
-                 
-                  <InputComp title="협력업체" value={inputValues.searchPoBpNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchPoBpNm", e)} />
+     //검색창 div
+     const searchDiv = () => (
+      <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
+         <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
+            <InputComp title="수주번호" ref={searchSoNoRef} value={inputValues.searchSoNo} handleCallSearch={search}  onChange={(e) => onInputChange("searchSoNo", e)} />
+            <InputComp title="사업장" ref={searchBpNmRef} value={inputValues.searchBpNm}   handleCallSearch={search} onChange={(e) => onInputChange("searchBpNm", e)} />
+            <InputComp title="작업명" value={inputValues.searchWorkNm}  handleCallSearch={search} onChange={(e) => onInputChange("searchWorkNm", e)} />
+            
+            <SelectSearch
+                  title="진행상태"
+                  value={inputValues.searchWorkStatus}
+                  onChange={(label, value) => {
+                     onInputChange("searchWorkStatus", value);
+                  }}
+                
+                  datas={inputValues.zzMA0005}
                   
-                  <InputComp title="작업명" value={inputValues.searchWorkNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchWorkNm", e)} />
-
-                  <DateRangePickerComp
-                     title="신청기간"
-                     startValue={inputValues.startDt}
-                     endValue={inputValues.endDt}
-                     handleCallSearch={searchModalDiv}
-                     onChange={(startDate, endDate) => {
-                        onInputChange("startDt", startDate);
-                        onInputChange("endDt", endDate);
-                     }}
-                  />
-               </div>
-               <div className="w-[20%] flex justify-end h-8">
-                  <button type="button" onClick={searchModalDiv} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
-                     <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
-                     조회
-                  </button>
-               </div>
-            </div>
+               />
+            
+            {userInfo.coCd === '999' && (
+               <InputComp title="협력업체" value={inputValues.searchPoBpNm}  handleCallSearch={search} onChange={(e) => onInputChange("searchPoBpNm", e)} />
+            )}
+          
          </div>
-         <div>{grid2()}</div>
       </div>
    );
+
+   // const modalDiv = () => (
+   //    <div className="space-y-3">
+   //       <div className="bg-gray-100 rounded-lg p-3 search text-sm search h-full">
+   //          <div className="w-full flex justify-between">
+   //             <div className="grid grid-cols-3 gap-y-2  justify-start ">
+   //                <InputComp title="수주번호" ref={searchSoNoRef} value={inputValues.searchSoNo} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchSoNo", e)} />
+
+   //                <InputComp title="고객사" ref={searchBpNmRef} value={inputValues.searchBpNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchBpNm", e)} />
+                 
+   //                <InputComp title="협력업체" value={inputValues.searchPoBpNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchPoBpNm", e)} />
+                  
+   //                <InputComp title="작업명" value={inputValues.searchWorkNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchWorkNm", e)} />
+
+   //                <DateRangePickerComp
+   //                   title="신청기간"
+   //                   startValue={inputValues.startDt}
+   //                   endValue={inputValues.endDt}
+   //                   handleCallSearch={searchModalDiv}
+   //                   onChange={(startDate, endDate) => {
+   //                      onInputChange("startDt", startDate);
+   //                      onInputChange("endDt", endDate);
+   //                   }}
+   //                />
+   //             </div>
+   //             <div className="w-[20%] flex justify-end h-8">
+   //                <button type="button" onClick={searchModalDiv} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+   //                   <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
+   //                   조회
+   //                </button>
+   //             </div>
+   //          </div>
+   //       </div>
+   //       <div>{grid2()}</div>
+   //    </div>
+   // );
    const modalDiv2 = () => (
       <div className="space-y-3">
          <div className="bg-gray-100 rounded-lg p-3 search text-sm search h-full">
@@ -1009,18 +1077,23 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                <Breadcrumb items={breadcrumbItem} />
                {buttonDiv()}
             </div>
-            <div className="flex space-x-3">
-               <div className="w-full">{div1()}</div>
+            <div>{searchDiv()}</div>
+            <div className="flex space-x-2">
+               <div className="w-2/5 ">
+                  <div>{grid2()}</div>
+               </div>
+               <div className="w-3/5 space-y-2">
+                  <div className="flex space-x-3">
+                     <div className="w-full">{div1()}</div>
+                  </div>
+
+                  <div>{grid()}</div>
+
+               </div>
             </div>
 
-            <div>{grid()}</div>
          </div>
-         <CommonModal
-            isOpen={inputValues.isOpen} size="xl" 
-            onClose={() => { onInputChange("isOpen", false); contNoRef.current?.focus(); }} 
-            title="" >
-            <div>{modalDiv()}</div>
-         </CommonModal>
+     
          <CommonModal
             isOpen={inputValues.isOpen2} size="xl" 
             onClose={() => { onInputChange("isOpen2", false); ; }} 
@@ -1031,4 +1104,4 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    );
 };
 
-export default Sp0101;
+export default Sp0105;

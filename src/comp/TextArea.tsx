@@ -9,7 +9,7 @@ interface TextAreaProps {
   value?: string;
   target?: string;
   setChangeGridData?: (target: string, value: string) => void;
-  readOnly?: boolean;
+  readonly?: boolean;
   errorMsg?: string;
   type?: string;
   layout?: "horizontal" | "vertical" | "flex";
@@ -23,6 +23,7 @@ interface TextAreaProps {
   onkeyDown?: (e: any) => void;
   handleCallSearch?: () => void;
 
+
 }
 
 const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
@@ -30,7 +31,7 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
   value,
   target,
   setChangeGridData,
-  readOnly = false,
+  readonly = false,
   errorMsg,
   type,
   layout = "horizontal",
@@ -94,10 +95,11 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
                       p-2 border border-gray-200 rounded-md  focus:outline-orange-300
                       ${layout === "horizontal" ? "col-span-2" : "flex-grow"}
                       ${height ? `h-[${height}px]` : ""}
+                      ${readonly ? "bg-gray-100" : ""}
             `}
             value={value}
             placeholder={placeholder}
-            readOnly={readOnly}
+            readOnly={readonly}
             onChange={handleChange}
             data-type={type === "number" ? "number" : "text"}
             onKeyDown={handleKeyDown}
