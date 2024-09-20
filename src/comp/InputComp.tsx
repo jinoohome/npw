@@ -447,7 +447,7 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
        return (
            <div
                className={` ${layout === 'horizontal' ? 'grid grid-cols-3 gap-3 items-center' : ''} ${
-                   layout === 'flex' ? 'flexbg-gray-100 items-center space-x-2' : ''
+                   layout === 'flex' ? 'flex bg-gray-100 items-center space-x-2' : ''
                }`}
            >
                <label
