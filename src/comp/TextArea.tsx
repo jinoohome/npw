@@ -95,7 +95,7 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
                       p-2 border border-gray-200 rounded-md  focus:outline-orange-300
                       ${layout === "horizontal" ? "col-span-2" : "flex-grow"}
                       ${height ? `h-[${height}px]` : ""}
-                      ${readonly ? "bg-gray-100" : ""}
+                      ${readonly ? "bg-gray-100 text-[#999]" : ""}
             `}
             value={value}
             placeholder={placeholder}

@@ -116,7 +116,7 @@ const InputComp = forwardRef<HTMLInputElement, InputCompProps>(
                      type="text"
                      data-type={type === "number" ? "number" : "text"}
                      className={`border rounded-md h-8 p-2 w-full 
-                        ${readOnly ? "bg-gray-100" : ""} 
+                        ${readOnly ? "bg-gray-100 text-[#999]" : ""} 
                         ${type === "number" ? "text-right" : ""}
                         ${layout === "flex" ? "w-full" : ""}
                         focus:outline-orange-300`}
@@ -177,7 +177,7 @@ const InputComp1 = forwardRef<HTMLInputElement, Props1>(({ title, handleCallSear
                 onChange={handleChange}
                 type="text"
                 className={`border rounded-md h-8 p-2 w-full 
-                  ${readOnly ? "bg-gray-100" : ""} 
+                  ${readOnly ? "bg-gray-100 text-[#999]" : ""} 
                   ${type === "number" ? "text-right" : ""}
                   focus:outline-orange-300`}
               ></input>
@@ -229,7 +229,7 @@ const InputComp2 = forwardRef<HTMLInputElement, Props2>(({ title, target, setCha
                type="text"
                data-type={type === "number" ? "number" : "text"}
                className={`border rounded-md h-8 p-2 w-full 
-            ${readOnly ? "bg-gray-100" : ""} 
+            ${readOnly ? "bg-gray-100 text-[#999]" : ""} 
             ${type === "number" ? "text-right" : ""}
             focus:outline-orange-300`}
                onChange={handleChange}
@@ -299,7 +299,7 @@ interface InputSearchCompProps {
              type="text"
              ref={inputRef}
              className={`border rounded-md h-8 p-2 w-full focus:outline-orange-300 
-                       ${readOnly ? "bg-gray-100" : ""}
+                       ${readOnly ? "bg-gray-100 text-[#999]" : ""}
                   
              `}
              value={value}
@@ -361,7 +361,7 @@ const InputSearchComp1 = forwardRef<HTMLInputElement, Props3>(({ title, value ='
                type="text"
                ref={ref || inputRef}
                className={`border rounded-md h-8 p-2 w-full focus:outline-orange-300
-                           ${readOnly ? "bg-gray-100" : ""}
+                           ${readOnly ? "bg-gray-100 text-[#999]"  : ""}
                `}
                
                value={value}
@@ -473,7 +473,7 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
                            timeIntervals={30}
                            locale={ko}
                            className={`border rounded-md h-8 p-2 w-full focus:outline-orange-300
-                                       ${readonly ? "bg-gray-100" : ""}
+                                       ${readonly ? "bg-gray-100 text-[#999]" : ""}
                                     `}
                            wrapperClassName="w-full z-50"
                            popperClassName="custom-datepicker-popper"  

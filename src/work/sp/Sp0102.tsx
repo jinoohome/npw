@@ -18,8 +18,8 @@ interface Props {
    userInfo: any;
 }
 
-const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
-   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "발주확인" }];
+const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
+   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "수주조회" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
       gridDatas2: [],
@@ -106,7 +106,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
       return result;
    };
 
-   const SP0105_S01 = async (soNo: string) => {
+   const SP0102_S01 = async (soNo: string) => {
       const param = {
          soNo: soNo || "999",
          bpNm: inputValues.searchBpNm || "999",
@@ -119,7 +119,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
       };
 
       const data = JSON.stringify(param);
-      const result = await fetchPost("SP0105_S01", { data });
+      const result = await fetchPost("SP0102_S01", { data });
 
       
       return result;
@@ -211,9 +211,6 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
 
       if (majorCode === "MA0004") onInputChange("zzMA0004", formattedResult);
       if (majorCode === "MA0005"){
-         formattedResult = formattedResult.filter(
-            (item: any) => item.value == "999" || item.value == "MA0016"  || item.value == "MA0017" 
-        ); 
       onInputChange("zzMA0005", formattedResult);
       
       }
@@ -374,7 +371,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
 
    const search = async () => {
 
-      const result = await SP0105_S01(inputValues.searchSoNo);
+      const result = await SP0102_S01(inputValues.searchSoNo);
       onInputChange("gridDatas2", result);
    };
 
@@ -633,7 +630,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
   
 
    const searchModalDiv =  () => {
-      const result =  SP0105_S01(inputValues.searchSoNo);
+      const result =  SP0102_S01(inputValues.searchSoNo);
       onInputChange("gridDatas2", result);
    };
    const searchModalDiv2 = async () => {
@@ -668,7 +665,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
 
    const handleSoNoOnIconClick = async (e: any) => {
      
-      const result = await SP0105_S01(e);
+      const result = await SP0102_S01(e);
       onInputChange("gridDatas2", result);
     
 
@@ -756,7 +753,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
 
    const columns2 = [
       { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
-      { header: "발주번호", name: "soNo", width: 120, align: "center", rowSpan: false,  hidden: true  }, // SO_NO: 수주 번호
+      { header: "수주번호", name: "soNo", width: 120, align: "center", rowSpan: true,   }, // SO_NO: 수주 번호
       { header: "구분번호", name: "soSeq", width: 120, align: "center", hidden: true }, // SO_NO: 수주 번호
       { header: "사업장", name: "bpNm", width: 150, rowSpan: false }, 
       { header: "사업장", name: "bpCd", width: 300,   hidden: true }, 
@@ -764,19 +761,19 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
       { header: "작업명", name: "workNm", width: 100 }, 
       { header: "협력업체", name: "poBpCd", width: 300,  hidden: true }, 
       { header: "협력업체", name: "poBpNm", width: 100 }, 
-      { header: "신청일자", name: "orderDt", width: 120, align: "center",  hidden: true }, // ORDER_DT: 수주 일자
+      { header: "신청일자", name: "orderDt", width: 120, align: "center", }, // ORDER_DT: 수주 일자
       { header: "요청일자", name: "reqDt", width: 120, align: "center" }, // REQ_DT: 요청 일자
       { header: "수주상태", name: "orderStatus", width: 100, align: "center", hidden: true }, // 
       { header: "진행상태", name: "workStatus", width: 100, align: "center", hidden: true }, // 
       { header: "진행상태", name: "workStatusNm", width: 100, align: "center",  }, // 
-      { header: "설치희망일", name: "hopeDt", width: 100, align: "center",  hidden: true }, // 
-      { header: "설치요청일", name: "workReqDt", width: 100, align: "center",  hidden: true }, // 
-      { header: "설치예정일", name: "expectDt", width: 100, align: "center",  hidden: true }, //
-      { header: "설치완료일", name: "finishDt", width: 100, align: "center", hidden: true }, // 
-      { header: "수량", name: "qty", width: 100, align: "center",  hidden: true }, // 
-      { header: "구분", name: "workDiv", width: 100, align: "center",  hidden: true }, // 
-      { header: "비고", name: "remark", width: 100, align: "center",  hidden: true }, // 
-      { header: "확정여부", name: "cfmFlag", width: 100, align: "center",  hidden: true }, // 
+      { header: "설치희망일", name: "hopeDt", width: 100, align: "center" }, // 
+      { header: "설치요청일", name: "workReqDt", width: 100, align: "center" }, // 
+      { header: "설치예정일", name: "expectDt", width: 100, align: "center" }, //
+      { header: "설치완료일", name: "finishDt", width: 100, align: "center" }, // 
+      { header: "수량", name: "qty", width: 100, align: "center"}, // 
+      { header: "구분", name: "workDiv", width: 100, align: "center" }, // 
+      { header: "비고", name: "remark", width: 100, align: "center"}, // 
+      { header: "확정여부", name: "cfmFlag", width: 100, align: "center" }, // 
    
  
    ];
@@ -788,7 +785,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
-               <div className="min-w-[100px]">발주리스트</div>
+               <div className="min-w-[100px]">수주리스트</div>
             </div>
      
          </div>
@@ -846,10 +843,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
             <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
             조회
          </button>
-         <button type="button" onClick={save} className="bg-blue-500 text-white  rounded-lg px-2 py-1 flex items-center shadow">
-            <ServerIcon className="w-5 h-5 mr-1" />
-            저장
-         </button>
+      
       </div>
    );
 
@@ -860,14 +854,14 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
-               <div className="min-w-[100px]">발주정보</div>
+               <div className="min-w-[100px]">수주정보</div>
             </div>
      
          </div>
 
          <div className="space-y-2 ">
             <div className="grid grid-cols-3 gap-y-2 justify-start ">
-               <InputComp title="발주번호" value={inputValues.soNo} readOnly={true} onChange={(e) => onInputChange("soNo", e)} />
+               <InputComp title="수주번호" value={inputValues.soNo} readOnly={true} onChange={(e) => onInputChange("soNo", e)} />
 
                <SelectSearch
                   title="진행상태"
@@ -998,7 +992,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
      const searchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
          <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
-            <InputComp title="발주번호" ref={searchSoNoRef} value={inputValues.searchSoNo} handleCallSearch={search}  onChange={(e) => onInputChange("searchSoNo", e)} />
+            <InputComp title="수주번호" ref={searchSoNoRef} value={inputValues.searchSoNo} handleCallSearch={search}  onChange={(e) => onInputChange("searchSoNo", e)} />
             <InputComp title="사업장" ref={searchBpNmRef} value={inputValues.searchBpNm}   handleCallSearch={search} onChange={(e) => onInputChange("searchBpNm", e)} />
             <InputComp title="작업명" value={inputValues.searchWorkNm}  handleCallSearch={search} onChange={(e) => onInputChange("searchWorkNm", e)} />
             
@@ -1089,17 +1083,17 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
             </div> 
             <div>{searchDiv()}</div>
             <div className="flex space-x-2">
-               <div className="w-2/5 ">
+               <div className="w-full ">
                   <div>{grid2()}</div>
                </div>
-               <div className="w-3/5 space-y-2">
+               {/* <div className="w-3/5 space-y-2">
                   <div className="flex space-x-3">
                      <div className="w-full">{div1()}</div>
                   </div>
 
                   <div>{grid()}</div>
 
-               </div>
+               </div> */}
             </div>
 
          </div>
@@ -1114,4 +1108,4 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
    );
 };
 
-export default Sp0105;
+export default Sp0102;

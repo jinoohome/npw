@@ -36,6 +36,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       zzMA0004: [],
       zzMA0005: [],
       zzItmes: [],
+      searchWorkStatus :'MA0017'
    });
 
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
@@ -66,6 +67,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
          ZZ_WORKS();
          ZZ_B_PO_BP();
          ZZ_CODE("MA0004");
+         ZZ_CODE("MA0005");
          ZZ_ITEMS();
       } catch (error) {
          console.error("setGridData Error:", error);
@@ -101,18 +103,20 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       return result;
    };
 
-   const SP0103_P01 = async (soNo: string) => {
+   const SP0107_P01 = async (soNo: string) => {
       const param = {
          soNo: soNo || "999",
          bpNm: inputValues.searchBpNm || "999",
          startDt: inputValues.startDt || "999",
          endDt: inputValues.endDt || "999",
          poBpNm: inputValues.searchPoBpNm || "999",
+         poBpCd: userInfo.coCd,
          workNm: inputValues.searchWorkNm || "999",
+         workStatus: inputValues.searchWorkStatus ,
       };
 
       const data = JSON.stringify(param);
-      const result = await fetchPost("SP0103_P01", { data });
+      const result = await fetchPost("SP0107_P01", { data });
 
       
       return result;
@@ -196,12 +200,20 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
       const result = await fetchPost("ZZ_CODE", param);
 
-      const formattedResult = result.map((item: any) => ({
+      let formattedResult = result.map((item: any) => ({
          value: item.code,
          text: item.codeName,
+          label: item.codeName,
       }));
 
       if (majorCode === "MA0004") onInputChange("zzMA0004", formattedResult);
+      if (majorCode === "MA0005"){
+         formattedResult = formattedResult.filter(
+            (item: any) => item.value == "999" || item.value == "MA0017" || item.value == "MA0018"
+        );
+        onInputChange("zzMA0005", formattedResult);
+      }
+      
 
       return formattedResult;
    };
@@ -348,7 +360,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const search = async () => {
       if (!inputValues.soNo) {
-         alertSwal("수주번호를 입력해주세요.", "", "warning");
+         alertSwal("발주번호를 입력해주세요.", "", "warning");
          return;
       }
 
@@ -366,8 +378,15 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const save = async () => {
       if(!inputValues.soNo) {
-         alertSwal("수주번호를 입력해주세요.", "", "warning");
+         alertSwal("발주번호를 입력해주세요.", "", "warning");
          return;
+      }
+
+      if(inputValues.cfmFlag2 === "Y") {
+         if(!inputValues.finishDt){
+            alertSwal("완료일자를 선택해주세요.", "", "warning");
+            return;
+         }
       }
 
       let datas = await getGridDatas(gridRef);
@@ -375,10 +394,12 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       inputValues.gridDatas = datas;
       inputValues.soNo ? (inputValues.status = "U") : (inputValues.status = "I");
 
-      if(inputValues.cfmFlag === "Y") {
-         inputValues.workStatus = "MA0016"
+
+
+      if(inputValues.cfmFlag2 === "Y") {
+         inputValues.workStatus = "MA0018"
       } else {
-         inputValues.workStatus = "MA0015"
+         inputValues.workStatus = "MA0017"
       }
       
 
@@ -391,14 +412,14 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
 
 
-      const result = await fetchPost(`SP0103_U03`, data);
+      const result = await fetchPost(`SP0107_U03`, data);
       returnResult(result);
    };
 
    const del = async () => {
 
       if(!inputValues.soNo) {
-         alertSwal("수주번호를 입력해주세요.", "", "warning");
+         alertSwal("발주번호를 입력해주세요.", "", "warning");
          return;
       }
 
@@ -414,7 +435,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
          menuId: activeComp.menuId,
          insrtUserId: userInfo.usrId,
     };
-      const result = await fetchPost(`SP0103_U03`, data);
+      const result = await fetchPost(`SP0107_U03`, data);
       returnResult(result);
    };
 
@@ -605,7 +626,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
   };
 
    const searchModalDiv = async () => {
-      const result = await SP0103_P01(inputValues.searchSoNo);
+      const result = await SP0107_P01(inputValues.searchSoNo);
       onInputChange("gridDatas2", result);
    };
    const searchModalDiv2 = async () => {
@@ -640,7 +661,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const handleSoNoOnIconClick = async (e: any) => {
       onInputChange("searchSoNo", e);
-      const result = await SP0103_P01(e);
+      const result = await SP0107_P01(e);
       onInputChange("gridDatas2", result);
       onInputChange("isOpen", true);
 
@@ -653,7 +674,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    //-------------------grid----------------------------
    const columns = [
     { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
-    { header: "수주번호", name: "soNo", width: 100, align: "center", hidden: true  },
+    { header: "발주번호", name: "soNo", width: 100, align: "center", hidden: true  },
     { header: "수주 순번", name: "soSeq", width: 80, align: "center", hidden: true  }, 
     { header: "품목 순번", name: "itemSeq", width: 100, align: "center", hidden: true  }, 
     { header: "품목코드", name: "itemCd", width: 120, align: "center" }, 
@@ -666,28 +687,28 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
        formatter: function (e: any) { return commas(e.value);},
     }, // QTY: 수량
     {
-       header: "판매단가", name: "soPrice", width: 100, align: "right", editor: "text",
+       header: "판매단가", name: "soPrice", width: 100, align: "right", editor: "text", hidden: true,
        formatter: function (e: any) { return commas(e.value); },
     }, // SO_PRICE: 수주 가격
     {
-       header: "금액", name: "soAmt", width: 120, align: "right", 
+       header: "금액", name: "soAmt", width: 120, align: "right",  hidden: true,
        formatter: function (e: any) { return commas(e.value); },
     }, // SO_AMT: 수주 금액
     {
-       header: "공급가액", name: "soNetAmt", width: 120, align: "right",
+       header: "공급가액", name: "soNetAmt", width: 120, align: "right", hidden: true,
        formatter: function (e: any) {  return commas(e.value); },
        
     }, // SO_NET_AMT: 수주 순 금액
     {
-       header: "부가세", name: "soVatAmt", width: 120, align: "right", 
+       header: "부가세", name: "soVatAmt", width: 120, align: "right",   hidden: true,
        formatter: function (e: any) { return commas(e.value); },
     }, // SO_VAT_AMT: 수주 부가세
     {
-       header: "발주단가", name: "poPrice", width: 100, align: "right", editor: "text",
+       header: "단가", name: "poPrice", width: 100, align: "right", editor: "text",
        formatter: function (e: any) {  return commas(e.value); },
     }, // PO_PRICE: 발주 가격
     {
-       header: "발주금액", name: "poAmt", width: 120, align: "right", 
+       header: "금액", name: "poAmt", width: 120, align: "right", 
        formatter: function (e: any) {  return commas(e.value); },
     }, // PO_AMT: 발주 금액
     {
@@ -698,7 +719,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
        header: "부가세", name: "poVatAmt", width: 120, align: "right", 
        formatter: function (e: any) {  return commas(e.value);  },
     }, // PO_VAT_AMT: 발주 부가세
-   { header: "비고", name: "remark", editor: "text", width: 250 }, // REMARK: 비고
+   { header: "비고", name: "remark", editor: "text" }, // REMARK: 비고
  ];
  
    const grid = () => (
@@ -711,7 +732,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                <div className="min-w-[100px]">품목리스트</div>
             </div>
             <div className="flex items-center justify-end w-full">
-               <div className="flex pt-2 space-x-2">
+               {/* <div className="flex pt-2 space-x-2">
                   <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
                      <PlusIcon className="w-5 h-5" />
                      추가
@@ -720,19 +741,19 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                      <MinusIcon className="w-5 h-5" />
                      삭제
                   </button>
-               </div>
+               </div> */}
             </div>
          </div>
 
          <TuiGrid01 gridRef={gridRef} columns={columns} headerHeight={30} 
             handleFocusChange={() => {}} handleAfterChange={handleGridChange} 
-            perPageYn={false} height={window.innerHeight-550} />
+            perPageYn={false} height={window.innerHeight-750} />
       </div>
    );
 
    const columns2 = [
       { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
-      { header: "수주번호", name: "soNo", width: 120, align: "center", rowSpan: false }, // SO_NO: 수주 번호
+      { header: "발주번호", name: "soNo", width: 120, align: "center", rowSpan: false }, // SO_NO: 수주 번호
       { header: "구분번호", name: "soSeq", width: 120, align: "center", hidden: true }, // SO_NO: 수주 번호
       { header: "사업장", name: "bpNm", width: 300, rowSpan: false }, 
       { header: "사업장", name: "bpCd", width: 300,   hidden: true }, 
@@ -743,14 +764,17 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       { header: "신청일자", name: "orderDt", width: 120, align: "center" }, // ORDER_DT: 수주 일자
       { header: "요청일자", name: "reqDt", width: 120, align: "center" }, // REQ_DT: 요청 일자
       { header: "수주상태", name: "orderStatus", width: 100, align: "center", hidden: true }, // 
-      { header: "진행상태", name: "orderStatusNm", width: 100, align: "center" }, // 
+      { header: "진행상태", name: "workStatus", width: 100, align: "center", hidden: true }, // 
+      { header: "진행상태", name: "workStatusNm", width: 100, align: "center",  }, // 
       { header: "설치희망일", name: "hopeDt", width: 100, align: "center",  hidden: true }, // 
       { header: "설치예정일", name: "expectDt", width: 100, align: "center",  hidden: true }, //
       { header: "설치완료일", name: "finishDt", width: 100, align: "center", hidden: true }, // 
       { header: "수량", name: "qty", width: 100, align: "center",  hidden: true }, // 
       { header: "구분", name: "workDiv", width: 100, align: "center",  hidden: true }, // 
       { header: "비고", name: "remark", width: 100, align: "center",  hidden: true }, // 
+      { header: "비고", name: "remark2", width: 100, align: "center",  hidden: true }, // 
       { header: "확정여부", name: "cfmFlag", width: 100, align: "center",  hidden: true }, // 
+      { header: "확정여부", name: "cfmFlag2", width: 100, align: "center",  hidden: true }, // 
    
  
    ];
@@ -801,10 +825,10 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const buttonDiv = () => (
       <div className="flex justify-end space-x-2">
-         <button type="button" onClick={del} className="bg-rose-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+         {/* <button type="button" onClick={del} className="bg-rose-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
             <TrashIcon className="w-5 h-5 mr-1" />
             삭제
-         </button>
+         </button> */}
          <button type="button" onClick={search} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
             <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
             조회
@@ -817,12 +841,19 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    );
 
    const div1 = () => (
-      <div className="bg-gray-100 rounded-lg p-3 search text-sm search h-full">
+      <div className="border rounded-md p-2 space-y-2 w-full text-sm">
+          <div className="flex justify-between items-center border-b pb-2">
+            <div className="flex items-center space-x-1 text-orange-500 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="min-w-[100px]">발주정보</div>
+            </div>
+     
+         </div>
          <div className="space-y-2 w-[70%]">
             <div className="grid grid-cols-4 gap-y-2 justify-start ">
-               <InputSearchComp title="수주번호" value={inputValues.soNo} readOnly={true} onChange={(e) => onInputChange("soNo", e)} onKeyDown={handleSoNoOnKeyDown} onIconClick={handleSoNoOnIconClick} />
-
-               
+               <InputSearchComp title="발주번호" value={inputValues.soNo} readOnly={true} onChange={(e) => onInputChange("soNo", e)} onKeyDown={handleSoNoOnKeyDown} onIconClick={handleSoNoOnIconClick} />
 
                <SelectSearch
                   title="진행상태"
@@ -835,14 +866,39 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                   dataKey={{ label: "codeName", value: "code" }}
                   readonly={true}
                />
-
             
-
+{/* 
                <DatePickerComp
                   title="신청일자"
                   value={inputValues.reqDt}
                   onChange={(e) => {onInputChange("reqDt", e); }}
                  
+               /> */}
+
+               <SelectSearch
+                  title="작업명"
+                  value={inputValues.workCd}
+                  onChange={(label, value) => {
+                     onInputChange("workCd", value);
+                  }}
+                  stringify={true}
+                  param={{ coCd: "200" }}
+                  procedure="ZZ_WORKS"
+                  dataKey={{ label: "workNm", value: "workCd" }}
+                  readonly={true}
+               />
+
+               <SelectSearch
+                  title="협력업체"
+                  value={inputValues.poBpCd}
+                  onChange={(label, value) => {
+                     onInputChange("poBpCd", value);
+                  }}
+                  stringify={true}
+                  param={{ coCd: "200", bpType: "ZZ0003", bpNm: "999", bpDiv: "999" }}
+                  procedure="ZZ_B_PO_BP"
+                  dataKey={{ label: "bpNm", value: "bpCd" }}
+                  readonly={true}
                />
 
                <SelectSearch
@@ -855,37 +911,18 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                   param={{ coCd: "200", bpType: "ZZ0002", bpNm: "999", bpDiv: "999" }}
                   procedure="ZZ_B_PO_BP"
                   dataKey={{ label: "bpNm", value: "bpCd" }}
+                  readonly={true}
                />
-               <SelectSearch
-                  title="작업명"
-                  value={inputValues.workCd}
-                  onChange={(label, value) => {
-                     onInputChange("workCd", value);
-                  }}
-                  stringify={true}
-                  param={{ coCd: "200" }}
-                  procedure="ZZ_WORKS"
-                  dataKey={{ label: "workNm", value: "workCd" }}
-               />
-               <SelectSearch
-                  title="협력업체"
-                  value={inputValues.poBpCd}
-                  onChange={(label, value) => {
-                     onInputChange("poBpCd", value);
-                  }}
-                  stringify={true}
-                  param={{ coCd: "200", bpType: "ZZ0003", bpNm: "999", bpDiv: "999" }}
-                  procedure="ZZ_B_PO_BP"
-                  dataKey={{ label: "bpNm", value: "bpCd" }}
-               />
+              
+              
 
-               <DatePickerComp
+               {/* <DatePickerComp
                   title="설치희망일"
                   value={inputValues.hopeDt}
                   onChange={(e) => {
                      onInputChange("hopeDt", e);
                   }}
-               />
+               /> */}
 
                <DatePickerComp
                   title="설치요청일"
@@ -893,10 +930,11 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                   onChange={(e) => {
                      onInputChange("workReqDt", e);
                   }}
+                  readonly={true}   
                />
 
                
-               <DatePickerComp
+               {/* <DatePickerComp
                   title="설치예정일"
                   value={inputValues.expectDt}
                   onChange={(e) => {
@@ -910,10 +948,11 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                   onChange={(e) => {
                      onInputChange("finishDt", e);
                   }}
-               />
+               /> */}
 
                <InputComp title="수량" value={inputValues.qty} 
                           type="number"
+                          readOnly={true}
                onChange={(e) => onInputChange("qty", e)} />
 
                <SelectSearch
@@ -925,37 +964,118 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                   param={{ coCd: "999", majorCode: "MA0004", div: "" }}
                   procedure="ZZ_CODE"
                   dataKey={{ label: "codeName", value: "code" }}
+                  readonly={true}
+
                />
             </div>
             <div className="flex justify-between w-full">
                <div className="w-5/6">
-                  <TextArea title="비고" value={inputValues.remarkDtl} onChange={(e) => onInputChange("remarkDtl", e)} layout="flex" minWidth="90px" />
+                  <TextArea title="비고" value={inputValues.remarkDtl} 
+                  readonly={true}
+                  onChange={(e) => onInputChange("remarkDtl", e)} layout="flex" minWidth="90px" />
                </div>
 
-               <div className="self-end">
+               {/* <div className="self-end">
                   <Checkbox title="발주확정" 
                   layout="flex"
                   value={inputValues.cfmFlag} 
                   onChange={(e) => onInputChange("cfmFlag", e)} />
-               </div>
+               </div> */}
             </div>
          </div>
       </div>
    );
 
+
+   const div2 = () => (
+      <div className="border rounded-md p-2 space-y-2 w-full text-sm">
+          <div className="flex justify-between items-center border-b pb-2">
+            <div className="flex items-center space-x-1 text-orange-500 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="min-w-[100px]">완료정보등록</div>
+            </div>
+     
+         </div>
+
+         <div className="flex space-x-8">
+            <div className="space-y-2 w-[60%]">
+               <div className="grid grid-cols-3 gap-y-2 justify-start ">
+               
+                  {/* <DatePickerComp
+                     title="설치희망일"
+                     value={inputValues.hopeDt}
+                     onChange={(e) => {
+                        onInputChange("hopeDt", e);
+                     }}
+                  /> */}
+
+                  <DatePickerComp
+                     title="설치요청일"
+                     value={inputValues.workReqDt}
+                     onChange={(e) => {
+                        onInputChange("workReqDt", e);
+                     }}
+                     readonly={true}
+                  />
+                  
+                  <DatePickerComp
+                     title="설치예정일"
+                     value={inputValues.expectDt}
+                     onChange={(e) => {
+                        onInputChange("expectDt", e);
+                     }}
+                  />
+
+                  <DatePickerComp
+                     title="설치완료일"
+                     value={inputValues.finishDt}
+                     onChange={(e) => {
+                        onInputChange("finishDt", e);
+                     }}
+                  />
+                  
+                     
+               </div>
+               <div className="flex justify-between w-full">
+                  <div className="w-full">
+                     <TextArea title="비고" value={inputValues.remarkDtl2} onChange={(e) => onInputChange("remarkDtl2", e)} layout="flex" minWidth="90px" />
+                  </div>
+               </div>
+            </div>
+               <div>
+                  <Checkbox title="최종완료확인" 
+                     value={inputValues.cfmFlag2} 
+                     onChange={(e) => onInputChange("cfmFlag2", e)} />
+               </div>
+         </div>
+      </div>
+   );
    const modalDiv = () => (
       <div className="space-y-3">
          <div className="bg-gray-100 rounded-lg p-3 search text-sm search h-full">
             <div className="w-full flex justify-between">
                <div className="grid grid-cols-3 gap-y-2  justify-start ">
-                  <InputComp title="수주번호" ref={searchSoNoRef} value={inputValues.searchSoNo} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchSoNo", e)} />
-
-                  <InputComp title="고객사" ref={searchBpNmRef} value={inputValues.searchBpNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchBpNm", e)} />
-                 
-                  <InputComp title="협력업체" value={inputValues.searchPoBpNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchPoBpNm", e)} />
-                  
+                  <InputComp title="발주번호" ref={searchSoNoRef} value={inputValues.searchSoNo} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchSoNo", e)} />
+                  <InputComp title="사업장" ref={searchBpNmRef} value={inputValues.searchBpNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchBpNm", e)} />
                   <InputComp title="작업명" value={inputValues.searchWorkNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchWorkNm", e)} />
+                 
+                  <SelectSearch
+                  title="진행상태"
+                  value={inputValues.searchWorkStatus}
+                  onChange={(label, value) => {
+                     onInputChange("searchWorkStatus", value);
+                  }}
+                
+                  datas={inputValues.zzMA0005}
+                  
+               />
 
+                  { userInfo.cocd === '999' && 
+                  <InputComp title="협력업체" value={inputValues.searchPoBpNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchPoBpNm", e)} />
+                  }
+{/* 
                   <DateRangePickerComp
                      title="신청기간"
                      startValue={inputValues.startDt}
@@ -965,7 +1085,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                         onInputChange("startDt", startDate);
                         onInputChange("endDt", endDate);
                      }}
-                  />
+                  /> */}
                </div>
                <div className="w-[20%] flex justify-end h-8">
                   <button type="button" onClick={searchModalDiv} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
@@ -1014,6 +1134,11 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
             </div>
 
             <div>{grid()}</div>
+
+            <div className="flex space-x-3">
+               <div className="w-full">{div2()}</div>
+            </div>
+
          </div>
          <CommonModal
             isOpen={inputValues.isOpen} size="xl" 
