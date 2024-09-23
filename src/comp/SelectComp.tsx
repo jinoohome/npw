@@ -166,6 +166,7 @@ const SelectComp3 = forwardRef<HTMLSelectElement, Props3>(({ placeholder, handle
   stringify?: boolean;
   minWidth?: string;
   datas?: any[];
+  readonly?: boolean;
 }
 
 // HTMLSelectElement와 추가 메서드를 포함하는 타입 정의
@@ -175,7 +176,7 @@ interface SelectSearchCompRef extends HTMLSelectElement {
 }
 
 const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
-  ({ title, value = '', handleCallSearch, minWidth, onChange, procedure, param, dataKey, stringify, layout = "horizontal", target, setChangeGridData, datas }, ref) => {
+  ({ title, value = '', handleCallSearch, minWidth, onChange, procedure, param, readonly = false, dataKey, stringify, layout = "horizontal", target, setChangeGridData, datas }, ref) => {
      const localRef = useRef<HTMLSelectElement>(null);
      const choicesInstanceRef = useRef<Choices | null>(null);
 
@@ -321,7 +322,9 @@ const SelectSearchComp = forwardRef<SelectSearchCompRef, Props4>(
                        onChange(selectedLabel, selectedValue);
                     }
                  }}
-                 className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
+                 disabled = {readonly}
+                 className={`border rounded-md h-8 p-2 w-full focus:outline-orange-300
+               `}
               ></select>
            </div>
         </div>
