@@ -83,6 +83,37 @@ const Sp0108 = ({ item, activeComp, userInfo }: Props) => {
       }
    };
 
+   const generateColorPalette = (size:any) => {
+      const colors = [];
+      const saturation = 50; // 채도
+      const lightness = 60; // 밝기
+  
+      for (let i = 0; i < size; i++) {
+        const hue = Math.floor((360 / size) * i); // Hue 값을 고르게 분배
+        const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`; // HSL 색상
+        colors.push(color);
+      }
+  
+      return colors;
+    };
+
+    const colorPalette = generateColorPalette(inputValues.calendarList.length);
+
+   const eventPropGetter = (event:any) => {
+      const eventIndex = inputValues.calendarList.findIndex((e:any) => e.workCd === event.workCd); 
+      const backgroundColor = colorPalette[eventIndex % colorPalette.length]; 
+
+  
+      return {
+        style: {
+          backgroundColor,
+        },
+      };
+    };
+
+   const handleEventClick = (event:any) => {
+      console.log("event", event);
+   }
 
    return (
       <div className={`space-y-5 overflow-y-hidden h-screen`}>
@@ -94,9 +125,12 @@ const Sp0108 = ({ item, activeComp, userInfo }: Props) => {
             <Calendar
                localizer={localizer}
                events={inputValues.calendarList}
+               eventPropGetter={eventPropGetter} 
+               onSelectEvent={handleEventClick} 
                startAccessor="start"
                endAccessor="end"
-               style={{ height: 700 }}
+               style={{ height: 750 }}
+               className="text-md"
                />
 
          </div>
