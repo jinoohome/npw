@@ -103,6 +103,67 @@ const FileUpload: React.FC<FileUploadProps> = ({
     noClick: true,
   });
 
+  const handleDownloadFile = async (mgNo: string, fileUrl: string, fileName: string, saveFileName: string) => {
+    try {
+      const param = { mgNo: mgNo };
+      const data = JSON.stringify(param);
+
+      const response = await fetch(`http://localhost:8080/ZZ_FILE`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: data,
+      });
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("파일 다운로드 오류:", error);
+    }
+  };
+
+    // 전체 다운로드 기능 (Zip)
+    const handleDownloadAll = async () => {
+      const zip = new JSZip();
+      const folder = zip.folder("files");
+  
+      for (const file of uploadedFilesState) {
+        const param = { mgNo: file.mgNo };
+        const data = JSON.stringify(param);
+  
+        const response = await fetch(`http://localhost:8080/ZZ_FILE`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: data,
+        });
+  
+        const blob = await response.blob();
+        folder?.file(file.fileName, blob);
+      }
+  
+      zip.generateAsync({ type: 'blob' }).then((content) => {
+        const url = window.URL.createObjectURL(content);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "files.zip";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      });
+    };
+
+
   const handleDeleteUploaded = (index: number) => {
     const newUploadedFiles = uploadedFilesState.filter((_, i) => i !== index);
     const removedFile = uploadedFilesState[index];
@@ -166,12 +227,23 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
           {uploadedFilesState.length > 0 && (
             <div className='mt-4'>
+               <div className="flex justify-between items-center py-1">
+                <p>업로드된 파일 목록:</p>
+                <button
+                  onClick={handleDownloadAll}
+                  className=" text-blue-500 px-3 py-1 rounded-md text-sm border"
+                >
+                  전체 다운로드
+                </button>
+              </div>
               <ul className='work-scroll'>
                 {uploadedFilesState.map((file, index) => (
                   <li key={index} className="flex items-center justify-between py-1 border-b">
                     <div className="flex items-center space-x-2">
                       <XMarkIcon onClick={() => handleDeleteUploaded(index)} className="w-5 h-5 text-zinc-500 cursor-pointer"></XMarkIcon>
-                      <span className='text-sm'>{file.fileName}</span>
+                      <button onClick={() => handleDownloadFile(file.mgNo, file.filePath, file.fileName, file.saveFileName)} className="text-sm underline">
+                        {file.fileName}
+                      </button>
                     </div>
                     <div className="flex items-center space-x-3">
                       <span className='text-sm'>{(file.fileSize / 1024).toFixed(2)} KB</span>
