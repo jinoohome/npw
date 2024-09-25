@@ -71,10 +71,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
     try {
       const compressedFile = await imageCompression(file, options);
 
-      const extension = file.name.split('.').pop();
+      //const extension = file.name.split('.').pop();
       const compressedFileWithExtension = new File(
         [compressedFile],
-        `${compressedFile.name}.${extension}`,
+      //  `${compressedFile.name}.${extension}`,
+        file.name,
         { type: compressedFile.type }
       );
 
@@ -163,6 +164,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
       });
     };
 
+    const handleDelete = (index: number) => {
+      const newFiles = compressedFiles.filter((_, i) => i !== index);
+      setCompressedFiles(newFiles);
+      onFilesChange && onFilesChange(newFiles, uploadedFilesState, deletedFiles); // 변경된 파일 리스트 부모에게 전달
+    };
+  
+
 
   const handleDeleteUploaded = (index: number) => {
     const newUploadedFiles = uploadedFilesState.filter((_, i) => i !== index);
@@ -212,7 +220,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
                   {compressedFiles.map((file, index) => (
                     <li key={index} className="flex items-center justify-between py-1 border-b">
                       <div className="flex items-center space-x-2 ">
-                        <XMarkIcon className="w-5 h-5 text-zinc-500 cursor-pointer"></XMarkIcon>
+                      <XMarkIcon onClick={() => handleDelete(index)} className="w-5 h-5 text-zinc-500 cursor-pointer"></XMarkIcon>
                         <span className='text-sm'>{file.name}</span>
                       </div>
                       <div className="flex items-center space-x-3">
