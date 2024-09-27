@@ -31,6 +31,7 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       startDate: date(-1, 'month'),
       endDate: date(),
       closeYnPoBpS: 'N',
+      poBpS: userInfo.usrDiv !== '999' ? userInfo.bpCd : '999',
    });
 
    const onInputChange = (name: string, value: any) => {
@@ -46,6 +47,15 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    // 첫 페이지 시작시 실행
    useEffect(() => {
       reSizeGrid({ ref: GridRef1, containerRef: gridGridContainerRef, sec: 200 });
+
+      console.log("유저 구분:", userInfo.usrDiv);
+      console.log("관할구역:", userInfo.bpCd);
+      if (userInfo.usrDiv !== '999') {
+         setInputValues((prevValues) => ({
+            ...prevValues,
+            poBpS: userInfo.bpCd, // 관할구역 값 세팅
+         }));
+      }
    }, []);
 
    // 탭 클릭시 Grid 리사이즈
@@ -77,7 +87,7 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       };
   
       handleSearch();
-  }, [inputValues.closeYnPoBpS]);
+  }, [inputValues.closeYnPoBpS, inputValues.poBpS]);
 
  
    //---------------------- api -----------------------------
@@ -90,11 +100,13 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
           soNo: searchRef1.current?.value || '999',
           dlvyNm: searchRef2.current?.value || '999',
           bpNm: searchRef3.current?.value || '999',
-          poBpNm: searchRef4.current?.value || '999',
-          empNm: searchRef5.current?.value || '999',
+          poBpNm: inputValues.poBpS || '999',
+          empNm: searchRef4.current?.value || '999',
           yyyyMm: '999',
           closeYn: inputValues.closeYnPoBpS || '999',
         };
+
+        console.log('param:', param);  
     
         const data = JSON.stringify(param);
         const result = await fetchPost(`SM0103_S01`, { data });
@@ -263,6 +275,21 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                               //초기값 세팅시
                               datas={[{value : '999', label : '전체'},{value : 'Y', label : '마감완료'},{value : 'N', label : '마감전'}]}
             />
+            <SelectSearchComp title="관할구역" 
+                              ref={searchRef6}
+                              value={inputValues.poBpS}
+                              onChange={(label, value) => {
+                                    onInputChange('poBpS', value);
+                                 }}
+
+                              //readonly={userInfo.usrDiv !== '999'}
+
+                              //초기값 세팅시
+                              stringify={true}
+                              param={{ coCd: "100",bpType : "ZZ0003", bpNm : '999', bpDiv: '999' }}
+                              procedure="ZZ_B_PO_BP"
+                              dataKey={{ label: "bpNm", value: "bpCd" }}
+               />
          </div>
       </div>
    );
@@ -322,7 +349,7 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                </div>
             </div>
    
-            <TuiGrid01 columns={grid1Columns} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} />
+            <TuiGrid01 columns={grid1Columns} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} height={window.innerHeight - 550}/>
          </div>
       );
    };

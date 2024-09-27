@@ -11,7 +11,7 @@ interface Props {
    userInfo : any;
 }
 
-const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
+const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    const GridRef1 = useRef<any>(null);
 
@@ -30,8 +30,8 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       startDate: date(-1, 'month'),
       endDate: date(),
-      payYnS: '999',
-      closeYnS: 'N',
+      closeYnPoBpS: 'N',
+      poBpS: userInfo.usrDiv !== '999' ? userInfo.bpCd : '999',
    });
 
    const onInputChange = (name: string, value: any) => {
@@ -42,11 +42,18 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
     
   };
 
-   const breadcrumbItem = [{ name: "정산관리" }, { name: "정산관리" }, { name: "매출등록" }];
+   const breadcrumbItem = [{ name: "정산관리" }, { name: "정산관리" }, { name: "매입등록" }];
 
    // 첫 페이지 시작시 실행
    useEffect(() => {
       reSizeGrid({ ref: GridRef1, containerRef: gridGridContainerRef, sec: 200 });
+
+      if (userInfo.usrDiv !== '999') {
+         setInputValues((prevValues) => ({
+            ...prevValues,
+            poBpS: userInfo.bpCd, // 관할구역 값 세팅
+         }));
+      }
    }, []);
 
    // 탭 클릭시 Grid 리사이즈
@@ -71,85 +78,59 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       } 
    }, [gridDatas1]);
 
-   // useEffect(() => {
-   //    if (GridRef1.current) {
-   //       const gridInstance = GridRef1.current.getInstance();
-   
-   //       // 그리드가 초기화되지 않았을 경우에 대비한 안전한 접근
-   //       if (!gridInstance) return;
-   
-   //       if (inputValues.closeYnS === 'N') {
-   //          gridInstance.enableColumn('chkCashDt');
-   //       } else if (inputValues.closeYnS === 'Y') {
-   //          gridInstance.disableColumn('chkCashDt');
-   //       } else if (inputValues.closeYnS === '999') {
-   //          gridInstance.enableColumn('chkCashDt');
-   //       }
-   //    }
-   // }, [inputValues.closeYnS]);
-
    useEffect(() => {
       // inputValues 중 결제여부 또는 마감여부가 변경되면 검색을 실행
       const handleSearch = async () => {
-          await SM0101_S01();
+          await SM0104_S01();
       };
   
       handleSearch();
-  }, [inputValues.payYnS, inputValues.closeYnS]);
+  }, [inputValues.closeYnPoBpS, inputValues.poBpS]);
 
  
    //---------------------- api -----------------------------
 
-   const SM0101_S01 = async () => {
+   const SM0104_S01 = async () => {
       try {
         const param = {
-          coCd: userInfo.coCd,
           startDt: inputValues.startDate,
           endDt: inputValues.endDate,
           soNo: searchRef1.current?.value || '999',
-          bpNm: searchRef2.current?.value || '999',
-          ownNm: '999',
-          dlvyNm: searchRef3.current?.value || '999',
-          payYn: inputValues.payYnS || '999',
+          dlvyNm: searchRef2.current?.value || '999',
+          bpNm: searchRef3.current?.value || '999',
+          poBpNm: inputValues.poBpS || '999',
+          ownNm: searchRef4.current?.value || '999',
           yyyyMm: '999',
-          closeYn: inputValues.closeYnS || '999',
+          closeYn: inputValues.closeYnPoBpS || '999',
         };
+
+        console.log('param:', param);  
     
         const data = JSON.stringify(param);
-        const result = await fetchPost(`SM0101_S01`, { data });
+        const result = await fetchPost(`SM0104_S01`, { data });
     
         if (!result || result.length === 0) {
           setGridDatas([]);
           return;
         }
-    
-        // _attributes가 없는 경우에도 안전하게 초기화
-      //   let filteredData = result.map((row: any) => ({
-      //     ...row,
-      //     _attributes: {
-      //       ...(row._attributes || {}),  // 기존 _attributes가 있으면 병합
-      //       checked: row.closeYn === 'Y',  // checked 속성 설정
-      //     },
-      //   }));
-    
-        // 딜레이를 주어 그리드가 데이터를 안정적으로 처리할 시간을 줌
+
         setTimeout(() => {
           setGridDatas(result);
         }, 100);  // 100ms 딜레이 추가
     
         return result;
       } catch (error) {
-        console.error("SM0101_S01 Error:", error);
+        console.error("SM0104_S01 Error:", error);
       }
     };
 
    // 마감 저장
-   const SM0101_U01 = async (data: any) => {
+   const SM0104_U01 = async (data: any) => {
       try {
-         const result = await fetchPost(`SM0101_U01`, data);
+         const result = await fetchPost(`SM0104_U01`, data);
          return result;
       } catch (error) {
-         console.error("SM0101_U01 Error:", error);
+         console.error("SM0104_U01 Error:", error);
          throw error;
       }
    };
@@ -157,13 +138,13 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    //-------------------event--------------------------
 
    const search = async () => {
-      await SM0101_S01();
+      await SM0104_S01();
    };
 
    //검색 창 클릭 또는 엔터시 조회
    const handleCallSearch = async () => {
       //setGridData();
-      await SM0101_S01();
+      await SM0104_S01();
    };
 
    const getGridValues = async (status:any) => {
@@ -182,6 +163,24 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    };
 
    //-------------------button--------------------------
+   //grid 추가버튼
+   const addGridRow = () => {
+      let grid = GridRef1.current.getInstance();
+
+      const focusedCell = grid.getFocusedCell();
+  
+      // 선택된 행의 rowKey와 columnName을 활용하여 soNo 값을 가져옴
+      if (focusedCell) {
+        const { rowKey } = focusedCell;
+        const selectedSoNo = grid.getValue(rowKey, 'soNo'); // 선택된 행의 soNo 값 가져오기
+        
+        // 새로운 행을 추가하면서 선택된 soNo 값을 사용
+        grid.appendRow({ soNo: selectedSoNo, closeSoSeq: null, coCd: "100", isNew: true }, { at: rowKey+1 });
+
+         grid.focusAt(rowKey+1, 1, true);
+      }
+   };
+
    //마감버튼
    const addClose = async () => {
       // 마감년월 유효성 체크
@@ -206,7 +205,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             const data = await getGridValues('I');
 
             if (data) {
-               let result = await SM0101_U01(data);
+               let result = await SM0104_U01(data);
                if (result) {
                   await returnResult(result);
                }
@@ -222,7 +221,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       const data = await getGridValues('D');
 
       if (data) {
-         let result = await SM0101_U01(data);
+         let result = await SM0104_U01(data);
          if (result) {
             await returnResult(result);
          }
@@ -234,7 +233,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       const data = await getGridValues('S');
 
       if (data) {
-         let result = await SM0101_U01(data);
+         let result = await SM0104_U01(data);
          if (result) {
             await returnResult(result);
          }
@@ -276,35 +275,43 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                           onChange={(e)=>{
                           onInputChange('soNoS', e);
                      }} />
-            <InputComp title="고객사" ref={searchRef2} value={inputValues.bpNmS} handleCallSearch={handleCallSearch} 
+            <InputComp title="배송지" ref={searchRef2} value={inputValues.dlvyNmS} handleCallSearch={handleCallSearch} 
+                          onChange={(e)=>{
+                          onInputChange('dlvyNmS', e);
+                     }} />  
+            <InputComp title="고객사" ref={searchRef3} value={inputValues.bpNmS} handleCallSearch={handleCallSearch} 
                           onChange={(e)=>{
                           onInputChange('bpNmS', e);
                      }} />
-            <InputComp title="배송지" ref={searchRef3} value={inputValues.dlvyNmS} handleCallSearch={handleCallSearch} 
+            <InputComp title="대상자" ref={searchRef4} value={inputValues.ownNmS} handleCallSearch={handleCallSearch} 
                           onChange={(e)=>{
-                          onInputChange('dlvyNmS', e);
-                     }} />            
-            
-            <SelectSearchComp title="결제여부" 
-                              ref={searchRef4}
-                              value={inputValues.payYnS}
-                              onChange={(label, value) => {
-                                    onInputChange('payYnS', value);
-                                 }}                           
-
-                              //초기값 세팅시
-                              datas={[{value : '999', label : '전체'},{value : 'Y', label : '결제완료'},{value : 'N', label : '미결제'}]}
-            />
+                          onInputChange('ownNmS', e);
+                     }} />       
             <SelectSearchComp title="마감여부" 
                               ref={searchRef5}
-                              value={inputValues.closeYnS}
+                              value={inputValues.closeYnPoBpS}
                               onChange={(label, value) => {
-                                    onInputChange('closeYnS', value);
+                                    onInputChange('closeYnPoBpS', value);
                                  }}                           
 
                               //초기값 세팅시
                               datas={[{value : '999', label : '전체'},{value : 'Y', label : '마감완료'},{value : 'N', label : '마감전'}]}
             />
+            <SelectSearchComp title="관할구역" 
+                              ref={searchRef6}
+                              value={inputValues.poBpS}
+                              onChange={(label, value) => {
+                                    onInputChange('poBpS', value);
+                                 }}
+
+                              //readonly={userInfo.usrDiv !== '999'}
+
+                              //초기값 세팅시
+                              stringify={true}
+                              param={{ coCd: "100",bpType : "ZZ0003", bpNm : '999', bpDiv: '999' }}
+                              procedure="ZZ_B_PO_BP"
+                              dataKey={{ label: "bpNm", value: "bpCd" }}
+               />
          </div>
       </div>
    );
@@ -314,23 +321,29 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const grid1Columns = [
       { header: "", name: "coCd", hidden: true },
       { header: "마감주문번호", name: "closeSoNo", hidden: true },
-      { header: "마감여부", name: "closeYn", align: "center", width: 60},
+      { header: "마감", name: "closeYnPoBp", align: "center", width: 40},
       { header: "마감년월", name: "yyyyMm", align: "center", width: 80},
-      { header: "주문번호", name: "soNo", align: "center", width: 120},
-      { header: "고객사", name: "bpNm", width: 280 },
-      { header: "품목", name: "itemNm", width: 280 },
-      { header: "패키지", name: "pkgItemNm", width: 120 },
-      { header: "매출금액", name: "soAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "미결제금액", name: "noPay", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "계산서발행", name: "receiptAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "카드결제", name: "cardAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "현금결제", name: "cashAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "입금일", name: "chkCashDt", align: "center", editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },
+      { header: "주문번호", name: "soNo", align: "center", width: 100},
+      { header: "고객사", name: "bpNm", width: 200 },
+      { header: "배송지", name: "dlvyNm", width: 200},
+      { header: "관할구역", name: "poBpNm", width: 120},
+      { header: "주문일", name: "orderDt", align: "center", width: 80, hidden: true},
+      { header: "직원명", name: "empNm", width: 80, hidden: true },
+      { header: "대상자", name: "ownNm", width: 80, align: "center" },
+      { header: "품목", name: "itemNm", width: 160 },
+      { header: "수량", name: "soQty", width: 40, align: "center", hidden: true },
+      { header: "매출금액", name: "soAmt", align: "right", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "공급금액", name: "netAmt", align: "right", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "부가세", name: "vatAmt", align: "right", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "비율", name: "bpRate", align: "center", width: 50},
+      { header: "청구금액", name: "purchaseAmt", align: "right", editor: "text", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "공급금액", name: "purchaseNetAmt", align: "right", editor: "text", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "부가세", name: "purchaseVatAmt", align: "right", editor: "text", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
    ];
 
    const Grid1 = () => {
-      const isCloseYnComplete = inputValues.closeYnS === 'Y'; // 마감완료
-      const isCloseYnNotComplete = inputValues.closeYnS === 'N'; // 마감전
+      const isCloseYnComplete = inputValues.closeYnPoBpS === 'Y'; // 마감완료
+      const isCloseYnNotComplete = inputValues.closeYnPoBpS === 'N'; // 마감전
    
       return (
          <div className="border rounded-md p-2 space-y-2">
@@ -339,7 +352,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                   <div>
                      <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                   </div>
-                  <div className="">주문 리스트</div>
+                  <div className="">본부 마감 된 주문 리스트</div>
                </div>
    
                {/* 마감여부에 따라 버튼과 마감년월 input을 조건부 렌더링 */}
@@ -361,6 +374,12 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                         <button type="button" onClick={addClose} className="bg-green-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
                            마감
                         </button>
+                        <button type="button" onClick={saveClose} className="bg-blue-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
+                              저장 
+                        </button>
+                        <button type="button" onClick={addGridRow} className="bg-yellow-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
+                              추가
+                        </button>
                      </>
                   )}
    
@@ -369,14 +388,11 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                      <button type="button" onClick={delClose} className="bg-red-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
                         마감취소
                      </button>
-                  )}
-                  <button type="button" onClick={saveClose} className="bg-blue-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
-                        입금일 저장
-                  </button>
+                  )}                  
                </div>
             </div>
    
-            <TuiGrid01 columns={grid1Columns} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} />
+            <TuiGrid01 columns={grid1Columns} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} height={window.innerHeight - 550}/>
          </div>
       );
    };
@@ -397,4 +413,4 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    );
 };
 
-export default So0101;
+export default So0104;
