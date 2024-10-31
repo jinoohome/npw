@@ -1,4 +1,4 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, reSizeGrid, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
+import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, SelectSearch, CommonModal, commas, alertSwal, fetchPost, Breadcrumb, TuiGrid01, reSizeGrid, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
@@ -17,21 +17,31 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const GridRef1 = useRef<any>(null);
    const GridRef2 = useRef<any>(null);
    const GridRef3 = useRef<any>(null);
+   const GridRef4 = useRef<any>(null);
 
    const gridGridContainerRef = useRef(null);
    const grid2GridContainerRef = useRef(null);
    const grid3GridContainerRef = useRef(null);
+   const grid4GridContainerRef = useRef(null);
+   
+   const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
+      coCd: '',
+   });
 
    //검색창 ref
    const searchRef1 = useRef<any>(null);
    const searchRef2 = useRef<any>(null);
    const searchRef3 = useRef<any>(null);
+   const searchRef4 = useRef<any>(null);
+   const searchRef5 = useRef<any>(null);
+   const searchRef6 = useRef<any>(null);
 
    const [gridDatas1, setGridDatas] = useState<any[]>();
    const [gridDatas2, setGridDatas2] = useState<any[]>();
    const [gridDatas3, setGridDatas3] = useState<any[]>();
+   const [gridDatas4, setGridDatas4] = useState<any[]>();
 
-   const [focusRow, setFocusRow] = useState<any>(0);
+   const [isOpen, setIsOpen] = useState(false);
 
    const breadcrumbItem = [{ name: "기준정보" }, { name: "재고" }, { name: "본부&창고별 재고관리" }];
 
@@ -40,6 +50,7 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       setGridData();
       reSizeGrid({ ref: GridRef1, containerRef: gridGridContainerRef, sec: 200 });
       reSizeGrid({ ref: GridRef2, containerRef: grid2GridContainerRef, sec: 200 });
+      reSizeGrid({ ref: GridRef3, containerRef: grid3GridContainerRef, sec: 200 });
    }, []);
 
    const setGridData = async () => {
@@ -51,6 +62,14 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             if (grid2Result?.length) {
                let itemNm = searchRef3.current?.value || '999'
                await MM0501_S03( grid2Result[0].bpCd, grid2Result[0].whCd, itemNm);
+            } 
+         } else {
+            if (GridRef2.current) {
+               GridRef2.current.getInstance().clear();
+            }
+
+            if (GridRef3.current) {
+               GridRef3.current.getInstance().clear();
             }
          }
       } catch (error) {
@@ -114,6 +133,29 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       }
    }, [gridDatas3]);
 
+   useEffect(() => {
+      if (GridRef4.current && gridDatas4) {
+         let grid4 = GridRef4.current.getInstance();
+         grid4.resetData(gridDatas4);
+
+         let focusRowKey = grid4.getFocusedCell().rowKey || 0;
+
+         if (gridDatas4.length > 0) {
+            grid4.focusAt(focusRowKey, 0, true);
+         }
+         
+      }
+   }, [gridDatas4]);
+
+   useEffect(() => {
+      // inputValues 중 결제여부 또는 마감여부가 변경되면 검색을 실행
+      const handleSearch = async () => {
+          await MM0201_S01();
+      };
+  
+      handleSearch();
+  }, [inputValues.itemGrp, inputValues.itemDiv]);
+
    //---------------------- api -----------------------------
    const MM0501_S01 = async () => {
       const param = {
@@ -164,13 +206,65 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       }
    };
 
+   const MM0201_S01 = async () => {
+      try {
+         const param = {
+            coCd: "100",
+            itemNm: searchRef4.current?.value || "999",
+            itemGrp: inputValues.itemGrp || "999",
+            itemDiv: inputValues.itemDiv || "999",
+            pkgItemYn: "999",
+            subsYn:  "999",
+            deduYn:  "999",
+            useYn: 'Y',
+         };
+
+         const data = JSON.stringify(param);
+         const result = await fetchPost(`MM0202_S01`, { data });
+         setGridDatas4(result);
+
+         return result;
+      } catch (error) {
+         console.error("MM0201_S01 Error:", error);
+         throw error;
+      }
+   };
+
    //-------------------event--------------------------
+   const onInputChange = (name: string, value: any) => {
+      setInputValues((prevValues) => {
+          // null, undefined, ""을 하나의 빈 값으로 취급
+          const currentValue = prevValues[name] ?? "";
+          const newValue = value ?? "";
+  
+          // 동일한 값일 경우 상태를 업데이트하지 않음
+          if (currentValue === newValue) {
+              return prevValues;
+          }
+  
+          return {
+              ...prevValues,
+              [name]: newValue,
+          };
+      });
+   };
 
    const search = () => {
       setGridData();
    };
 
    const save = async () => {
+      let grid3Data = await getGridDatas(GridRef3);
+
+      // 입고일자 체크 로직 추가
+      const missingEnterDtRows = grid3Data.filter((row: any) => !row.enterDt || row.enterDt.trim() === "");
+
+      if (missingEnterDtRows.length > 0) {
+      // 입고일자가 비어있다면 경고 메시지 출력
+      alertSwal("입고일자 미등록","입고일자를 입력해 주세요", "warning");
+      return;
+   }
+
       let result = await MM0501_U03();
       if (result) {
          returnResult(result);
@@ -201,54 +295,63 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       let grid1 = GridRef1.current.getInstance();
       let grid2 = GridRef2.current.getInstance();
       let grid3 = GridRef3.current.getInstance();
-      let flag = true;
-      grid2.appendRow({}, { focus: true });
 
       let inBpCd = grid1.getValue(grid1.getFocusedCell().rowKey, "bpCd");
 
-      grid2.setValue(grid2.getFocusedCell().rowKey, "coCd", "100", false);
-      grid2.setValue(grid2.getFocusedCell().rowKey, "bpCd", inBpCd, false);
-      grid2.setValue(grid2.getFocusedCell().rowKey, "status", "I", false);
+      grid2.appendRow({  coCd: "100", status: "I", bpCd: inBpCd, useYn: "Y"}, { at: 0 });
+      grid2.focusAt(0, 1, true);
       grid3.clear();
    };
 
    //grid 삭제버튼
    const delMajorGridRow = () => {
-      let grid2 = GridRef2.current.getInstance();     
-      let { rowKey } = grid2.getFocusedCell();
-      grid2.removeRow(rowKey, {});
+      let grid = GridRef2.current.getInstance();      
+
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+      
+      // 행을 삭제
+      grid.removeRow(rowKey, {});
+
+      // 남은 행이 있는 경우에만 포커스를 맞춤
+      if (grid.getRowCount() > 0) {
+         grid.focusAt(rowIndex, 1, true);
+      }
    };
 
    //grid 추가버튼
    const addMinorGridRow = () => {
       let grid2 = GridRef2.current.getInstance();
-      let grid3 = GridRef3.current.getInstance();
       let flag = true;
-      grid3.appendRow({}, { focus: true });
 
-      let inBpCd = grid2.getValue(grid2.getFocusedCell().rowKey, "bpCd");
       let inWhCd = grid2.getValue(grid2.getFocusedCell().rowKey, "whCd");
 
       if (!inWhCd) {
-         grid3.removeRow(grid3.getFocusedCell().rowKey);
          flag = false;
          let title = "창고코드 미등록";
          let msg = "창고코드 먼저 저장 후에 추가해 주세요";
          alertSwal(title, msg, "warning");
       }
 
-      grid3.setValue(grid3.getFocusedCell().rowKey, "coCd", "100", false);
-      grid3.setValue(grid3.getFocusedCell().rowKey, "bpCd", inBpCd, false);
-      grid3.setValue(grid3.getFocusedCell().rowKey, "whCd", inWhCd, false);
-      grid3.setValue(grid3.getFocusedCell().rowKey, "status", "I", false);
-      grid3.setValue(grid3.getFocusedCell().rowKey, "useYn", "Y", false);
+      if (flag) {
+         openModal();
+      }      
    };
 
    //grid 삭제버튼
    const delMinorGridRow = () => {
-      let grid3 = GridRef3.current.getInstance();
-      let { rowKey } = grid3.getFocusedCell();
-      grid3.removeRow(rowKey, {});
+      let grid = GridRef3.current.getInstance();      
+
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+      
+      // 행을 삭제
+      grid.removeRow(rowKey, {});
+
+      // 남은 행이 있는 경우에만 포커스를 맞춤
+      if (grid.getRowCount() > 0) {
+         grid.focusAt(rowIndex, 1, true);
+      }
    };
 
    //grid 포커스변경시
@@ -285,6 +388,10 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       let itemNm = searchRef3.current?.value || '999'
       if (whCd) {
          await MM0501_S03(bpCd, whCd, itemNm);
+      } else {
+         if (GridRef3.current) {
+            GridRef3.current.getInstance().clear();
+         }
       }
    };
 
@@ -298,7 +405,94 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             let itemNm = searchRef3.current?.value || '999'
             await MM0501_S03( grid2Result[0].bpCd, grid2Result[0].whCd, itemNm);
          }
+      } else {
+         if (GridRef2.current) {
+            GridRef2.current.getInstance().clear();
+         }
+
+         if (GridRef3.current) {
+            GridRef3.current.getInstance().clear();
+         }
       }
+   };
+
+   const handleCallSearchModal = async () => {
+      await MM0201_S01();
+     
+  };
+
+   const openModal = async() => {
+      setIsOpen(true);
+      await MM0201_S01();
+      refreshGrid(GridRef4);
+    };
+  
+    const closeModal = () => {
+      setIsOpen(false);
+    };
+
+    const addItems = () => {
+      const grid1 = GridRef1.current.getInstance();
+      const rowData1 = grid1.getRow(grid1.getFocusedCell().rowKey);
+
+      const grid2 = GridRef2.current.getInstance();
+      const rowData2 = grid2.getRow(grid2.getFocusedCell().rowKey);
+
+      const grid4 = GridRef4.current.getInstance();
+      const checkedRows = grid4.getCheckedRows();
+  
+      const grid3 = GridRef3.current.getInstance();
+      const existingItemCds = new Set(grid3.getData().map((row: any) => row.itemCd));
+  
+      checkedRows.forEach((row: any) => {
+          if (!existingItemCds.has(row.itemCd)) {  // itemCd 중복 확인
+              const newRow = {
+                  coCd: rowData1.coCd,
+                  bpCd: rowData1.bpCd,
+                  whCd: rowData2.whCd,
+                  itemCd: row.itemCd,
+                  itemNm: row.itemNm,
+                  useYn: "Y",
+                  status: "I"
+              };
+  
+              grid3.appendRow(newRow, { focus: true });
+          }
+      });
+  
+      closeModal();
+  };
+
+  const handleDblClick = (ev: any) => {
+      const { rowKey } = ev;
+
+      const grid4 = GridRef4.current.getInstance();
+      const rowData3 = grid4.getRow(rowKey);
+
+      const grid2 = GridRef2.current.getInstance();
+      const rowData2 = grid2.getRow(grid2.getFocusedCell().rowKey);
+
+      const grid1 = GridRef1.current.getInstance();
+      const rowData1 = grid1.getRow(grid1.getFocusedCell().rowKey);
+
+      const grid3 = GridRef3.current.getInstance();
+      const existingItemCds = new Set(grid3.getData().map((row: any) => row.itemCd));
+
+      if (!existingItemCds.has(rowData3.itemCd)) {  // itemCd 중복 확인
+         const newRow = {
+            coCd: rowData1.coCd,
+                  bpCd: rowData1.bpCd,
+                  whCd: rowData2.whCd,
+                  itemCd: rowData3.itemCd,
+                  itemNm: rowData3.itemNm,
+                  useYn: "Y",
+                  status: "I"
+         };
+
+         grid3.appendRow(newRow, { focus: true });
+      }
+
+      setIsOpen(false);
    };
 
    //-------------------div--------------------------
@@ -328,6 +522,55 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       </div>
    );
 
+   const modalSearchDiv = () => (
+      <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
+         <div className="w-full flex justify-between">
+            <div className="grid grid-cols-3  gap-y-3  justify-start w-[80%]">
+               <InputComp1 ref={searchRef4} handleCallSearch={handleCallSearchModal} title="품목명"></InputComp1>
+               <SelectSearch
+                       title="품목그룹"
+                       value={inputValues.itemGrp}
+                       onChange={(label, value) => {
+                          onInputChange("itemGrp", value);
+                          handleCallSearchModal();
+                       }}
+
+                       param={{ coCd: "999", majorCode: "CD0004", div: "" }}
+                       procedure="ZZ_CODE"
+                       dataKey={{ label: "codeName", value: "code" }}
+
+                   />
+               <SelectSearch
+                       title="품목구분"
+                       value={inputValues.itemDiv}
+                       onChange={(label, value) => {
+                          onInputChange("itemDiv", value);
+                          handleCallSearchModal();
+                       }}
+
+                       param={{ coCd: "999", majorCode: "CD0005", div: "" }}
+                       procedure="ZZ_CODE"
+                       dataKey={{ label: "codeName", value: "code" }}
+
+                   />
+            </div>
+            <div className="w-[20%] flex justify-end">
+               <button type="button" onClick={handleCallSearchModal} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+                  <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
+                  조회
+               </button>
+            </div>
+         </div>
+      </div>
+   );
+
+   const ModalDiv = () => (
+      <CommonModal isOpen={isOpen} onClose={closeModal} title="품목등록">
+         {modalSearchDiv()}
+         {Grid4()}
+      </CommonModal>
+   );
+
    //-------------------grid----------------------------
 
    const grid1Columns = [
@@ -350,9 +593,9 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "", name: "coCd", hidden: true },
       { header: "본부 코드", name: "bpCd", align: "center" , hidden: true },
       { header: "창고코드", name: "whCd", align: "center", hidden: true },
-      { header: "품목코드", name: "itemCd", align: "center", editor: "text" },
-      { header: "품목명", name: "itemNm"},
-      { header: "입고일자", name: "enterDt", align: 'center',
+      { header: "품목코드", name: "itemCd", align: "center", width: 140 },
+      { header: "품목명", name: "itemNm", width: 600},
+      { header: "입고일자", name: "enterDt", align: 'center', width: 140,
          editor: {
             type: 'datePicker',
             options: {
@@ -361,8 +604,29 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                   timepicker: false
             }
         }},
-      { header: "재고수량", name: "onhandQty", editor: "text"},
+      { header: "재고수량", name: "onhandQty", editor: "text", align: "center",
+         formatter: function(e: any) {
+            if(e.value){return commas(e.value);}
+         }},
       { header: "상태", name: "status", hidden: true },
+   ];
+
+   const grid4Columns = [
+      { header: "회사코드", name: "coCd", hidden: true },
+      { header: "품목코드", name: "itemCd", width: 100, align: "center" },
+      { header: "품목명", name: "itemNm", width: 300 },
+      { header: "규격", name: "spec", width: 200 },
+      { header: "품목그룹", name: "itemGrpNm", width: 100 },
+      { header: "품목구분", name: "itemDivNm", width: 100 },
+      { header: "판매단가", name: "salePrice", width: 100, align: "right",   
+         formatter: function(e: any) {if(e.value){return commas(e.value);} }  },
+      { header: "발주단가", name: "costPrice", width: 100, align: "right",  
+         formatter: function(e: any) {if(e.value){return commas(e.value);} }  },
+      { header: "과세여부", name: "taxYn", width: 100, align: "center" },
+      { header: "패키지품목추가", name: "pkgItemYn", hidden: true },
+      { header: "대체유무", name: "subsYn", width : 100, align: "center" },
+      { header: "공제유무", name: "deduYn", width : 100, align: "center" },
+      { header: "사용여부", name: "useYn", hidden: true },
    ];
 
    const Grid1 = () => (
@@ -430,6 +694,24 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       </div>
    );
 
+   const Grid4 = () => (
+      <div className="border rounded-md p-2 space-y-2">
+         <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center space-x-1 text-orange-500 ">
+               <div>※ 더블클릭 시 단일 품목이 선택 됩니다.</div>
+            </div>
+            <div className="flex space-x-1">
+               <button type="button" onClick={addItems} className="bg-orange-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+                  <PlusIcon className="w-5 h-5" />
+                  선택등록
+               </button>
+            </div>
+         </div>
+         <TuiGrid01 gridRef={GridRef4} columns={grid4Columns} rowHeaders={['checkbox','rowNum']} handleDblClick={handleDblClick} height = {window.innerHeight - 530}
+         />
+      </div>
+   );
+
    return (
       <div className={`space-y-5 overflow-y-auto `}>
          <div className="space-y-2">
@@ -440,12 +722,13 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             <div>{searchDiv()}</div>
          </div>
          <div className="w-full h-full md:flex p-2 md:space-x-2 md:space-y-0 space-y-2">
-            <div className="w-1/4 flex flex-col space-y-2">
+            <div className="w-1/3 flex flex-col space-y-2">
                <div className="" ref={gridGridContainerRef}>{Grid1()}</div>
                <div className="" ref={grid2GridContainerRef}>{Grid2()}</div>
             </div>
-            <div className="w-3/4 h-full" ref={grid3GridContainerRef}>{Grid3()}</div> 
+            <div className="w-2/3 h-full" ref={grid3GridContainerRef}>{Grid3()}</div> 
          </div>
+         {ModalDiv()}
       </div>
    );
 };

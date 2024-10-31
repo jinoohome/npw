@@ -20,32 +20,10 @@ const Mm0202 = ({ item, activeComp, userInfo }: Props) => {
    const searchRef6 = useRef<any>(null);
 
    const [searchChoices, setSearchChoices] = useState<{ [key: string]: any }>({});
-   const [inputChoices, setInputChoices] = useState<{ [key: string]: any }>({});
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
 
    const [gridDatas, setGridDatas] = useState<any[]>();
-   const breadcrumbItem = [{ name: "기준정보" }, { name: "품목" }, { name: "품목 등록" }];
-
-   const refs = {
-      coCd: useRef<any>(null),
-      itemCd: useRef<any>(null),
-      itemNm: useRef<any>(null),
-      spec: useRef<any>(null),
-      itemGrp: useRef<any>(null),
-      itemDiv: useRef<any>(null),
-      salePrice: useRef<any>(null),
-      costPrice: useRef<any>(null),
-      taxYn: useRef<any>(null),
-      pkgItemYn: useRef<any>(null),
-      subsYn: useRef<any>(null),
-      deduYn: useRef<any>(null),
-      useYn: useRef<any>(null),
-      delYn: useRef<any>(null),
-      insrtUserId: useRef<any>(null),
-      insrtDt: useRef<any>(null),
-      updtUserId: useRef<any>(null),
-      updtDt: useRef<any>(null),
-   };
+   const breadcrumbItem = [{ name: "기준정보" }, { name: "품목" }, { name: "품목 조회 (장례지원단)" }];
 
    const [cd0004, setCd0004] = useState<ZZ_CODE_RES[]>([]);
    const [cd0005, setCd0005] = useState<ZZ_CODE_RES[]>([]);
@@ -80,31 +58,6 @@ const Mm0202 = ({ item, activeComp, userInfo }: Props) => {
       initChoice(searchRef6, (choice) => setSearchChoices((prev) => ({ ...prev, useYn: choice })), [
          { value: "999", label: "전체" },
          { value: "Y", label: "사용", selected: true },
-         { value: "N", label: "미사용" },
-      ]);
-
-      // Input Choices
-      initChoice(refs.coCd, (choice) => setInputChoices((prev) => ({ ...prev, coCd: choice })));
-      initChoice(refs.itemGrp, (choice) => setInputChoices((prev) => ({ ...prev, itemGrp: choice })));
-      initChoice(refs.itemDiv, (choice) => setInputChoices((prev) => ({ ...prev, itemDiv: choice })));
-      initChoice(refs.taxYn, (choice) => setInputChoices((prev) => ({ ...prev, taxYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.pkgItemYn, (choice) => setInputChoices((prev) => ({ ...prev, pkgItemYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.subsYn, (choice) => setInputChoices((prev) => ({ ...prev, subsYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.deduYn, (choice) => setInputChoices((prev) => ({ ...prev, deduYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.useYn, (choice) => setInputChoices((prev) => ({ ...prev, useYn: choice })), [
-         { value: "Y", label: "사용" },
          { value: "N", label: "미사용" },
       ]);
    };
@@ -159,16 +112,7 @@ const Mm0202 = ({ item, activeComp, userInfo }: Props) => {
             grid.focusAt(checkFocusRow, 0, true);
          }
       }
-      //updateChoices(choice3, gridDatas, "coCd", "bpNm", "");
    }, [gridDatas]);
-
-   //inputChoicejs 데이터 설정
-   // useEffect(() => {
-   //    updateChoices(choice1, zz0005, "value", "text");
-
-   //    let zz0005Data = zz0005.filter((item) => item.value !== "999");
-   //    updateChoices(choice4, zz0005Data, "value", "text", "");
-   // }, [zz0005]);
 
    // //inputChoicejs 데이터 설정
    useEffect(() => {
@@ -176,35 +120,8 @@ const Mm0202 = ({ item, activeComp, userInfo }: Props) => {
    }, [cd0004]);
 
    useEffect(() => {
-      updateChoices(inputChoices.itemGrp, cd0004Input, "value", "text");
-   }, [cd0004Input]);
-
-   useEffect(() => {
       updateChoices(searchChoices.itemDiv, cd0005, "value", "text");
    }, [cd0005]);
-
-   useEffect(() => {
-      updateChoices(inputChoices.itemDiv, cd0005Input, "value", "text");
-   }, [cd0005Input]);
-
-   useEffect(() => {
-      updateChoices(inputChoices.coCd, coCds, "value", "text");
-   }, [coCds]);
-
-   // //inputChoicejs 데이터 설정
-   // useEffect(() => {
-   //    updateChoices(choice6, zz0009, "value", "text");
-   // }, [zz0009]);
-
-   // Grid 내부 Choicejs 데이터 설정
-   // useEffect(() => {
-   //    if (zz0005) {
-   //       let gridInstance = majorGridRef.current.getInstance();
-   //       let column = gridInstance.getColumn("codeDiv");
-   //       column.editor.options.listItems = zz0001;
-   //       gridInstance.refreshLayout();
-   //    }
-   // }, [zz0005]);
 
    //---------------------- api -----------------------------
 
@@ -248,7 +165,7 @@ const Mm0202 = ({ item, activeComp, userInfo }: Props) => {
    const MM0202_S01 = async () => {
       try {
          const param = {
-            coCd: userInfo.coCd,
+            coCd: "100",
             itemNm: searchRef1.current?.value || "999",
             itemGrp: searchRef2.current?.value || "999",
             itemDiv: searchRef3.current?.value || "999",
@@ -260,20 +177,11 @@ const Mm0202 = ({ item, activeComp, userInfo }: Props) => {
 
          const data = JSON.stringify(param);
          const result = await fetchPost(`MM0202_S01`, { data });
+         console.log("MM0202_S01", result);
          setGridDatas(result);
          return result;
       } catch (error) {
          console.error("MM0202_S01 Error:", error);
-         throw error;
-      }
-   };
-
-   const MM0201_U01 = async (data: any) => {
-      try {
-         const result = await fetchPost(`MM0201_U01`, data);
-         return result;
-      } catch (error) {
-         console.error("MM0201_U01 Error:", error);
          throw error;
       }
    };
@@ -284,129 +192,6 @@ const Mm0202 = ({ item, activeComp, userInfo }: Props) => {
       setErrorMsgs({});
       setGridData();
    };
-
-   const validateData = (action: string, dataString: any) => {
-      // dataString이 문자열이면 JSON.parse()를 사용, 그렇지 않으면 직접 사용
-      const data = typeof dataString === "string" ? JSON.parse(dataString) : dataString;
-      let result = true;
-
-      if (action === "save") {
-         if (data.length < 1) return false;
-
-         for (const item of data) {
-            if (["U", "I"].includes(item.status)) {
-          
-               if (!item.itemNm) {
-                  setErrorMsgs((prev) => ({ ...prev, itemNm: "*품목명을 입력해주세요." }));
-                  result = false;
-               }
-            }
-         }
-      }
-
-      if(!result){
-         alertSwal("필수입력항목을 확인해주세요.", "error", "error");
-      }else{
-         return result; 
-      }
-
-   };
-
-   const save = async () => {
-      setErrorMsgs({});
-      let grid = gridRef.current.getInstance();
-      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
-      let rowIndex = grid.getIndexOfRow(rowKey);
-      setFocusRow(rowKey); // 저장 후에는 추가Row가 맨마지막으로 이동하므로 rowkey로 지정
-
- 
-      const data = await getGridValues();
-
-   
-      if (data) {
-         let result = await MM0201_U01(data);
-         if (result) {
-            returnResult(result);
-         }
-      } else {
-         grid.focusAt(rowIndex, 0, true); //저장이 안된경우는 추가행이 맨위에 있으므로 rowIndex로 지정
-      }
-   };
-
-   const returnResult = async (result: any) => {
-      alertSwal(result.msgText, result.msgCd, result.msgStatus);
-      setGridData();
-   };
-
-   // 모든 grid Data 내용을 가져옴
-   const getGridValues = async () => {
-      let datas = await getGridDatas(gridRef);
-     
-      if (!validateData("save", datas)) return false;
-
-      if (datas) {
-         let data = {
-            data: JSON.stringify(datas),
-            menuId: activeComp.menuId,
-            insrtUserId: userInfo.usrId,
-         };
-
-         return data;
-      }
-   };
-
-   //grid 추가버튼
-   const addMajorGridRow = () => {
-      let grid = gridRef.current.getInstance();
-
-      grid.appendRow({ coCd: userInfo.coCd, itemGrp: "", itemDiv: "", taxYn: "N", pkgItemYn: "N", subsYn: "N", deduYn: "N", useYn: "Y" }, { at: 0 });
-      grid.getPagination().movePageTo(0);
-      grid.focusAt(0, 1, true);
-   };
-
-   //grid 삭제버튼
-   const delMajorGridRow = () => {
-      let grid = gridRef.current.getInstance();
-      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
-      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
-
-      grid.removeRow(rowKey, {});
-      grid.focusAt(rowIndex, 1, true);
-   };
-
-   const handleFocusChange = async ({ rowKey }: any) => {
-      
-      if(focusRow != rowKey) {
-         setErrorMsgs({})
-      }
-      
-      if (rowKey !== null && gridRef.current) {
-         const grid = gridRef.current.getInstance();
-         const rowData = grid.getRow(rowKey);
-
-        
-         if (rowData) {
-            Object.entries(rowData).forEach(([key, value]) => {
-               const ref = refs[key as keyof typeof refs];
-               if (ref && ref.current) {
-                  if (inputChoices[key]) {
-                     setTimeout(() => {
-                        inputChoices[key].setChoiceByValue(value);
-                     }, 100);
-                  } else{
-                     let type = ref.current.getAttribute("data-type");
-                     if (type === "number") {
-                        ref.current.value = commas(Number(value));
-                      } else {
-                        ref.current.value = value;
-                      }
-                 }
-               }
-            });
-         }
-      }
-   };
-
 
    //검색 창 클릭 또는 엔터시 조회
    const handleCallSearch = () => {
@@ -422,10 +207,6 @@ const Mm0202 = ({ item, activeComp, userInfo }: Props) => {
             <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
             조회
          </button>
-         {/* <button type="button" onClick={save} className="bg-blue-500 text-white  rounded-lg px-2 py-1 flex items-center shadow">
-            <ServerIcon className="w-5 h-5 mr-1" />
-            저장
-         </button> */}
       </div>
    );
 
@@ -448,13 +229,13 @@ const Mm0202 = ({ item, activeComp, userInfo }: Props) => {
    //-------------------grid----------------------------
    const columns = [
       { header: "회사코드", name: "coCd", width: 80, align: "center", hidden: true},
-      { header: "회사", name: "bpNm", width: 100, sortable: true},
+      { header: "사업부서", name: "bpNm", width: 80, align: "center", sortable: true},
       { header: "품목코드", name: "itemCd", width: 100, align: "center", sortable: true},
-      { header: "품목명", name: "itemNm", width: 200, sortable: true},
-      { header: "규격", name: "spec", width:100, sortable: true},
-      { header: "품목그룹코드", name: "itemGrp", align: "center", width:120, sortable: true},
+      { header: "품목명", name: "itemNm", width: 250, sortable: true},
+      { header: "규격", name: "spec", width:200, sortable: true},
+      { header: "품목그룹코드", name: "itemGrp", align: "center", width:120, hidden: true},
       { header: "품목그룹", name: "itemGrpNm", sortable: true},
-      { header: "품목구분코드", name: "itemDiv", align: "center", width:120,  sortable: true},
+      { header: "품목구분코드", name: "itemDiv", align: "center", width:120, hidden: true},
       { header: "품목구분", name: "itemDivNm", sortable: true},
       { header: "판매단가", name: "salePrice", align: "right", width: 100, sortable: true, 	
          formatter: function(e: any) {
@@ -471,11 +252,6 @@ const Mm0202 = ({ item, activeComp, userInfo }: Props) => {
       { header: "대체유무", name: "subsYn", align: "center", width: 80, sortable: true},
       { header: "공제유무", name: "deduYn", align: "center", width: 80, sortable: true},
       { header: "사용여부", name: "useYn", align: "center", width: 80, sortable: true},
-
-      // { header: "등록자", name: "insrtUserId", hidden: true },
-      // { header: "등록일시", name: "insrtDt", hidden: true },
-      // { header: "수정자", name: "updtUserId", hidden: true },
-      // { header: "수정일시", name: "updtDt", hidden: true }
    ];
 
    
@@ -483,16 +259,30 @@ const Mm0202 = ({ item, activeComp, userInfo }: Props) => {
       height: 40,
       position: 'top', 
       columnContent: {
-         bpNm: {
-              template: (e:any) => {
-                  return  `총 ${e.cnt}개`;
+         // bpNm: {
+         //      template: (e:any) => {
+         //          return  `총 ${e.cnt}개`;
               
-              }
-          },
-        
+         //      }
+         //  },     
+          itemDivNm: {
+            template: (e:any) => {
+                return `합계 : `;
+            }
+         },
+         salePrice: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },   
+         costPrice: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
       }
-
-
    }
 
    const grid = () => (
@@ -506,8 +296,8 @@ const Mm0202 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={handleFocusChange} 
-                  height = {window.innerHeight - 500} perPageYn={false} summary={summary}/>
+         <TuiGrid01 gridRef={gridRef} columns={columns}
+                  height = {window.innerHeight - 590} summary={summary}/>
       </div>
    );
 

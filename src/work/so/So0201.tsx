@@ -1,7 +1,7 @@
 import { on } from "events";
 import { React, useEffect, useState, useRef, useCallback, initChoice, 
    updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
-   reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp, DateRangePickerComp, date, InputSearchComp, commas,
+   reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, SelectSearch, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp, DateRangePickerComp, date, InputSearchComp, commas,
     RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, formatCardNumber, formatExpiryDate, getGridCheckedDatas2 } from "../../comp/Import";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ReactSelectEditor";
@@ -43,6 +43,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
     const searchRef4 = useRef<any>(null);
     const searchRef5 = useRef<any>(null);
     const searchRef6 = useRef<any>(null);
+    const searchRef7 = useRef<any>(null);
 
    const [tabIndex, setTabIndex] = useState(0);
    const [currentInputDiv, setCurrentInputDiv] = useState<JSX.Element | null>(null);
@@ -782,6 +783,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange('confirmDt', result[0].confirmDt);
       onInputChange('preRcptNo', result[0].preRcptNo);
       onInputChange('pkgYn', result[0].pkgYn);
+      onInputChange('mouYn', result[0].mouYn);
       onInputChange('dealType', result[0].dealType);
       onInputChange('payAmt', result[0].payAmt);      
    };
@@ -1039,6 +1041,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    const handleCallSearch5 = async () => {
       const param = {
          dlvyNm: searchRef3.current?.value || '999',
+         addr1: searchRef7.current?.value || '999',
       };
       const data = JSON.stringify(param);
       const result = await fetchPost("SO0201_P04", { data });
@@ -1361,6 +1364,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       const target = e.target as HTMLInputElement; 
       const param = {
          dlvyNm: target.value || '999',
+         addr1: searchRef7.current?.value || '999',
       };
       const data = JSON.stringify(param);
       const result = await fetchPost("SO0201_P04", { data });
@@ -1386,6 +1390,10 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                      return;
                   }
               });
+            } else {
+               onInputChange('dlvyCd', dlvyCd);
+               onInputChange('dlvyNm', dlvyNm);
+               onInputChange('dlvyAddr', addr1);
             }
          } else {
             await setIsOpen3(true);
@@ -1400,6 +1408,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    const handleInputSearch5 = async (e: any) => {
       const param = {
          dlvyNm: e || '999',
+         addr1: searchRef7.current?.value || '999',
       };
 
       onInputChange('dlvyNmS', e);
@@ -1661,6 +1670,10 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                <InputComp title="배송지명" ref={searchRef3} value={inputValues.dlvyNmS} handleCallSearch={handleCallSearch5} 
                           onChange={(e)=>{
                           onInputChange('dlvyNmS', e);
+                     }} />
+               <InputComp title="주소" ref={searchRef7} value={inputValues.addr1} handleCallSearch={handleCallSearch5} 
+                          onChange={(e)=>{
+                          onInputChange('addr1', e);
                      }} />         
             </div>
             <div className="w-[40%] flex justify-end">
@@ -1767,7 +1780,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          </div>
 
          <div className="space-y-5">
-            <div className="grid grid-cols-2  gap-3  justify-around items-center pr-2 pb-[69px]">
+            <div className="grid grid-cols-2  gap-3  justify-around items-center pr-2 pb-[23px]">
                <InputSearchComp1 value={inputValues.soNo} readOnly={true} title="주문번호" target="soNo" handleInputSearch={handleInputSearch} />
                <SelectSearchComp title="접수구분" 
                               ref={refs.rcptMeth}
@@ -1890,6 +1903,11 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                           onChange={(e) => {
                            onInputChange('roleNm', e);                           
                         }}   />
+               <Checkbox  title = "MOU 여부" value={inputValues.mouYn} layout="flex" 
+                           minWidth="80px"
+                           checked={inputValues.mouYn == 'Y'} 
+                          onChange={(e) => {
+                                    onInputChange('mouYn', e)}} />
             </div>
          </div>
       </div>

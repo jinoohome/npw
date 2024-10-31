@@ -148,7 +148,7 @@ const Mm0402 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 columns={grid1Columns} gridRef={GridRef1} />
+         <TuiGrid01 columns={grid1Columns} gridRef={GridRef1} height={window.innerHeight - 500}/>
       </div>
    );
 

@@ -61,8 +61,18 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const setGridData = async () => {
-      try {                   
-         await MM0301_S01();
+      try {                
+         const result = await MM0301_S01();
+
+         if (!result || result.length === 0) {
+            // 데이터가 없을 때 refs 값들 초기화
+            Object.keys(refs).forEach((key) => {
+               const ref = refs[key as keyof typeof refs];
+               if (ref?.current) {                  
+                     ref.current.value = ""; // 각 ref의 값을 빈 값으로 설정
+               }
+            });
+         }
       } catch (error) {
          console.error("setGridData Error:", error);
       }
@@ -82,7 +92,10 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
          const updatedGridDatas = gridDatas.map(data => ({ ...data, _attributes: { ...data._attributes, checked: true }}));
          grid.resetData(updatedGridDatas);
          if (gridDatas.length > 0) {
-            grid.focusAt(focusRow, 0, true);
+            console.log(focusRow);
+            let checkFocusRow = grid.getValue(focusRow, "workCd") ? focusRow : 0;
+            grid.focusAt(checkFocusRow, 0, true);
+            //grid.focusAt(focusRow, 0, true);
          }
       }
 
@@ -134,18 +147,11 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const save = async () => {
-
       let grid = gridRef.current.getInstance();
-      const focusRow = grid.getFocusedCell().rowKey? grid.getFocusedCell().rowKey : 0;
       let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
-      let rowIndex = grid.getIndexOfRow(rowKey);
       setFocusRow(rowKey);
 
-
-    
       const data = await getGridValues();
-
-      console.log(data)
     
       if (data) {
          let result = await MM0301_U01(data);
@@ -153,17 +159,14 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
             await returnResult(result);
          }
       }else{
-
          grid.focusAt(rowKey, 0, true);
       }
-
-    
-    
    };
+
    const returnResult = async(result: any) => {
      
       alertSwal(result.msgText, result.msgCd, result.msgStatus);
-      await setGridData();
+      setGridData();
    
    };
 
@@ -198,7 +201,16 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
       let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
 
       grid.removeRow(rowKey, {});
-      grid.focusAt(rowIndex, 1, true);
+      // 데이터가 남아 있을 때만 focusAt을 호출
+      console.log('삭제버튼클릭');
+
+      if (grid.getRowCount() > 0) {
+         console.log('rowIndex',rowIndex);   
+         grid.focusAt(rowIndex, 1, true);
+         setFocusRow(rowIndex);
+      } else {
+         setFocusRow(0);  // 그리드가 비어 있을 경우, 포커스를 첫 번째 행으로 설정 (데이터가 추가되면 다시 포커스를 맞춤)
+      }
    };
 
    //grid 포커스변경시
@@ -291,9 +303,9 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
 
    //-------------------grid----------------------------
    const columns = [
-      { header: "작업코드", name: "workCd", hidden: false },
-      { header: "작업명", name: "workNm", hidden: false , editor: "text"},
-      { header: "사용여부", name: "useYn", align: 'center', hidden: false },
+      { header: "작업코드", name: "workCd", width: 100, align: "center"},
+      { header: "작업명", name: "workNm", width: 250},
+      { header: "사용여부", name: "useYn", align: 'center'},
      
    ];
 
@@ -318,7 +330,7 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={handleFocusChange} rowHeaders={['checkbox','rowNum']}  />
+         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={handleFocusChange} height = {window.innerHeight - 520}/>
       </div>
    );
 

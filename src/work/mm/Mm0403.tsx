@@ -207,7 +207,7 @@ const Mm0403 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    const save = async () => {
       let result = await MM0403_U01();
-
+console.log(result);
       if (result) {
          returnResult(result);
       }
@@ -255,9 +255,18 @@ const Mm0403 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    //grid 삭제버튼
    const delMinorGridRow = () => {
-      let grid2 = GridRef2.current.getInstance();
-      let { rowKey } = grid2.getFocusedCell();
-      grid2.removeRow(rowKey, {});
+      let grid = GridRef2.current.getInstance();      
+
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+      
+      // 행을 삭제
+      grid.removeRow(rowKey, {});
+
+      // 남은 행이 있는 경우에만 포커스를 맞춤
+      if (grid.getRowCount() > 0) {
+         grid.focusAt(rowIndex, 1, true);
+      }
    };
 
    //grid 포커스변경시
@@ -336,14 +345,14 @@ const Mm0403 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       if (gridInstance.getRowCount() === 0) {
           gridInstance.appendRow({
               coCd: '100',
-              siGunGu: rowData.siGunGu, // 클릭된 행의 siGunGu 값 사용
+              siGunGu: rowData.code, // 클릭된 행의 siGunGu 값 사용
               dlvyDiv: 'ZZ0189',
               status: 'I',
               useYn: 'Y',
           });
           gridInstance.appendRow({
               coCd: '100',
-              siGunGu: rowData.siGunGu, // 클릭된 행의 siGunGu 값 사용
+              siGunGu: rowData.code, // 클릭된 행의 siGunGu 값 사용
               dlvyDiv: 'ZZ0193',
               status: 'I',
               useYn: 'Y',
@@ -402,7 +411,6 @@ const Mm0403 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    const grid2Columns = [
       { header: "", name: "coCd", hidden: true },
-      { header: "시/군/구", name: "siGunGu", align: "center" , hidden: true },
       { header: "시/군/구", name: "siGunGu", align: "center" , hidden: true },
       { header: "발주구분", name: "dlvyDiv", align: "center", formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: zz0019 } }},
       { header: "발주지점", name: "dlvyCd", align: "center",   formatter: "listItemText", editor: { type: ChoicesEditor, options: 

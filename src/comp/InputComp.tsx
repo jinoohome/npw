@@ -199,7 +199,7 @@ interface Props2 {
    onkeyDown?: (e: any) => void;
 }
 
-const InputComp2 = forwardRef<HTMLInputElement, Props2>(({ title, target, setChangeGridData, readOnly = false, errorMsg, type, onChange, onkeyDown }, ref) => {
+const InputComp2 = forwardRef<HTMLInputElement, Props2>(({ title, target, setChangeGridData, readOnly = false, errorMsg, type = "text", onChange, onkeyDown }, ref) => {
    const handleChange = (event: any) => {
       let value = event.target.value;
       if (type === "number") {
@@ -226,20 +226,20 @@ const InputComp2 = forwardRef<HTMLInputElement, Props2>(({ title, target, setCha
             <input
                readOnly={readOnly}
                ref={ref}
-               type="text"
-               data-type={type === "number" ? "number" : "text"}
+               type={type} // 수정된 부분: 전달받은 type을 사용
                className={`border rounded-md h-8 p-2 w-full 
-            ${readOnly ? "bg-gray-100 text-[#999]" : ""} 
-            ${type === "number" ? "text-right" : ""}
-            focus:outline-orange-300`}
+               ${readOnly ? "bg-gray-100 text-[#999]" : ""} 
+               ${type === "number" ? "text-right" : ""} 
+               focus:outline-orange-300`}
                onChange={handleChange}
                onKeyDown={handleKeyDown}
-            ></input>
+            />
          </div>
-         <label className="text-rose-500">{errorMsg}</label>
+         {errorMsg && <label className="text-rose-500">{errorMsg}</label>}
       </div>
    );
 });
+
 
 interface InputSearchCompProps {
    title: string;

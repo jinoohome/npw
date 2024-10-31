@@ -1,7 +1,8 @@
 import { userInfo } from "os";
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
+import { React, useEffect, useState, useRef, SelectSearch, InputComp, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import DaumPostcodeComp from "../../comp/DaumPostcodeComp";  // DaumPostcodeComp 컴포넌트 임포트
 
 interface Props {
    item: any;
@@ -44,6 +45,10 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       erpCode: useRef<any>(null),
    };
 
+   const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
+      coCd: '',
+   });
+
    const [gridDatas, setGridDatas] = useState<any[]>();
    const [zz0005, setZz0005] = useState<ZZ_CODE_RES[]>([]);
    const [cd0008, setCd0008] = useState<ZZ_CODE_RES[]>([]);
@@ -54,17 +59,10 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    const [choice1, setChoice1] = useState<any>();
    const [choice2, setChoice2] = useState<any>();
-   const [choice3, setChoice3] = useState<any>();
-   const [choice4, setChoice4] = useState<any>();
-   const [choice5, setChoice5] = useState<any>();
-   const [choice6, setChoice6] = useState<any>();
-   const [choice7, setChoice7] = useState<any>();
-   const [choice8, setChoice8] = useState<any>();
-
 
    const [focusRow, setFocusRow] = useState<any>(0);
 
-   const breadcrumbItem = [{ name: "관리자" }, { name: "거래처관리" }, { name: "거래처등록" }];
+   const breadcrumbItem = [{ name: "기준정보" }, { name: "거래처" }, { name: "거래처등록 (유지보수)" }];
 
    // 첫 페이지 시작시 실행
    useEffect(() => {
@@ -82,11 +80,6 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          { value: "Y", label: "사용" },
          { value: "N", label: "미사용" },
       ]);
-      initChoice(refs.paBpCd, setChoice3);
-      initChoice(refs.bpType, setChoice4);
-      initChoice(refs.bankCd, setChoice6);
-      initChoice(refs.coCd, setChoice7);
-      initChoice(refs.bpDiv, setChoice8);
    };
 
    const setGridData = async () => {
@@ -96,36 +89,19 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             setZz0005(zz0005Data);
          }
 
-         let cd0008Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0008", div: "" });
-         if (cd0008Data != null) {
-            setCd0008(cd0008Data);
+         const result = await MM0101_S01();
+
+         if (!result || result.length === 0) {
+            // 데이터가 없을 때 refs 값들 초기화
+            Object.keys(refs).forEach((key) => {
+               const ref = refs[key as keyof typeof refs];
+               if (ref?.current) {                  
+                     ref.current.value = ""; // 각 ref의 값을 빈 값으로 설정
+               }
+            });
+
+            setInputValues([]);
          }
-
-         let zz0009Data = await ZZ_CODE({ coCd: "999", majorCode: "ZZ0009", div: "" });
-         if (zz0009Data != null) {
-            setZZ0009(zz0009Data);
-         }
-
-         let zz0019Data = await ZZ_CODE({ coCd: "999", majorCode: "ZZ0019", div: "" });
-         if (zz0019Data != null) {
-            setZZ0019(zz0019Data);
-         }
-
-
-         let coCdData = await ZZ_B_BIZ();
-         if (coCdData != null) {
-            coCdData.unshift({ value: "", text: "" });
-             setCoCds(coCdData);
-         }
-
-         let paBpCdData = await MM0101_S01_IN();
-         if (paBpCdData != null) {
-            paBpCdData.unshift({ value: "", text: "" });
-             setPaBpCds(paBpCdData);
-         }
-         
-
-         await MM0101_S01();
       } catch (error) {
          console.error("setGridData Error:", error);
       }
@@ -152,43 +128,7 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    //inputChoicejs 데이터 설정
    useEffect(() => {
       updateChoices(choice1, zz0005, "value", "text");
-
-      let zz0005Data = zz0005.filter((item) => item.value !== "999");
-      updateChoices(choice4, zz0005Data, "value", "text", "");
    }, [zz0005]);
-
-   //inputChoicejs 데이터 설정
-   useEffect(() => {
-      updateChoices(choice5, cd0008, "value", "text");
-   }, [cd0008]);
-
-   //inputChoicejs 데이터 설정
-   useEffect(() => {
-      updateChoices(choice6, zz0009, "value", "text");
-   }, [zz0009]);
-
-   //inputChoicejs 데이터 설정
-   useEffect(() => {
-      updateChoices(choice8, zz0019, "value", "text");
-   }, [zz0019]);
-
-   useEffect(() => {
-      updateChoices(choice7, coCds, "value", "text");
-   }, [coCds]);
-
-   useEffect(() => {
-      updateChoices(choice3, paBpCds, "value", "text");
-   }, [paBpCds]);
-
-   // Grid 내부 Choicejs 데이터 설정
-   // useEffect(() => {
-   //    if (zz0005) {
-   //       let gridInstance = majorGridRef.current.getInstance();
-   //       let column = gridInstance.getColumn("codeDiv");
-   //       column.editor.options.listItems = zz0001;
-   //       gridInstance.refreshLayout();
-   //    }
-   // }, [zz0005]);
 
    //---------------------- api -----------------------------
 
@@ -205,63 +145,10 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       return formattedResult;
    };
 
-   var ZZ_B_BIZ = async () => {
-      try {
-         const param = {
-            coCd: userInfo.coCd,
-         };
-
-         const data = JSON.stringify(param);
-         const result = await fetchPost(`ZZ_B_BIZ`, { data });
-
-         let formattedResult = Array.isArray(result)
-         ? result.map(({ coCd, bpNm, ...rest }) => ({
-              value: coCd,
-              text: bpNm,
-              label: bpNm,
-              ...rest,
-           }))
-         : [];
-     
-         return formattedResult;
-      } catch (error) {
-         console.error("ZZ_B_BIZ Error:", error);
-         throw error;
-      }
-   }
-
-   const MM0101_S01_IN = async () => {
-      try {
-         const param = {
-            coCd: userInfo.coCd,
-            bpNm: searchRef1.current?.value || "999",
-            bpType: searchRef2.current?.value || "999",
-            useYn: searchRef3.current?.value || "999",
-         };
-
-         const data = JSON.stringify(param);
-         const result = await fetchPost(`MM0101_S01`, { data });
-
-         let formattedResult = Array.isArray(result)
-         ? result.map(({ bpCd, bpNm, ...rest }) => ({
-              value: bpCd,
-              text: bpNm,
-              label: bpNm,
-              ...rest,
-           }))
-         : [];
-     
-         return formattedResult;
-      } catch (error) {
-         console.error("MM0101_S01 Error:", error);
-         throw error;
-      }
-   };
-
    const MM0101_S01 = async () => {
       try {
          const param = {
-            coCd: userInfo.coCd,
+            coCd: "200",
             bpNm: searchRef1.current?.value || "999",
             bpType: searchRef2.current?.value || "999",
             useYn: searchRef3.current?.value || "999",
@@ -288,6 +175,36 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    };
 
    //-------------------event--------------------------
+   const handleAddressSelect = (data: any) => {
+      const { zonecode, roadAddress, jibunAddress } = data;
+      const selectedAddress = roadAddress || jibunAddress;
+   
+      // 우편번호와 주소 필드에 값을 설정
+      refs.zipCd.current.value = zonecode;
+      refs.addr1.current.value = selectedAddress;
+   
+      // 그리드 데이터 변경
+      setChangeGridData("zipCd", zonecode);
+      setChangeGridData("addr1", selectedAddress);
+   };
+
+   const onInputChange = (name: string, value: any) => {
+      setInputValues((prevValues) => {
+          // null, undefined, ""을 하나의 빈 값으로 취급
+          const currentValue = prevValues[name] ?? "";
+          const newValue = value ?? "";
+  
+          // 동일한 값일 경우 상태를 업데이트하지 않음
+          if (currentValue === newValue) {
+              return prevValues;
+          }
+  
+          return {
+              ...prevValues,
+              [name]: newValue,
+          };
+      });
+   };
 
    const search = () => {
       setGridData();
@@ -302,6 +219,7 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          }
       }
    };
+
    const returnResult = () => {
       let grid = gridRef.current.getInstance();
       let focusMajorRowKey = grid.getFocusedCell().rowKey || 0;
@@ -328,16 +246,25 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const addGridRow = () => {
       let grid = gridRef.current.getInstance();
 
-      grid.appendRow({ coCd: "", bpDiv: "", paBpCd: "", bpType: "", bankCd: "", useYn: "Y" }, { at: 0 });
+      grid.appendRow({ coCd: "200", bpDiv: "", paBpCd: "", bpType: "", bankCd: "", useYn: "Y" }, { at: 0 });
       grid.getPagination().movePageTo(0);
       grid.focusAt(0, 1, true);
    };
 
    //grid 삭제버튼
    const delMajorGridRow = () => {
-      let grid = gridRef.current.getInstance();
-      let { rowKey } = grid.getFocusedCell();
+      let grid = gridRef.current.getInstance();      
+
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+      
+      // 행을 삭제
       grid.removeRow(rowKey, {});
+
+      // 남은 행이 있는 경우에만 포커스를 맞춤
+      if (grid.getRowCount() > 0) {
+         grid.focusAt(rowIndex, 1, true);
+      }
    };
 
    //grid 포커스변경시
@@ -348,32 +275,17 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
          if (rowData) {
             Object.entries(rowData).forEach(([key, value]) => {
+               
+               onInputChange(key, value);
+            }); 
+         }
+
+         if (rowData) {
+            Object.entries(rowData).forEach(([key, value]) => {
                const ref = refs[key as keyof typeof refs]; // Add index signature to allow indexing with a string
-               console.log(key+'>>'+value)
+
                if (ref && ref.current !== null) {
-                  if (key === "paBpCd") {
-                     setTimeout(function () {
-                        choice3?.setChoiceByValue(value);
-                     }, 100);
-                  } else if (key === "coCd") {
-                     setTimeout(function () {
-                        choice7?.setChoiceByValue(value);
-                     }, 100);
-                  } else if (key === "bpType") {
-                     setTimeout(function () {
-                        choice4?.setChoiceByValue(value);
-                     }, 100);
-                  } else if (key === "bpDiv") {
-                     setTimeout(function () {
-                        choice8?.setChoiceByValue(value);
-                     }, 100);
-                  } else if (key === "bankCd") {
-                     setTimeout(function () {
-                        choice6?.setChoiceByValue(value);
-                     }, 100);
-                  } else {
-                     ref.current.value = value;
-                  }
+                  ref.current.value = value;
                }
             });
          }
@@ -435,10 +347,54 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
          <div className="p-5 space-y-5">
             <div className="grid grid-cols-4  gap-12  justify-around items-center ">
-               <SelectComp2 ref={refs.coCd} title="사업부서" target="coCd" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.bpCd} title="회사코드" target="bpCd" setChangeGridData={setChangeGridData} readOnly={true} />
-               <SelectComp2 ref={refs.paBpCd} title="그룹사코드" target="paBpCd" setChangeGridData={setChangeGridData} />
-               <SelectComp2 ref={refs.bpType} title="회사구분" target="bpType" setChangeGridData={setChangeGridData} />
+            <SelectSearch
+                        title="사업부서"
+                        value={inputValues.coCd}
+                        readonly={true}
+                        onChange={(label, value) => {
+                              setChangeGridData("coCd", value);
+                              onInputChange("coCd", value);
+                        }}
+
+                        stringify={true}
+                        layout="vertical"
+                        param={{ coCd: "200" }}
+                        procedure="ZZ_B_BIZ"
+                        dataKey={{ label: "bpNm", value: "coCd" }}
+               />
+               <InputComp title="회사코드" readOnly={true} layout="vertical" value={inputValues.bpCd} onChange={(e)=> onInputChange('bpCd',e)} />
+               <SelectSearch
+                        title="그룹사코드"
+                        value={inputValues.paBpCd}
+                        onChange={(label, value) => {
+                              setChangeGridData("paBpCd", value);
+                              onInputChange("paBpCd", value);
+                        }}
+
+                        stringify={true}
+                        layout="vertical"
+                        param={{ coCd: "200",
+                                 bpNm: "999",
+                                 bpType: searchRef2.current?.value || "999",
+                                 useYn: "Y", }}
+                        procedure="MM0101_S01"
+                        dataKey={{ label: "bpNm", value: "bpCd" }}
+               />
+               <SelectSearch
+                       title="회사구분"
+                       value={inputValues.bpType}
+                       readonly={inputValues.bpCd}
+                       layout="vertical"
+                       onChange={(label, value) => {
+                           setChangeGridData("bpType", value);
+                           onInputChange("bpType", value);
+                       }}
+
+                       param={{ coCd: "999", majorCode: "ZZ0005", div: "" }}
+                       procedure="ZZ_CODE"
+                       dataKey={{ label: "codeName", value: "code" }}
+
+                   />
             </div>
 
             <div className="grid grid-cols-2  gap-12  justify-around items-center">
@@ -446,8 +402,21 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                <InputComp2 ref={refs.bpNm} title="회사약명" target="bpNm" setChangeGridData={setChangeGridData} />
             </div>
 
-            <div className="grid grid-cols-4  gap-12  justify-around items-center">
-               <SelectComp2 ref={refs.bpDiv} title="회사종류" target="bpDiv" setChangeGridData={setChangeGridData} />
+            <div className="grid grid-cols-4  gap-6  justify-around items-center">
+               <SelectSearch
+                       title="회사종류"
+                       value={inputValues.bpDiv}
+                       layout="vertical"
+                       onChange={(label, value) => {
+                           setChangeGridData("bpDiv", value);
+                           onInputChange("bpDiv", value);
+                       }}
+
+                       param={{ coCd: "999", majorCode: "ZZ0019", div: "" }}
+                       procedure="ZZ_CODE"
+                       dataKey={{ label: "codeName", value: "code" }}
+
+                   />
                <InputComp2 ref={refs.indType} title="업종" target="indType" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.cndType} title="업태" target="cndType" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.repreNm} title="대표자명" target="repreNm" setChangeGridData={setChangeGridData} />
@@ -461,13 +430,29 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>
 
             <div className="grid grid-cols-3  gap-12  justify-around items-center">
-               <InputComp2 ref={refs.zipCd} title="우편번호" target="zipCd" setChangeGridData={setChangeGridData} />
+               <div className="flex space-x-2">
+                  <InputComp2 ref={refs.zipCd} title="우편번호" target="zipCd" setChangeGridData={setChangeGridData} />
+                  <DaumPostcodeComp onComplete={handleAddressSelect} /> {/* Daum 주소 검색 버튼 */}
+               </div>
                <InputComp2 ref={refs.addr1} title="주소" target="addr1" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.addr2} title="상세주소" target="addr2" setChangeGridData={setChangeGridData} />
             </div>
 
             <div className="grid grid-cols-3  gap-12  justify-around items-center">
-               <SelectComp2 ref={refs.bankCd} title="은행" target="bankCd" setChangeGridData={setChangeGridData} />
+               <SelectSearch
+                       title="은행"
+                       value={inputValues.bankCd}
+                       layout="vertical"
+                       onChange={(label, value) => {
+                           setChangeGridData("bankCd", value);
+                           onInputChange("bankCd", value);
+                       }}
+
+                       param={{ coCd: "999", majorCode: "ZZ0009", div: "" }}
+                       procedure="ZZ_CODE"
+                       dataKey={{ label: "codeName", value: "code" }}
+
+                   />
                <InputComp2 ref={refs.bankAcctNo} title="은행계좌번호" target="bankAcctNo" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.bankHolder} title="예금주" target="bankHolder" setChangeGridData={setChangeGridData} />    
             </div>
@@ -524,7 +509,7 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={handleFocusChange} />
+         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={handleFocusChange} height={window.innerHeight - 520}/>
       </div>
    );
 

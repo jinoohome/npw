@@ -88,10 +88,11 @@ const SelectComp1 = forwardRef<HTMLSelectElement, Props1>(({ title, handleCallSe
 interface Props2 {
    title: string;
    target: string;
+   readOnly?: boolean;
    setChangeGridData?: (target: string, value: string) => void;
    onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }
-const SelectComp2 = forwardRef<HTMLSelectElement, Props2>(({ title, target, setChangeGridData, onChange }, ref) => {
+const SelectComp2 = forwardRef<HTMLSelectElement, Props2>(({ title, target, readOnly = false, setChangeGridData, onChange }, ref) => {
    const handleKeyDown = (event: React.KeyboardEvent<HTMLSelectElement>) => {
       
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
@@ -373,15 +374,22 @@ interface SelectSearchProps {
    addData,
  }: SelectSearchProps) => {
    const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
- 
+
    useEffect(() => {
-      let isMounted = true; // 컴포넌트가 마운트된 상태인지 추적하는 변수
+      let isMounted = true;
 
       const addCustomOption = (items: { value: string; label: string }[]) => {
-         // additionalOption에 value가 999인 값이 있으면 추가
-         if (addData && addData === '999') {
+         // 빈 값 추가를 위한 구분자 확인
+         if (addData === 'empty') {
            return [
-              { value: '999', label: '전체' }, // value가 999인 label 추가
+             { value: '', label: '' }, // 빈 값 추가
+             ...items,
+           ];
+         }
+         // '999'에 대한 경우
+         if (addData === '999') {
+           return [
+              { value: '999', label: '전체' }, 
              ...items,
            ];
          }
@@ -405,7 +413,6 @@ interface SelectSearchProps {
                 label: item[dataKey.label],
               }));
               items = addCustomOption(items);
-              
               setOptions(items);
             }
           })
@@ -413,12 +420,12 @@ interface SelectSearchProps {
             console.error("데이터 로드 중 오류 발생:", error);
           });
       }
-    
+
       return () => {
-        isMounted = false; // cleanup 시점에 마운트 상태를 false로 설정
+        isMounted = false;
       };
     }, [datas, procedure, param, dataKey, addData]);
- 
+
    const getData = async (procedure: string, param: any) => {
      try {
        let result = "";
@@ -440,7 +447,7 @@ interface SelectSearchProps {
          onClick(); // onClick 함수가 전달되면 실행
      }
    };
- 
+
    const handleChange = (selectedOption: { value: string; label: string } | null) => {
      if (selectedOption) {
        if (setChangeGridData && target) {
@@ -454,7 +461,7 @@ interface SelectSearchProps {
        }
      }
    };
- 
+
    return (
      <div
        className={` ${
@@ -488,7 +495,8 @@ interface SelectSearchProps {
        </div>
      </div>
    );
- };
+};
+
 
 
 interface SelectPopProps {

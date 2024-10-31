@@ -1,4 +1,4 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, reSizeGrid, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
+import { React, useEffect, useState, useRef, commas, initChoice, fetchPost, Breadcrumb, TuiGrid01, reSizeGrid, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
@@ -20,6 +20,7 @@ const Mm0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    //검색창 ref
    const searchRef1 = useRef<any>(null);
    const searchRef2 = useRef<any>(null);
+   const searchRef3 = useRef<any>(null);
 
    const [gridDatas1, setGridDatas] = useState<any[]>();
 
@@ -74,23 +75,11 @@ const Mm0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    //---------------------- api -----------------------------
 
-   const ZZ_CODE = async (param: ZZ_CODE_REQ) => {
-      const result3 = await ZZ_CODE_API(param);
-      let formattedResult = Array.isArray(result3)
-         ? result3.map(({ code, codeName, ...rest }) => ({
-              value: code,
-              text: codeName,
-              label: codeName,
-              ...rest,
-           }))
-         : [];
-      return formattedResult;
-   };
-
    const MM0206_S01 = async () => {
       const param = {
          coCd: userInfo.coCd,
          pkgName: searchRef1.current?.value || '999',
+         itemName: searchRef3.current?.value || '999',
          useYn: searchRef2.current?.value || '999',
       };
 
@@ -129,6 +118,7 @@ const Mm0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       <div className="bg-gray-100 rounded-lg p-5 search text-sm">
          <div className="grid gap-y-3  justify-start w-[80%]  2xl:w-[60%]  xl:grid-cols-3 md:grid-cols-2">
             <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch} title="패키지명"></InputComp1>
+            <InputComp1 ref={searchRef3} handleCallSearch={handleCallSearch} title="품목명"></InputComp1>
             <SelectComp1 ref={searchRef2} title="사용유무" handleCallSearch={handleCallSearch}></SelectComp1>
          </div>
       </div>
@@ -140,12 +130,13 @@ const Mm0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "", name: "coCd", hidden: true },
       { header: "패키지 코드", name: "pkgItemCd", align: "center", width: 100, rowSpan: true },
       { header: "패키지명", name: "pkgName", align: "left", width: 430, rowSpan: true },
-      { header: "금액", name: "pkgAmt", align: "right", width: 100, rowSpan: true },
-      { header: "필수체크", name: "mandatoryYn", align: "center", width: 100 },
+      { header: "금액", name: "pkgAmt", align: "right", width: 100, rowSpan: true,   
+         formatter: function(e: any) {if(e.value){return commas(e.value);} } },
       { header: "패키지 사용여부", name: "useYn", align: "center", width: 120, hidden: true },
       { header: "품목코드", name: "itemCd", align: "center", width: 100 },
-      { header: "품목명", name: "itemNm", width: 430 },
+      { header: "품목명", name: "itemNm", width: 450 },
       { header: "정렬순서", name: "sort", align: "center", width: 100 },
+      { header: "필수체크", name: "mandatoryYn", align: "center", width: 100 },
       { header: "품목 사용여부", name: "itemUseYn", align: "center" },
    ];
 
@@ -156,11 +147,11 @@ const Mm0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
-               <div className="">패키지 리스트</div>
+               <div className="">패키지 품목 리스트</div>
             </div>
          </div>
 
-         <TuiGrid01 columns={grid1Columns} gridRef={GridRef1} />
+         <TuiGrid01 columns={grid1Columns} gridRef={GridRef1} height = {window.innerHeight - 495}/>
       </div>
    );
 

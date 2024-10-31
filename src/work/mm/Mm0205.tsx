@@ -1,9 +1,7 @@
 import { React, useEffect, useState, useRef, commas, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, reSizeGrid, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, CommonModal } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
-import { OptColumn } from "tui-grid/types/options";
 import { XMarkIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
-import Modal from 'react-modal';
 
 interface Props {
    item: any;
@@ -19,7 +17,6 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    const gridGridContainerRef = useRef(null);
    const grid2GridContainerRef = useRef(null);
-   const grid3GridContainerRef = useRef(null);
 
    const searchRef1 = useRef<any>(null);
    const searchRef2 = useRef<any>(null);
@@ -35,9 +32,6 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    
    const [searchChoices, setSearchChoices] = useState<{ [key: string]: any }>({});
    const [choice1, setChoice1] = useState<any>();
-   const [choice2, setChoice2] = useState<any>();
-   const [choice3, setChoice3] = useState<any>();
-   const [choice4, setChoice4] = useState<any>();
 
    const breadcrumbItem = [{ name: "기준정보" }, { name: "품목" }, { name: "패키지 품목 등록" }];
 
@@ -165,12 +159,19 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          pkgName: searchRef1.current?.value || '999',
          useYn: searchRef2.current?.value || '999',
       };
-
+   
       const data = JSON.stringify(param);
       const result = await fetchPost(`MM0205_S01`, { data });
+   
       setGridDatas(result);
+
+      if (!result || result.length === 0) {
+         GridRef2.current?.getInstance().clear();
+      }
+   
       return result;
    };
+   
 
    const MM0205_S02 = async (param: { pkgItemCd: string }) => {
       const result2 = await fetchPost(`MM0205_S02`, param);
@@ -180,6 +181,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const MM0205_U03 = async () => {
       try {
          const data = await getGridValues();
+         console.log(data);
          const result = await fetchPost(`MM0205_U03`, data);
          return result as any;
       } catch (error) {
@@ -191,7 +193,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const MM0201_S01 = async () => {
       try {
          const param = {
-            coCd: userInfo.coCd,
+            coCd: "100",
             itemNm: searchRef3.current?.value || "999",
             itemGrp: searchRef4.current?.value || "999",
             itemDiv: searchRef5.current?.value || "999",
@@ -219,11 +221,11 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const save = async () => {
       let result = await MM0205_U03();
       if (result) {
-         returnResult();
+         returnResult(result);
       }
    };
-   const returnResult = () => {
-      alertSwal("저장완료", "저장이 완료되었습니다.", "success");
+   const returnResult = async(result: any) => {
+      alertSwal(result.msgText, result.msgCd, result.msgStatus);
       setGridData();
    };
 
@@ -255,19 +257,47 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    };
 
    const delMajorGridRow = () => {
-      let grid1 = GridRef1.current.getInstance();     
-      let { rowKey } = grid1.getFocusedCell();
-      grid1.removeRow(rowKey, {});
+      let grid = GridRef1.current.getInstance();      
+
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+      
+      // 행을 삭제
+      grid.removeRow(rowKey, {});
+
+      // 남은 행이 있는 경우에만 포커스를 맞춤
+      if (grid.getRowCount() > 0) {
+         grid.focusAt(rowIndex, 1, true);
+      }
    };
 
    const addMinorGridRow = () => {
+      let gridRef1 = GridRef1.current.getInstance();
+      let inPkgItemCd = gridRef1.getValue(gridRef1.getFocusedCell().rowKey, "pkgItemCd");
+
+      if (!inPkgItemCd) {
+         let title = "패키지 미등록";
+         let msg = "패키지 먼저 저장 후에 추가해 주세요";
+         alertSwal(title, msg, "warning");
+         return;
+      }
+
       openModal();
    };
 
    const delMinorGridRow = () => {
-      let grid2 = GridRef2.current.getInstance();
-      let { rowKey } = grid2.getFocusedCell();
-      grid2.removeRow(rowKey, {});
+      let grid = GridRef2.current.getInstance();      
+
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+      
+      // 행을 삭제
+      grid.removeRow(rowKey, {});
+
+      // 남은 행이 있는 경우에만 포커스를 맞춤
+      if (grid.getRowCount() > 0) {
+         grid.focusAt(rowIndex, 1, true);
+      }
    };
 
    const handleMajorFocusChange = async ({ rowKey }: any) => {
@@ -280,6 +310,8 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       let pkgItemCd = grid1Row.pkgItemCd;
       if (pkgItemCd) {
          await MM0205_S02({ pkgItemCd: pkgItemCd });
+      } else {
+         GridRef2.current.getInstance().clear();
       }
    };
 
@@ -339,9 +371,10 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       setIsOpen(false);
     };
 
-    const modalSearch = () => { }
-
     const addItems = () => {
+      const grid1 = GridRef1.current.getInstance();
+      const rowData1 = grid1.getRow(grid1.getFocusedCell().rowKey);
+
       const grid3 = GridRef3.current.getInstance();
       const checkedRows = grid3.getCheckedRows();
   
@@ -354,8 +387,8 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       checkedRows.forEach((row: any) => {
           if (!existingItemCds.has(row.itemCd)) {  // itemCd 중복 확인
               const newRow = {
-                  coCd: row.coCd,
-                  pkgItemCd: grid2.getFocusedCell().rowKey,
+                  coCd: rowData1.coCd,
+                  pkgItemCd: rowData1.pkgItemCd,
                   itemCd: row.itemCd,
                   itemNm: row.itemNm,
                   sort: ++maxSort,  // 각 행에 대해 sort 값을 1씩 증가시킴
@@ -395,12 +428,12 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const modalSearchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
          <div className="w-full flex justify-between">
-            <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
+            <div className="grid grid-cols-3  gap-y-3  justify-start w-[80%]">
                <InputComp1 ref={searchRef3} handleCallSearch={handleCallSearchModal} title="품목명"></InputComp1>
                <SelectComp1 ref={searchRef4} title="품목그룹" handleCallSearch={handleCallSearchModal}></SelectComp1>
                <SelectComp1 ref={searchRef5} title="품목구분" handleCallSearch={handleCallSearchModal}></SelectComp1>
             </div>
-            <div className="w-[40%] flex justify-end">
+            <div className="w-[20%] flex justify-end">
                <button type="button" onClick={handleCallSearchModal} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
                   <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
                   조회
@@ -421,7 +454,11 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "", name: "coCd", hidden: true },
       { header: "패키지 코드", name: "pkgItemCd", align: "center", width: 100 },
       { header: "패키지명", name: "pkgName", align: "left", editor: "text", width: 330 },
-      { header: "금액", name: "pkgAmt", align: "right", editor: "text", width: 100 },
+      { header: "금액", name: "pkgAmt", align: "right", editor: "text", width: 100,
+         formatter: function(e: any) {
+            if(e.value){return commas(e.value);}
+         }
+       },
       {
          header: "필수체크",
          name: "mandatoryYn",
@@ -429,7 +466,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          formatter: "listItemText", 
          width: 100,         
          editor: {
-            type: ChoicesEditor,
+            type: "select",
             options: {
                listItems: [
                   { text: "Y", value: "Y" },
@@ -444,7 +481,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          align: "center",
          formatter: "listItemText",
          editor: {
-            type: ChoicesEditor,
+            type: "select",
             options: {
                listItems: [
                   { text: "사용", value: "Y" },
@@ -460,7 +497,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const grid2Columns = [
       { header: "", name: "coCd", hidden: true },
       { header: "패키지 코드", name: "pkgItemCd", align: "center" , hidden: true },
-      { header: "품목코드", name: "itemCd", align: "center", editor: "text", width: 100 },
+      { header: "품목코드", name: "itemCd", align: "center", width: 100 },
       { header: "품목명", name: "itemNm", width: 400},
       { header: "정렬순서", name: "sort", align: "center", editor: "text", width: 100 },
       {
@@ -469,7 +506,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          align: "center",
          formatter: "listItemText",
          editor: {
-            type: ChoicesEditor,
+            type: "select",
             options: {
                listItems: [
                   { text: "사용", value: "Y" },
@@ -520,7 +557,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 columns={grid1Columns} handleFocusChange={handleMajorFocusChange} gridRef={GridRef1} />
+         <TuiGrid01 columns={grid1Columns} handleFocusChange={handleMajorFocusChange} gridRef={GridRef1} height = {window.innerHeight - 530}/>
       </div>
    );
 
@@ -546,7 +583,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 columns={grid2Columns} gridRef={GridRef2}   />
+         <TuiGrid01 columns={grid2Columns} gridRef={GridRef2} height = {window.innerHeight - 530} />
       </div>
    );
 
@@ -563,7 +600,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                </button>
             </div>
          </div>
-         <TuiGrid01 gridRef={GridRef3} columns={grid3Columns} rowHeaders={['checkbox','rowNum']} handleDblClick={handleDblClick} 
+         <TuiGrid01 gridRef={GridRef3} columns={grid3Columns} rowHeaders={['checkbox','rowNum']} handleDblClick={handleDblClick} height = {window.innerHeight - 530}
          />
       </div>
    );

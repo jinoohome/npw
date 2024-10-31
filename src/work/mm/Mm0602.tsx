@@ -1,13 +1,8 @@
 import {
-   React, useEffect, useState,commas, useRef,SelectSearch, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
+   React, useEffect, useState,commas, useRef,SelectSearch, getGridCheckedDatas, date, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
 } from "../../comp/Import";
-import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import "tui-date-picker/dist/tui-date-picker.css";
-import DatePicker from "tui-date-picker";
-import { on } from "events";
-import { set } from "date-fns";
-import { Input, Label } from "@headlessui/react";
 
 interface Props {
    item: any;
@@ -24,15 +19,21 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       gridDatas4: [],
       gridDatas5: [],
       gridDatas6: [],
+      gridDatasP1: [],
       isOpen: false,
       isOpen2: false,
+      isOpen3: false,
       confirmYn: "N",
       compSmsYn: "N",
       etcSmsYn: "N",
       coCd : '100',
       subCodeDatas : [],
       hsTypeDatas : [],
-
+      contFrDt: date(),
+      contToDt: date(1, 'year'),
+      searchContNo: '',
+      searchBpCd: '',
+      itemNm: '',
    });
 
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
@@ -56,16 +57,15 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    const gridRef6 = useRef<any>(null);
    const gridContainerRef6 = useRef(null);
 
+   const gridRefP1 = useRef<any>(null);
+   const gridContainerRefP1 = useRef(null);
 
    const bpNmRef = useRef<HTMLInputElement>(null);
    const contNoRef = useRef<HTMLInputElement>(null);
    const searchBpNmRef = useRef<HTMLInputElement>(null);
    const searchContNoRef = useRef<HTMLInputElement>(null);
-   const hsTypeRef = useRef<any>(null);
-   const subCodeRef = useRef<any>(null);
-   const contTypeRef = useRef<any>(null);
-   const payCondRef = useRef<any>(null);
-   const chargeDeptRef = useRef<any>(null);
+   const searchBpCdRef = useRef<any>(null);
+   const searchItemNmRef = useRef<any>(null);
 
    const setGridData = async () => {
       try {
@@ -78,15 +78,14 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
    //------------------api--------------------------
 
-   const ZZ_B_PO_BP = async (bpBm:any) => {
+   const ZZ_B_BIZ2 = async (bpBm:any) => {
       const param = {
-         coCd: userInfo.coCd,
-         bpDiv: "ZZ0188",
+         coCd: '100',
          bpNm: bpBm || "999",
       };
 
       const data = JSON.stringify(param);
-      const result = await fetchPost("ZZ_B_PO_BP", { data });
+      const result = await fetchPost("ZZ_B_BIZ2", { data });
 
 
       onInputChange("gridDatas6", result);
@@ -95,9 +94,10 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
  
 
-   const MM0602_S01 = async (contNo :string) => {
+   const MM0602_S01 = async (contNo :string, bpNm :string) => {
       const param = {
          contNo: contNo  ,
+         bpNm: bpNm  ,
       };
 
       const data = JSON.stringify(param);
@@ -217,6 +217,21 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       return result;
    };
 
+   const MM0601_S07 = async () => {
+      const param = {
+         bpCd: inputValues.bpCd ,
+         itemNm: inputValues.itemNm || "999",
+         itemGrp: inputValues.itemGrp || "999",
+         itemDiv: inputValues.itemDiv || "999",
+      };
+
+      const data = JSON.stringify(param);
+      const result = await fetchPost("MM0601_S07", { data });
+
+      onInputChange("gridDatasP1", result);
+      return result;
+   };
+
 
 
    //------------------useEffect--------------------------
@@ -228,6 +243,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       reSizeGrid({ ref: gridRef4, containerRef: gridContainerRef4, sec: 200 });
       reSizeGrid({ ref: gridRef5, containerRef: gridContainerRef5, sec: 200 });
       reSizeGrid({ ref: gridRef6, containerRef: gridContainerRef6, sec: 200 });
+      reSizeGrid({ ref: gridRefP1, containerRef: gridContainerRefP1, sec: 200 });
       
    }, []);
 
@@ -284,6 +300,15 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       }
    }, [inputValues.gridDatas6]);
 
+   useEffect(() => {
+      
+      if (gridRefP1.current && inputValues.gridDatasP1) {
+         let grid = gridRefP1.current.getInstance();
+         grid.resetData(inputValues.gridDatasP1);
+         refreshGrid(gridRefP1);
+      }
+   }, [inputValues.gridDatasP1]);
+
 
    useEffect(() => {
       if (inputValues.bpCd) {
@@ -301,6 +326,13 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    }, [inputValues.isOpen2]);
 
    useEffect(() => {
+      if (inputValues.isOpen3) {
+         searchItemNmRef.current?.focus();
+         searchItemNmRef.current?.select();
+      }
+   }, [inputValues.isOpen3]);
+
+   useEffect(() => {
       handleFilterChange();
    }, [inputValues.hsType, inputValues.subCode]);
    
@@ -309,6 +341,15 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
          ZZ_CONT_INFO(inputValues.contNo,'BP_HS');
       }
    }, [inputValues.subCode]);
+
+   useEffect(() => {
+      // inputValues 중 결제여부 또는 마감여부가 변경되면 검색을 실행
+      const handleSearch = async () => {
+          await searchModalDiv3();
+      };
+  
+      handleSearch();
+  }, [inputValues.itemGrp, inputValues.itemDiv]);
 
    //-------------------event--------------------------
    const onInputChange = (name: string, value: any) => {
@@ -385,7 +426,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const search = async () => {
-      const result = await MM0602_S01(inputValues.contNo);
+      const result = await MM0602_S01(inputValues.contNo, '');
 
       console.log(result);
       
@@ -476,7 +517,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       inputValues.bpNm = target.value;
       onInputChange("searchBpNm", target.value);
 
-      let result = await ZZ_B_PO_BP(inputValues.bpNm );
+      let result = await ZZ_B_BIZ2(inputValues.bpNm );
 
       if (result.length === 1) {
          onInputChange("bpCd", result[0].bpCd);
@@ -487,9 +528,20 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const handleBpCdOnIconClick = async (e: any) => {
+      // 계약번호가 있는 경우, 고객사 선택 모달을 열지 않음
+      if (inputValues.contNo) {
+         alertSwal("계약번호가 존재합니다.", "고객사를 수정할 수 없습니다.", "warning");
+         return;
+      }
+      
       onInputChange("searchBpNm", e);
-      await ZZ_B_PO_BP(e);
+      await ZZ_B_BIZ2(e);
       onInputChange("isOpen2", true);
+   };
+
+   const openModal = async () => {    
+      await MM0601_S07();
+      onInputChange("isOpen3", true);
    };
 
    const handleDblClick = async (e: any) => {
@@ -505,27 +557,94 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
          setCoCdChange(rowData.contNo);
       }
    };
+
    const handleDblClick2 = (e: any) => {
       const gridInstance = gridRef6.current.getInstance(); 
       const rowData = gridInstance.getRow(e.rowKey);
       if(rowData) {
          onInputChange("bpCd", rowData.bpCd);
          onInputChange("bpNm", rowData.bpNm);
-         onInputChange("isOpen2", false);
-         
-        
+         onInputChange("isOpen2", false);         
       }
    };
 
+   const handleDblClick3 = (e: any) => {
+      const gridInstance1 = gridRef.current.getInstance();
+      const gridInstance2 = gridRef2.current.getInstance();
+      const gridInstance3 = gridRefP1.current.getInstance();
+      const gridInstance4 = gridRef4.current.getInstance();
+     
+      // 포커스된 셀을 기반으로 행을 가져오는 방법
+      const focusedCell1 = gridInstance1.getFocusedCell();
+      const focusedCell2 = gridInstance2.getFocusedCell();
+     
+      // 포커스된 셀이 있는 경우 해당 행의 데이터를 가져옴
+      const row1 = focusedCell1 ? gridInstance1.getRow(focusedCell1.rowKey) : null;
+      const row2 = focusedCell2 ? gridInstance2.getRow(focusedCell2.rowKey) : null;
+   
+      // e에서 rowKey를 사용하여 gridInstance3에서 행 데이터 가져오기
+      const row3 = gridInstance3.getRow(e.rowKey);
+   
+      // gridInstance4에 이미 존재하는 모든 행 데이터 가져오기
+      const existingRows = gridInstance4.getData();
+   
+      // 새로 추가할 행 만들기
+      const newRow = {
+         coCd: row1?.coCd || "",
+         contNo: row1?.contNo || "",
+         hsType: row1?.hsType || row2?.hsType || "",
+         hsTypeNm: row1?.hsTypeNm || row2?.hsTypeNm || "",
+         subCode: row2?.subCode || "",
+         subCodeNm: row2?.subCodeNm || "",
+         seqNo: (existingRows.length + 1).toString(), // 새로운 순번 설정
+         itemCd: row3.itemCd || "",
+         itemNm: row3.itemNm || "",
+         qty: row3.qty || "1",
+         priceCom: row3.priceCom || "",
+         pricePer: row3.pricePer || "",
+         branchGroup: row3.branchGroup || "",
+         branchGroupNm: row3.branchGroupNm || "",
+         mandatoryYn: row3.mandatoryYn || "",
+         remark: row3.remark || "",
+         status: "I",
+         _attributes: { checked: true }
+      };
+   
+      // 중복 체크: hsType, subCode, itemCd가 같은 행이 있는지 확인
+      const isDuplicate = existingRows.some(
+         (existingRow: any) =>
+            existingRow.hsType === newRow.hsType &&
+            existingRow.subCode === newRow.subCode &&
+            existingRow.itemCd === newRow.itemCd
+      );
+   
+      if (!isDuplicate) {
+         // 중복이 아닌 경우, 행 추가
+         gridInstance4.appendRow(newRow);
+      } else {
+         // 중복된 항목이 있을 경우 경고 메시지 표시 및 해당 행으로 포커스 이동
+         alertSwal("품목중복", "중복된 품목이 있습니다.", "warning");
+      }
+   
+      // 모달 닫기
+      onInputChange("isOpen3", false);
+   };
+   
+
    const searchModalDiv = async () => {
       
-      const result = await MM0602_S01(inputValues.searchContNo);
+      const result = await MM0602_S01(inputValues.searchContNo, inputValues.searchBpCd);
       onInputChange("gridDatas5", result);
     
    }
 
    const searchModalDiv2 = async () => {
-      await ZZ_B_PO_BP(inputValues.searchBpNm);
+      await ZZ_B_BIZ2(inputValues.searchBpNm);
+    
+   }
+
+   const searchModalDiv3 = async () => {
+      await MM0601_S07();
     
    }
 
@@ -534,7 +653,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       inputValues.contNo = target.value;
       onInputChange("searchContNo", target.value);
 
-      const result = await MM0602_S01(inputValues.contNo );
+      const result = await MM0602_S01(inputValues.contNo, inputValues.searchBpCd );
       onInputChange("gridDatas5", result);
       
       if (result.length === 1) {
@@ -552,7 +671,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
    const handleContNoOnIconClick = async (e: any) => {
       onInputChange("searchContNo", e);
-      const result =  await MM0602_S01(e);
+      const result =  await MM0602_S01(e, '');
       onInputChange("gridDatas5", result);
       onInputChange("isOpen", true);
 
@@ -580,6 +699,72 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       MM0601_S04();
    };
 
+   const addItems = () => {
+      const gridInstance1 = gridRef.current.getInstance();
+      const gridInstance2 = gridRef2.current.getInstance();
+      const gridInstance3 = gridRefP1.current.getInstance();
+      const gridInstance4 = gridRef4.current.getInstance();
+  
+      // 포커스된 셀을 기반으로 행을 가져오는 방법
+      const focusedCell1 = gridInstance1.getFocusedCell();
+      const focusedCell2 = gridInstance2.getFocusedCell();
+  
+      // 포커스된 셀이 있는 경우 해당 행의 데이터를 가져옴
+      const row1 = focusedCell1 ? gridInstance1.getRow(focusedCell1.rowKey) : null;
+      const row2 = focusedCell2 ? gridInstance2.getRow(focusedCell2.rowKey) : null;
+
+      // 체크된 행의 데이터를 가져옴
+      const rows3 = gridInstance3.getCheckedRows();
+      const currentRowCount = gridInstance4.getRowCount();
+  
+      // gridInstance4에 이미 존재하는 모든 행 데이터 가져오기
+      const existingRows = gridInstance4.getData();
+  
+      const newRows = rows3
+          .map((row3: any, index: number) => {
+              return {
+                  coCd: row1?.coCd || "",
+                  contNo: row1?.contNo || "",
+                  hsType: row1?.hsType || row2?.hsType || "",
+                  hsTypeNm: row1?.hsTypeNm || row2?.hsTypeNm || "",
+                  subCode: row2?.subCode || "",
+                  subCodeNm: row2?.subCodeNm || "",
+                  seqNo: (currentRowCount + index + 1).toString(),
+                  itemCd: row3.itemCd || "",
+                  itemNm: row3.itemNm || "",
+                  qty: row3.qty || "1",
+                  priceCom: row3.priceCom || "",
+                  pricePer: row3.pricePer || "",
+                  branchGroup: row3.branchGroup || "",
+                  branchGroupNm: row3.branchGroupNm || "",
+                  mandatoryYn: row3.mandatoryYn || "",
+                  remark: row3.remark || "",
+                  status: "I" ,
+                  _attributes: { checked: true } 
+              };
+          })
+          .filter((newRow: any) => {
+              // 중복 체크: hsType, subCode, itemCd가 같은 행이 있는지 확인
+              return !existingRows.some(
+                  (existingRow: any) =>
+                      existingRow.hsType === newRow.hsType &&
+                      existingRow.subCode === newRow.subCode &&
+                      existingRow.itemCd === newRow.itemCd
+              );
+          });
+  
+      if (newRows.length > 0) {
+          // 중복이 아닌 새로운 행들을 gridInstance4에 추가
+          gridInstance4.appendRows(newRows);
+      } else {
+          // 중복된 항목이 있을 경우 경고 메시지 표시 및 해당 행으로 포커스 이동
+         
+          alertSwal("품목중복", "중복된 품목이 있습니다.", "warning");
+      }
+
+      onInputChange("isOpen3", false);
+   }
+
    const handleMakeItem = () => {
       const gridInstance1 = gridRef.current.getInstance();
       const gridInstance2 = gridRef2.current.getInstance();
@@ -596,14 +781,14 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
   
       // row1이나 row2에 값이 없으면 경고 메시지를 표시하고 함수 종료
       if (!row1) {
-          alertSwal("경고", "경조코드를 선택해주세요.", "warning");
+          alertSwal("경고", "경조구분을 선택해주세요.", "warning");
           return;
       }
   
-      if (!row2) {
-          alertSwal("경고", "재직코드를 선택해주세요.", "warning");
-          return;
-      }
+      // if (!row2) {
+      //     alertSwal("경고", "재직구분을 선택해주세요.", "warning");
+      //     return;
+      // }
   
       // 체크된 행의 데이터를 가져옴
       const rows3 = gridInstance3.getCheckedRows();
@@ -618,7 +803,9 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                   coCd: row1?.coCd || "",
                   contNo: row1?.contNo || "",
                   hsType: row1?.hsType || row2?.hsType || "",
+                  hsTypeNm: row1?.hsTypeNm || row2?.hsTypeNm || "",
                   subCode: row2?.subCode || "",
+                  subCodeNm: row2?.subCodeNm || "",
                   seqNo: (currentRowCount + index + 1).toString(),
                   itemCd: row3.itemCd || "",
                   itemNm: row3.itemNm || "",
@@ -652,7 +839,33 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
           alertSwal("품목중복", "중복된 품목이 있습니다.", "warning");
       }
   };
+
+  //grid 추가버튼
+   const addItemGridRow = () => {
+      const gridInstance1 = gridRef.current.getInstance();
+      let flag = true;
+
+      // 포커스된 셀을 기반으로 행을 가져오는 방법
+      const focusedCell1 = gridInstance1.getFocusedCell();
   
+      // 포커스된 셀이 있는 경우 해당 행의 데이터를 가져옴
+      const row1 = focusedCell1 ? gridInstance1.getRow(focusedCell1.rowKey) : null;
+  
+      // row1이나 row2에 값이 없으면 경고 메시지를 표시하고 함수 종료
+      if (!inputValues.bpCd) {
+         flag = false;
+         alertSwal("경고", "고객사를 선택해주세요.", "warning");
+      }
+
+      if (!row1) {
+         flag = false;
+         alertSwal("경고", "경조구분을 선택해주세요.", "warning");
+      }
+
+      if (flag) {
+         openModal();
+      }      
+   }; 
   
    //-------------------grid----------------------------
    const columns = [
@@ -667,7 +880,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
-               <div className="">경조구분</div>
+               <div className="py-1">경조구분</div>
             </div>
          </div>
 
@@ -688,7 +901,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
-               <div className="">재직구분</div>
+               <div className="py-1">재직구분</div>
             </div>
          </div>
 
@@ -711,6 +924,12 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                </div>
                <div className="">품목</div>
             </div>
+            <div className="flex space-x-1">
+               <button type="button" onClick={addItemGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+                  <PlusIcon className="w-5 h-5" />
+                  추가
+               </button>
+            </div>
          </div>
 
          <TuiGrid01 gridRef={gridRef3} columns={columns3} headerHeight={30} 
@@ -724,12 +943,12 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       { header: "계약번호", name: "contNo", hidden: true }, // 계약 번호
       { header: "재직코드", name: "subCode", width: 80, align: "center" }, // 재직 구분
       { header: "재직구분", name: "subCodeNm", width: 80, align: "center" }, // 재직 구분
-      { header: "경조구분", name: "hsType", width: 80, align: "center" }, // 경조 구분
-      { header: "경조코드", name: "hsTypeNm", width: 80, align: "center" }, // 경조 구분
+      { header: "경조코드", name: "hsType", width: 80, align: "center" }, // 경조 구분
+      { header: "경조구분", name: "hsTypeNm", width: 80, align: "center" }, // 경조 구분
       { header: "순번", name: "seqNo",  hidden: true }, // 순번
       { header: "품목코드", name: "itemCd", width: 100, align: "center"  }, // 품목 코드
       { header: "품목명", name: "itemNm",  }, // 품목 코드
-      { header: "수량", name: "qty", width: 80, align: "right", editor : 'text' , 
+      { header: "수량", name: "qty", width: 80, align: "center", editor : 'text' , 
       formatter: function(e: any) {if(e.value){return commas(e.value);} }
       }, // 수량
       { header: "복리단가", name: "priceCom", width: 100, align: "right",  editor : 'text' , 
@@ -738,9 +957,14 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       { header: "개별단가", name: "pricePer", width: 100, align: "right", editor : 'text' , 
       formatter: function(e: any) {if(e.value){return commas(e.value);} }
       }, // 가격(개인)
-      { header: "필수여부", name: "mandatoryYn", width: 80, align: "center" }, // 필수 여부
-      { header: "발주그룹코드", hidden :true}, // 지점 그룹
-      { header: "발주그룹", name: "branchGroupNm", width: 100, align: "center" }, // 지점 그룹
+      { header: "필수여부", name: "mandatoryYn", width: 80, align: "center", formatter: "listItemText",  editor: { type: 'select', options: { listItems: [
+         { text: "Y", value: "Y" }, 
+         { text: "N", value: "N" }
+       ]   } }  }, // 필수 여부
+      { header: "발주그룹", name: "branchGroup", width: 100, align: "center", formatter: "listItemText",  editor: { type: 'select', options: { listItems: [
+         { text: "의전본부", value: "ZZ0189" }, 
+         { text: "화환업체", value: "ZZ0193" }
+       ]   } } }, // 지점 그룹
       { header: "비고", name: "remark", width: 300, editor : 'text' }, // 비고
       { header: "상태", name: "status", hidden:true} // 상태
   ];
@@ -822,9 +1046,9 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       { header: "계약번호", name: "contNo", width : 120, align: "center" },
       { header: "고객사", name: "bpNm",width : 300,   },
       { header: "계약명", name: "contNm",width : 200  },
-      { header: "계약일자", name: "contDt",  width : 120,  align: "center"},
-      { header: "시작일", name: "contFrDt",  width : 120,  align: "center"},
-      { header: "종료일", name: "contToDt",  width : 120,  align: "center"},
+      { header: "계약일자", name: "contDt",  width : 100,  align: "center"},
+      { header: "시작일", name: "contFrDt",  width : 100,  align: "center"},
+      { header: "종료일", name: "contToDt",  width : 100,  align: "center"},
       { header: "계약종류", name: "contTypeNm",   align: "center"},
    ];
 
@@ -854,6 +1078,42 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
          <TuiGrid01 gridRef={gridRef6} columns={columns6} headerHeight={30} 
                   handleFocusChange={() => {}}  handleDblClick={handleDblClick2}
                   perPageYn={false} height={window.innerHeight - 640} />
+      </div>
+   );
+
+   const columnsP1 = [
+      { header: "회사코드", name: "coCd", hidden: true },
+      { header: "품목코드", name: "itemCd", width: 100, align: "center" },
+      { header: "품목명", name: "itemNm", width: 300 },
+      { header: "품목그룹", name: "itemGrpNm", width: 100 },
+      { header: "품목구분", name: "itemDivNm", width: 100 },
+      { header: "복리단가", name: "priceCom", width: 100, align: "right",   
+         formatter: function(e: any) {if(e.value){return commas(e.value);} }  },
+      { header: "개별단가", name: "pricePer", width: 100, align: "right",  
+         formatter: function(e: any) {if(e.value){return commas(e.value);} }  },
+      { header: "발주그룹", name: "branchGroupNm", align: "center" },
+   ];
+
+   const gridP1 = () => (
+      <div className="border rounded-md p-2 space-y-2 w-full">
+         <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center space-x-1 text-orange-500 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="p-1">품목정보</div>
+            </div>
+            <div className="flex space-x-1">
+               <button type="button" onClick={addItems} className="bg-orange-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+                  <PlusIcon className="w-5 h-5" />
+                  선택등록
+               </button>
+            </div>
+         </div>
+
+         <TuiGrid01 gridRef={gridRefP1} columns={columnsP1} headerHeight={30} handleDblClick={handleDblClick3}
+                      rowHeaders={["rowNum", "checkbox"]}
+         handleFocusChange={() => {}} perPageYn={false} />
       </div>
    );
    //-------------------div--------------------------
@@ -904,6 +1164,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
             />
 
             <InputSearchComp title="고객사" ref={bpNmRef} value={inputValues.bpNm} 
+               readOnly={!!inputValues.contNo}
                onChange={(e) => onInputChange("bpNm", e)} 
                onKeyDown={handleBpCdOnKeyDown} 
                onIconClick={handleBpCdOnIconClick} />
@@ -936,9 +1197,9 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                title="계약기간"
                startValue={inputValues.contFrDt}
                endValue={inputValues.contToDt}
-               onChange={(startDate, endDate) => {
-                  onInputChange("contFrDt", startDate);
-                  onInputChange("contToDt", endDate);
+               onChange={(contFrDt, contToDt) => {
+                  onInputChange("contFrDt", contFrDt);
+                  onInputChange("contToDt", contToDt);
                }}
             />
 
@@ -1028,9 +1289,13 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       <div className="space-y-3">
          <div className="bg-gray-100 rounded-lg p-3 search text-sm search h-full">
             <div className="w-full flex justify-between">
-               <div className="grid grid-cols-1 ps-2 gap-x-3 gap-y-3   justify-start w-[70%]">
+               <div className="grid grid-cols-2 ps-2 gap-x-3 gap-y-3   justify-start w-[70%]">
                <InputComp title="계약번호" ref={searchContNoRef} value={inputValues.searchContNo} 
                handleCallSearch={searchModalDiv}  onChange={(e) => onInputChange('searchContNo',e)}
+          
+               />
+               <InputComp title="고객사" ref={searchBpCdRef} value={inputValues.searchBpCd} 
+               handleCallSearch={searchModalDiv}  onChange={(e) => onInputChange('searchBpCd',e)}
           
                />
                </div>
@@ -1065,6 +1330,54 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       </div>
    );
 
+   const modalDiv3 = () => (
+      <div className="space-y-3">
+         <div className="bg-gray-100 rounded-lg p-3 search text-sm search h-full">
+            <div className="w-full flex justify-between">
+               <div className="grid grid-cols-3 ps-2 gap-x-3 gap-y-3   justify-start w-[70%]">
+               <InputComp title="품목명" ref={searchItemNmRef} value={inputValues.itemNm} 
+               handleCallSearch={searchModalDiv3}  onChange={(e) => onInputChange('itemNm',e)}
+          
+               />
+               <SelectSearch
+                       title="품목그룹"
+                       value={inputValues.itemGrp}
+                       onChange={(label, value) => {
+                          onInputChange("itemGrp", value);
+                           searchModalDiv3();
+                       }}
+
+                       param={{ coCd: "999", majorCode: "CD0004", div: "" }}
+                       procedure="ZZ_CODE"
+                       dataKey={{ label: "codeName", value: "code" }}
+
+                   />
+               <SelectSearch
+                       title="품목구분"
+                       value={inputValues.itemDiv}
+                       onChange={(label, value) => {
+                          onInputChange("itemDiv", value);
+                           searchModalDiv3();
+                       }}
+
+                       param={{ coCd: "999", majorCode: "CD0005", div: "" }}
+                       procedure="ZZ_CODE"
+                       dataKey={{ label: "codeName", value: "code" }}
+
+                   />
+               </div>
+               <div className="w-[20%] flex justify-end">
+               <  button type="button" onClick={searchModalDiv3} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+                  <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
+                  조회
+               </button>
+               </div>
+            </div>
+         </div>
+         <div>{gridP1()}</div>
+      </div>
+   );
+
    return (
       <div className={`space-y-5 overflow-y-hidden h-screen`}>
          <div className="space-y-2">
@@ -1088,6 +1401,9 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
          </CommonModal>
          <CommonModal isOpen={inputValues.isOpen2} size="sm" onClose={() => {onInputChange("isOpen2", false); bpNmRef.current?.focus()}} title="">
             <div>{modalDiv2()}</div>
+         </CommonModal>
+         <CommonModal isOpen={inputValues.isOpen3} size="lg" onClose={() => {onInputChange("isOpen3", false); contNoRef.current?.focus()}} title="">
+            <div>{modalDiv3()}</div>
          </CommonModal>
       </div>
    );

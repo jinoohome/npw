@@ -1,6 +1,7 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
+import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, SelectSearch, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import DaumPostcodeComp from "../../comp/DaumPostcodeComp";  // DaumPostcodeComp 컴포넌트 임포트
 
 interface Props {
    item: any;
@@ -16,6 +17,10 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
    //검색창 ref
    const searchRef1 = useRef<any>(null);
    const searchRef2 = useRef<any>(null);
+
+   const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
+      coCd: '',
+   });
 
    const refs = {
       dlvyCd: useRef<any>(null),
@@ -42,11 +47,7 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
    const [wo0002Input, setWo0002Input] = useState<ZZ_CODE_RES[]>([]);
    const [wo0003Input, setWo0003Input] = useState<ZZ_CODE_RES[]>([]);
 
-   const [choice1, setChoice1] = useState<any>();
-   const [choice2, setChoice2] = useState<any>();
-   const [choice3, setChoice3] = useState<any>();
-   const [choice4, setChoice4] = useState<any>();
-   const [choice5, setChoice5] = useState<any>();   
+   const [choice1, setChoice1] = useState<any>(); 
    
    const [focusRow, setFocusRow] = useState<any>(0);
 
@@ -67,14 +68,6 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
 
    const setChoiceUI = () => {
       initChoice(searchRef2, setChoice1, [
-         { value: "999", label: "전체", selected: true },
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.dlvyDiv, setChoice2);     
-      initChoice(refs.siDo, setChoice3);
-      initChoice(refs.siGunGu, setChoice4);
-      initChoice(refs.useYn, setChoice5, [
          { value: "999", label: "전체", selected: true },
          { value: "Y", label: "사용" },
          { value: "N", label: "미사용" },
@@ -107,7 +100,19 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
             setWo0003Input(wo0003IntupData);   
          }       
 
-         await MM0401_S01();
+         const result = await MM0401_S01();
+
+         if (!result || result.length === 0) {
+            // 데이터가 없을 때 refs 값들 초기화
+            Object.keys(refs).forEach((key) => {
+               const ref = refs[key as keyof typeof refs];
+               if (ref?.current) {                  
+                     ref.current.value = ""; // 각 ref의 값을 빈 값으로 설정
+               }
+            });
+
+            setInputValues([]);
+         }
       } catch (error) {
          console.error("setGridData Error:", error);
       }
@@ -131,19 +136,6 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
       }
 
    }, [gridDatas]);
-
-   useEffect(() => {
-      updateChoices(choice2, cd0006Input, "value", "text");
-   }, [cd0006Input]);
-
-   useEffect(() => {
-      updateChoices(choice3, wo0002Input, "value", "text");
-   }, [wo0002Input]);
-
-   useEffect(() => {
-      updateChoices(choice4, wo0003Input, "value", "text");
-   }, [wo0003Input]);
-
    //---------------------- api -----------------------------
 
    const ZZ_CODE = async (param: ZZ_CODE_REQ) => {
@@ -199,34 +191,41 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    //-------------------event--------------------------
+   const handleAddressSelect = (data: any) => {
+      const { zonecode, roadAddress, jibunAddress } = data;
+      const selectedAddress = roadAddress || jibunAddress;
+   
+      // 우편번호와 주소 필드에 값을 설정
+      refs.zipCd.current.value = zonecode;
+      refs.addr1.current.value = selectedAddress;
+   
+      // 그리드 데이터 변경
+      setChangeGridData("zipCd", zonecode);
+      setChangeGridData("addr1", selectedAddress);
+   };
+
+   
+   const onInputChange = (name: string, value: any) => {
+      setInputValues((prevValues) => {
+          // null, undefined, ""을 하나의 빈 값으로 취급
+          const currentValue = prevValues[name] ?? "";
+          const newValue = value ?? "";
+  
+          // 동일한 값일 경우 상태를 업데이트하지 않음
+          if (currentValue === newValue) {
+              return prevValues;
+          }
+  
+          return {
+              ...prevValues,
+              [name]: newValue,
+          };
+      });
+   };
 
    const search = () => {
       setGridData();
    };
-
-   // const validateData = (action: string, dataString: any) => {
-   //    // dataString이 문자열이면 JSON.parse()를 사용, 그렇지 않으면 직접 사용
-   //    const data = typeof dataString === "string" ? JSON.parse(dataString) : dataString;
-
-   //    if (action === "save") {
-   //       if (data.length < 1) return false;
-
-   //       for (const item of data) {
-   //          if (["U", "I"].includes(item.status)) {
-   //             if (!item.coCd) {
-   //                alertSwal("입력확인", "사업부서를 선택해주세요.", "warning"); // 사용자에게 알림
-   //                return false;
-   //             }
-   //             if (!item.usrId) {
-   //                alertSwal("입력확인", "사번을 입력해주세요.", "warning"); // 사용자에게 알림
-   //                return false;
-   //             }
-   //          }
-   //       }
-   //    }
-
-   //    return true;
-   // };
 
    const save = async () => {
 
@@ -240,19 +239,16 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
       if (data) {
          let result = await MM0401_U01(data);
          if (result) {
-            await returnResult();
+            await returnResult(result);
          }
       }else{
 
          grid.focusAt(rowKey, 0, true);
       }
-
-    
-    
    };
-   const returnResult = async() => {
+   const returnResult = async(result: any) => {
      
-      alertSwal("저장완료", "저장이 완료되었습니다.", "success");
+      alertSwal(result.msgText, result.msgCd, result.msgStatus);
       await setGridData();
    
    };
@@ -260,7 +256,6 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
    // 모든 grid Data 내용을 가져옴
    const getGridValues = async () => {
       let datas = await getGridDatas(gridRef);
-      //if (!validateData("save", datas)) return false;
     
       if(datas){
          let data = {
@@ -286,8 +281,11 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
    //grid 삭제버튼
    const delMajorGridRow = () => {
       let grid = gridRef.current.getInstance();
-      const { rowKey } = grid.getFocusedCell();
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+    
       grid.removeRow(rowKey, {});
+      if(rowIndex > -1) grid.focusAt(rowIndex, 1, true);
    };
 
    //grid 포커스변경시
@@ -298,30 +296,17 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
 
          if (rowData) {
             Object.entries(rowData).forEach(([key, value]) => {
+               
+               onInputChange(key, value);
+            }); 
+         }
+
+         if (rowData) {
+            Object.entries(rowData).forEach(([key, value]) => {
                const ref = refs[key as keyof typeof refs]; // Add index signature to allow indexing with a string
                if (ref && ref.current) {
-                 
-                  if (key === "dlvyDiv") {
-                     setTimeout(function () {
-                        choice2?.setChoiceByValue(value);
-                     }, 100);
-                  } else if (key === "siDo") {
-                     setTimeout(function () {
-                        choice3?.setChoiceByValue(value);
-                     }, 100);
-                  } else if (key === "siGunGu") {
-                     setTimeout(function () {
-                        choice4?.setChoiceByValue(value);
-                     }, 100);                  
-                  }  else if (key === "useYn") {
-                     setTimeout(function () {
-                        choice5?.setChoiceByValue(value);
-                     }, 100);  
-                  } else {
-                     ref.current.value = value;
-                  }
-               }
-               
+                  ref.current.value = value;
+               }               
             });
          }
       }
@@ -375,20 +360,71 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
                <div className="">배송지 정보</div>
             </div>
          </div>
-
+   
          <div className="p-5 space-y-5">
             <div className="grid grid-cols-4  gap-6  justify-around items-center ">
-               <InputComp2 ref={refs.dlvyCd} title="배송지코드" target="dlvyCd" setChangeGridData={setChangeGridData}  readOnly= {true} />
+               <InputComp2 ref={refs.dlvyCd} title="배송지코드" target="dlvyCd" setChangeGridData={setChangeGridData} readOnly={true} />
                <InputComp2 ref={refs.dlvyNm} title="배송지명" target="dlvyNm" setChangeGridData={setChangeGridData} />
-               <SelectComp2 ref={refs.dlvyDiv} title="배송지구분" target="dlvyDiv" setChangeGridData={setChangeGridData} />
-               <SelectComp2 ref={refs.siDo} title="시/도" target="siDo" setChangeGridData={setChangeGridData} />
-               <SelectComp2 ref={refs.siGunGu} title="시/군/구" target="siGunGu" setChangeGridData={setChangeGridData} />
+               <SelectSearch
+                  title="배송지구분"
+                  value={inputValues.dlvyDiv}
+                  layout="vertical"
+                  onChange={(label, value) => {
+                     setChangeGridData("dlvyDiv", value);
+                     onInputChange("dlvyDiv", value);
+                  }}
+                  param={{ coCd: "999", majorCode: "CD0006", div: "" }}
+                  procedure="ZZ_CODE"
+                  dataKey={{ label: "codeName", value: "code" }}
+               />
+               <SelectSearch
+                  title="시/도"
+                  value={inputValues.siDo}
+                  layout="vertical"
+                  onChange={(label, value) => {
+                     setChangeGridData("siDo", value);
+                     onInputChange("siDo", value);
+                  }}
+                  param={{ coCd: "999", majorCode: "WO0002", div: "" }}
+                  procedure="ZZ_CODE"
+                  dataKey={{ label: "codeName", value: "code" }}
+               />
+               <SelectSearch
+                  title="시/군/구"
+                  value={inputValues.siGunGu}
+                  layout="vertical"
+                  onChange={(label, value) => {
+                     setChangeGridData("siGunGu", value);
+                     onInputChange("siGunGu", value);
+                  }}
+                  param={{ coCd: "999", majorCode: "WO0003", div: "" }}
+                  procedure="ZZ_CODE"
+                  dataKey={{ label: "codeName", value: "code" }}
+               />
                <InputComp2 ref={refs.telNo} title="전화번호" target="telNo" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.zipCd} title="우편번호" target="zipCd" setChangeGridData={setChangeGridData} />
+   
+               {/* 우편번호 및 주소 입력 필드와 DaumPostcodeComp 추가 */}
+               <div className="flex space-x-2 col-span-2">
+                  <InputComp2 ref={refs.zipCd} title="우편번호" target="zipCd" setChangeGridData={setChangeGridData} />
+                  <DaumPostcodeComp onComplete={handleAddressSelect} /> {/* Daum 주소 검색 버튼 */}
+               </div>
+   
                <InputComp2 ref={refs.addr1} title="주소" target="addr1" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.addr2} title="상세주소" target="addr2" setChangeGridData={setChangeGridData} />
-               <SelectComp2 ref={refs.useYn} title="사용여부" target="useYn" setChangeGridData={setChangeGridData} />
-              
+               <SelectSearch
+                  title="사용여부"
+                  value={inputValues.useYn}
+                  layout="vertical"
+                  onChange={(label, value) => {
+                     setChangeGridData("useYn", value);
+                     onInputChange("useYn", value);
+                  }}
+                  datas={[
+                     { value: "", label: "" },
+                     { value: "Y", label: "사용" },
+                     { value: "N", label: "미사용" },
+                  ]}
+               />
             </div>
          </div>
       </div>
@@ -396,7 +432,7 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
 
    //-------------------grid----------------------------
    const columns = [
-      { header: "배송지코드", name: "dlvyCd", width: 100, hidden: false },
+      { header: "배송지코드", name: "dlvyCd", width: 100, align: "center", hidden: false },
       { header: "배송지명", name: "dlvyNm", hidden: false },
       { header: "배송지구분", name: "dlvyDiv", hidden: true },
       { header: "시/도", name: "siDo", hidden: true },
@@ -430,7 +466,7 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={handleFocusChange} />
+         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={handleFocusChange} height={window.innerHeight - 520}/>
       </div>
    );
 

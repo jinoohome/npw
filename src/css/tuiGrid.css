@@ -7,7 +7,7 @@
 .tui-grid-cell{
 	white-space: pre-wrap;
   word-break: break-word;
-  vertical-align: top; /* 셀 내용이 상단에 맞춰지도록 설정 */
+  vertical-align: center; /* 셀 내용이 상단에 맞춰지도록 설정 */
   line-height: 1.5; /* 행 간격을 일정하게 유지 */
 
 }

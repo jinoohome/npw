@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef,  initChoice, updateChoices,  fetchPost, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid,  InputComp1, SelectComp1 } from "../../comp/Import";
+import { useEffect, useState, useRef,  initChoice, updateChoices,  fetchPost, SelectSearch, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid,  InputComp1, SelectComp1 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MagnifyingGlassIcon} from "@heroicons/react/24/outline";
 
@@ -13,40 +13,23 @@ const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
    const gridContainerRef = useRef(null); 
 
    const searchRef1 = useRef<any>(null);
-   const searchRef2 = useRef<any>(null);
-   const searchRef3 = useRef<any>(null);
 
-   const [choice1, setChoice1] = useState<any>();
-   const [choice2, setChoice2] = useState<any>();
+   const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
+      coCd: '',
+   });
 
    const [gridDatas, setGridDatas] = useState<any[]>();
-   const [zz0005, setZz0005] = useState<ZZ_CODE_RES[]>([]);
 
-   const breadcrumbItem = [{ name: "관리자" }, { name: "거래처관리" }, { name: "거래처 조회" }];
+   const breadcrumbItem = [{ name: "기준정보" }, { name: "거래처" }, { name: "거래처 조회 (장례지원단)" }];
 
    // 첫 페이지 시작시 실행
    useEffect(() => {
-      setChoiceUI();
       setGridData();
       reSizeGrid({ ref: gridRef, containerRef: gridContainerRef, sec: 200 });
    }, []);
 
-   const setChoiceUI = () => {
-      initChoice(searchRef2, setChoice1);
-      initChoice(searchRef3, setChoice2, [
-         { value: "999", label: "전체", selected: true },
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-   };
-
    const setGridData = async () => {
       try {
-         let zz0005Data = await ZZ_CODE({ coCd: "999", majorCode: "ZZ0005", div: "999" });
- 
-         if (zz0005Data != null) {
-            setZz0005(zz0005Data);
-         }
          await MM0102_S01();
       } catch (error) {
          console.error("setGridData Error:", error);
@@ -70,10 +53,9 @@ const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
       }
    }, [gridDatas]);
 
-   //inputChoicejs 데이터 설정
    useEffect(() => {
-      updateChoices(choice1, zz0005, "value", "text");
-   }, [zz0005]);
+      setGridData();
+   }, [inputValues.bpType, inputValues.bpDiv, inputValues.useYn]);
 
    //---------------------- api -----------------------------
    const ZZ_CODE = async (param: ZZ_CODE_REQ) => {
@@ -93,11 +75,11 @@ const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
    const MM0102_S01 = async () => {
       try {
          const param = {
-            //coCd: userInfo.coCd,
             coCd: "100",
             bpNm: searchRef1.current?.value || "999",
-            bpType: searchRef2.current?.value || "999",
-            useYn: searchRef3.current?.value || "999",
+            bpType: inputValues.bpType || "999",
+            bpDiv: inputValues.bpDiv || "999",
+            useYn: inputValues.useYn || "999",
          };
 
          const data = JSON.stringify(param);
@@ -113,6 +95,24 @@ const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
  
    
    //-------------------event--------------------------
+   const onInputChange = (name: string, value: any) => {
+      setInputValues((prevValues) => {
+          // null, undefined, ""을 하나의 빈 값으로 취급
+          const currentValue = prevValues[name] ?? "";
+          const newValue = value ?? "";
+  
+          // 동일한 값일 경우 상태를 업데이트하지 않음
+          if (currentValue === newValue) {
+              return prevValues;
+          }
+  
+          return {
+              ...prevValues,
+              [name]: newValue,
+          };
+      });
+   };
+
    const search = () => {
       setGridData();
    };
@@ -146,11 +146,43 @@ const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
    //검색창 div
    const searchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
-         <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
+         <div className="grid grid-cols-4  gap-y-3  justify-start w-[60%]">
             <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch} title="회사약명"></InputComp1>
-            <SelectComp1 ref={searchRef2} title="회사구분" handleCallSearch={handleCallSearch}></SelectComp1>
-            <SelectComp1 ref={searchRef3} title="사용유무" handleCallSearch={handleCallSearch}></SelectComp1>
-          
+            <SelectSearch
+                       title="회사구분"
+                       value={inputValues.bpType}
+                       addData={"999"}
+                       onChange={(label, value) => {
+                           onInputChange("bpType", value);
+                       }}
+
+                       param={{ coCd: "999", majorCode: "ZZ0005", div: "-999" }}
+                       procedure="ZZ_CODE"
+                       dataKey={{ label: "codeName", value: "code" }}
+
+                   />
+            <SelectSearch
+                       title="회사종류"
+                       value={inputValues.bpDiv}
+                       addData={"999"}
+                       onChange={(label, value) => {
+                           onInputChange("bpDiv", value);
+                       }}
+
+                       param={{ coCd: "999", majorCode: "ZZ0019", div: "-999" }}
+                       procedure="ZZ_CODE"
+                       dataKey={{ label: "codeName", value: "code" }}
+
+                   />
+            <SelectSearch title="사용유무" 
+                        value={inputValues.useYn}
+                        onChange={(label, value) => {
+                              onInputChange('useYn', value);
+                           }}                           
+
+                        //초기값 세팅시
+                        datas={[{value : '999', label : '전체'},{value : 'Y', label : '사용'},{value : 'N', label : '미사용'}]}
+                     />
          </div>
       </div>
    );
@@ -166,11 +198,11 @@ const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
       { header: "회사종류", name: "bpDiv", align: "center", width: 120 },
       { header: "대표자", name: "repreNm", width: 120 },
       { header: "사업자등록번호", name: "bpRgstNo", width: 130 },
-      { header: "업종", name: "indType" , width: 100},
-      { header: "업태", name: "cndType" , width: 100},
+      { header: "업종", name: "indType" , width: 150},
+      { header: "업태", name: "cndType" , width: 150},
       { header: "우편번호", name: "zipCd", align:"center" , width: 80},
-      { header: "주소1", name: "addr1" , width: 200},
-      { header: "주소2", name: "addr2" , width: 200},
+      { header: "주소", name: "addr1" , width: 200},
+      { header: "상세주소", name: "addr2" , width: 200},
       { header: "연락처", name: "telNo" , width: 120},
       { header: "연락처2", name: "telNo2" , width: 120},
       { header: "", name: "bankCd", hidden: true },

@@ -4,7 +4,7 @@ import { ZZ0101_S02_REQ, ZZ0101_S02_RES, ZZ0101_S02_API } from "../../ts/ZZ0101_
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
-import ChoicesEditor from "../../util/ChoicesEditor";
+import ChoicesEditor from "../../util/ReactSelectEditor";
 
 interface Props {
    item: any;
@@ -59,6 +59,9 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          const majorResult = await ZZ0101_S01();
          if (majorResult?.length) {
             await ZZ0101_S02({ majorCode: majorResult[0].majorCode });
+         } else {
+            // majorResult가 없으면 minors를 빈 배열로 세팅
+            setMinors([]);
          }
       } catch (error) {
          console.error("setGridData Error:", error);
@@ -200,10 +203,11 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       let majorGrid = majorGridRef.current.getInstance();
       let minorGrid = minorGridRef.current.getInstance();
 
-      majorGrid.appendRow({}, { focus: true });
-      let { rowKey } = majorGridRef.current.getInstance().getFocusedCell();
-      majorGrid.setValue(rowKey, "useYn", "Y", false);
-      majorGrid.setValue(rowKey, "status", "I", false);
+      let grid = majorGridRef.current.getInstance();
+
+      grid.appendRow({  status: "I", useYn: "Y"}, { at: 0 });
+      grid.getPagination().movePageTo(0);
+      grid.focusAt(0, 1, true);
 
       minorGrid.clear();
    };
@@ -221,8 +225,14 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          let msg = "minor코드 삭제 후 major코드 삭제해 주세요";
          alertSwal(title, msg, "warning");
       } else {
-         let { rowKey } = majorGrid.getFocusedCell();
+         let rowKey = majorGrid.getFocusedCell() ? majorGrid.getFocusedCell().rowKey : 0;
+         let rowIndex = majorGrid.getIndexOfRow(rowKey) > majorGrid.getRowCount() - 2 ? majorGrid.getRowCount() - 2 : majorGrid.getIndexOfRow(rowKey);
          majorGrid.removeRow(rowKey, {});
+
+         // 남은 행이 있는 경우에만 포커스를 맞춤
+         if (majorGrid.getRowCount() > 0) {
+            majorGrid.focusAt(rowIndex, 1, true);
+         }
       }
    };
 
@@ -231,9 +241,12 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       let majorGrid = majorGridRef.current.getInstance();
       let minorGrid = minorGridRef.current.getInstance();
       let flag = true;
-      minorGrid.appendRow({}, { focus: true });
 
       let inMajorCode = majorGrid.getValue(majorGrid.getFocusedCell().rowKey, "majorCode");
+
+      minorGrid.appendRow({  majorCode: inMajorCode, status: "I", useYn: "Y", lev: "0"}, { at: 0 });
+      minorGrid.getPagination().movePageTo(0);
+      minorGrid.focusAt(0, 1, true);
 
       if (!inMajorCode) {
          minorGrid.removeRow(minorGrid.getFocusedCell().rowKey);
@@ -242,18 +255,22 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          let msg = "major코드 먼저 저장 후에 추가해 주세요";
          alertSwal(title, msg, "warning");
       }
-
-      minorGrid.setValue(minorGrid.getFocusedCell().rowKey, "majorCode", inMajorCode, false);
-      minorGrid.setValue(minorGrid.getFocusedCell().rowKey, "status", "I", false);
-      minorGrid.setValue(minorGrid.getFocusedCell().rowKey, "useYn", "Y", false);
-      minorGrid.setValue(minorGrid.getFocusedCell().rowKey, "lev", "0", false);
    };
 
    //grid 삭제버튼
    const delMinorGridRow = () => {
-      let minorGrid = minorGridRef.current.getInstance();
-      let { rowKey } = minorGrid.getFocusedCell();
-      minorGrid.removeRow(rowKey, {});
+      let grid = minorGridRef.current.getInstance();      
+
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+      
+      // 행을 삭제
+      grid.removeRow(rowKey, {});
+
+      // 남은 행이 있는 경우에만 포커스를 맞춤
+      if (grid.getRowCount() > 0) {
+         grid.focusAt(rowIndex, 1, true);
+      }
    };
 
    //grid 포커스변경시
@@ -261,13 +278,14 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       if (rowKey === null) {
          rowKey = 0;
      }
-
+     
       let majorGrid = majorGridRef.current.getInstance();
       let majorRow = majorGrid.getRow(rowKey);
       let majorCode = majorRow.majorCode;
+
       if (majorCode) {
          await ZZ0101_S02({ majorCode: majorCode });
-      }
+      } 
    };
 
    //검색 창 클릭 또는 엔터시 조회
@@ -276,6 +294,9 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       const majorResult = await ZZ0101_S01();
       if (majorResult?.length) {
          await ZZ0101_S02({ majorCode: majorResult[0].majorCode });
+      } else {
+         // majorResult가 없으면 minors를 빈 배열로 세팅
+         setMinors([]);
       }
    };
 
@@ -310,9 +331,9 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    //-------------------grid----------------------------
 
    const majorColumns = [
-      { header: "major 코드", name: "majorCode", align: "center", width: 100 },
-      { header: "그룹코드명", name: "codeName", align: "left", editor: "text" },
-      { header: "코드 구분", name: "codeDiv", align: "center", formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: zz0001 } } },
+      { header: "major 코드", name: "majorCode", align: "center", width: 90 },
+      { header: "그룹코드명", name: "codeName", align: "left", editor: "text", width: 250 },
+      { header: "코드 구분", name: "codeDiv", align: "center", width: 130, formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: zz0001 } } },
       {
          header: "사용여부",
          name: "useYn",
@@ -333,14 +354,14 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    ];
 
    const minorColumns = [
-      { header: "minor코드", name: "code", align: "center" },
-      { header: "코드명", name: "codeName", editor: "text" },
-      { header: "상위 코드", name: "paCode", editor: "text" },
-      { header: "Lev", name: "lev", align: "center", editor: "text" },
-      { header: "비고1", name: "remark1", editor: "text" },
-      { header: "비고2", name: "remark2", editor: "text" },
-      { header: "비고3", name: "remark3", editor: "text" },
-      { header: "정렬", name: "sort", align: "center", editor: "text" },
+      { header: "minor코드", name: "code", align: "center", width: 90 },
+      { header: "코드명", name: "codeName", editor: "text", width: 250 },
+      { header: "상위 코드", name: "paCode", editor: "text", width: 90, hidden: true },
+      { header: "Lev", name: "lev", align: "center", editor: "text", hidden: true },
+      { header: "비고1", name: "remark1", editor: "text", width: 200 },
+      { header: "비고2", name: "remark2", editor: "text", width: 200 },
+      { header: "비고3", name: "remark3", editor: "text", hidden: true },
+      { header: "정렬", name: "sort", align: "center", editor: "text", width: 60 },
       {
          header: "사용여부",
          name: "useYn",
@@ -381,7 +402,7 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 columns={majorColumns} handleFocusChange={handleMajorFocusChange} gridRef={majorGridRef} />
+         <TuiGrid01 columns={majorColumns} handleFocusChange={handleMajorFocusChange} gridRef={majorGridRef} height={window.innerHeight - 550} />
       </div>
    );
 
@@ -406,7 +427,7 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 columns={minorColumns} gridRef={minorGridRef} />
+         <TuiGrid01 columns={minorColumns} gridRef={minorGridRef} height={window.innerHeight - 550}/>
       </div>
    );
 
@@ -420,8 +441,8 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             <div>{searchDiv()}</div>
          </div>
          <div className="w-full h-full md:flex p-2 md:space-x-2 md:space-y-0 space-y-2">
-            <div className="w-1/2" ref={majorGridContainerRef}>{majorGrid()}</div>
-            <div className="w-1/2" ref={minorGridContainerRef}>{minorGrid()} </div>
+            <div className="w-2/5" ref={majorGridContainerRef}>{majorGrid()}</div>
+            <div className="w-3/5" ref={minorGridContainerRef}>{minorGrid()} </div>
          </div>
       </div>
    );

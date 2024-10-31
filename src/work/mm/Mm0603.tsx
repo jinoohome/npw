@@ -15,7 +15,10 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
 
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
-
+      contNo: "",
+      searchContNo: "",
+      searchBpCd: "",
+      contDt: "",
    });
    const gridRef = useRef<any>(null);
    const gridContainerRef = useRef(null);
@@ -24,6 +27,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
 
    const contNoRef = useRef<HTMLInputElement>(null);
    const searchContNoRef = useRef<HTMLInputElement>(null);
+   const searchBpCdRef = useRef<HTMLInputElement>(null);
 
    const onInputChange = (name: string, value: any) => {
       setInputValues((prevValues) => ({
@@ -75,9 +79,10 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
       return result;
    };
 
-   const MM0602_S01 = async (contNo: string) => {
+   const MM0602_S01 = async (contNo: string, bpNm: string) => {
       const param = {
          contNo: contNo,
+         bpNm: bpNm,
       };
 
       const data = JSON.stringify(param);
@@ -90,11 +95,12 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
    const MM0603_S01 = async (contNo: string) => {
       const param = {
          contNo: contNo,
+         contDt: inputValues.contDt || '',
       };
 
       const data = JSON.stringify(param);
       const result = await fetchPost("MM0603_S01", { data });
-      console.log(result);
+      console.log(param);
 
       onInputChange("gridDatas1", result);
       return result;
@@ -179,7 +185,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
       inputValues.contNo = target.value;
       onInputChange("searchContNo", target.value);
 
-      const result = await MM0602_S01(inputValues.contNo);
+      const result = await MM0602_S01(inputValues.contNo, '');
       onInputChange("gridDatas5", result);
 
       if (result.length === 1) {
@@ -195,7 +201,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
 
    const handleContNoOnIconClick = async (e: any) => {
       onInputChange("searchContNo", e);
-      const result = await MM0602_S01(e);
+      const result = await MM0602_S01(e,'');
       onInputChange("gridDatas2", result);
       onInputChange("isOpen", true);
    };
@@ -213,13 +219,9 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const search = () => {
-      // const param = { ...inputValues };
-      // fetchPost("url", param).then((res) => {
-      //    if (res) {
-      //       refreshGrid(gridRef);
-      //    }
-      // });
+      MM0603_S01(inputValues.contNo);
    };
+
    const columns = [
       { header: "회사코드", name: "coCd", hidden: true }, // 회사 코드
       { header: "계약번호", name: "contNo", width: 120, align: "center" }, // 계약 번호
@@ -246,7 +248,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
       { header: "재직구분명", name: "subCodeNm", width: 150 }, // 재직 구분 명
       { header: "순번", name: "seqNo", hidden: true }, // 순번
       { header: "품목코드", name: "itemCd", width: 100, align: "center" }, // 품목 코드
-      { header: "수량", name: "qty", width: 80, align: "right", formatter: (e: any) => commas(e.value) }, // 수량
+      { header: "수량", name: "qty", width: 80, align: "center", formatter: (e: any) => commas(e.value) }, // 수량
       { header: "복리단가", name: "priceCom", width: 100, align: "right", formatter: (e: any) => commas(e.value) }, // 복리 단가
       { header: "개별단가", name: "pricePer", width: 100, align: "right", formatter: (e: any) => commas(e.value) }, // 개별 단가
       { header: "필수여부", name: "mandatoryYn", width: 80, align: "center" }, // 필수 여부
@@ -255,6 +257,36 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
       { header: "비고", name: "dtlRemark", width: 300 }, // 비고 (DTL)
       { header: "상태", name: "status", hidden: true }, // 상태
   ];
+
+  const summary = {
+   height: 40,
+   position: 'top', 
+   columnContent: {
+      // bpNm: {
+      //      template: (e:any) => {
+      //          return  `총 ${e.cnt}개`;
+           
+      //      }
+      //  },     
+       itemQty: {
+         template: (e:any) => {
+             return `합계 : `;
+         }
+      },
+      priceCom: {
+         template: (e:any) => {                  
+            const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+            return `${commas(data)}`; // 합계 표시
+            }
+      },   
+      pricePer: {
+         template: (e:any) => {                  
+            const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+            return `${commas(data)}`; // 합계 표시
+            }
+      },  
+   }
+}
   
    const grid = () => (
       <div className="border rounded-md p-2 space-y-2">
@@ -267,7 +299,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={() => {}} height={window.innerHeight - 500} perPageYn={false} />
+         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={() => {}} height={window.innerHeight - 480} summary={summary} perPageYn={false} />
       </div>
    );
 
@@ -308,10 +340,17 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
 
    const searchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-3 search text-sm search h-full">
-         <div className="grid grid-cols-3 gap-y-2 justify-start w-[60%]">
+         <div className="grid grid-cols-4 gap-y-2 justify-start w-[70%]">
             <InputSearchComp title="계약번호" value={inputValues.contNo} onChange={(e) => onInputChange("contNo", e)} onKeyDown={handleContNoOnKeyDown} onIconClick={handleContNoOnIconClick} />
-
-          
+            <DatePickerComp
+               title="계약기준일"
+               value={inputValues.contDt}
+               onChange={(e) => {
+                  onInputChange("contDt", e);
+               }}
+               //format="yyyy-MM-dd HH:mm A"
+               //timePicker={true}
+            />
             <SelectSearch
                title="재직구분"
                value={inputValues.subCode}
@@ -338,7 +377,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
 
    const searchModalDiv = async () => {
       
-      const result = await MM0602_S01(inputValues.searchContNo);
+      const result = await MM0602_S01(inputValues.searchContNo, inputValues.searchBpCd);
       onInputChange("gridDatas2", result);
     
    }
@@ -348,9 +387,13 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
       <div className="space-y-3">
          <div className="bg-gray-100 rounded-lg p-3 search text-sm search h-full">
             <div className="w-full flex justify-between">
-               <div className="grid grid-cols-1 ps-2 gap-x-3 gap-y-3   justify-start w-[70%]">
+               <div className="grid grid-cols-2 ps-2 gap-x-3 gap-y-3   justify-start w-[70%]">
                <InputComp title="계약번호" ref={searchContNoRef} value={inputValues.searchContNo} 
                handleCallSearch={searchModalDiv}  onChange={(e) => onInputChange('searchContNo',e)}
+          
+               />
+               <InputComp title="고객사" ref={searchBpCdRef} value={inputValues.searchBpCd} 
+               handleCallSearch={searchModalDiv}  onChange={(e) => onInputChange('searchBpCd',e)}
           
                />
                </div>

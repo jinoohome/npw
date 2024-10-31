@@ -1,7 +1,7 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
-import ChoicesEditor from "../../util/ChoicesEditor";
+import ChoicesEditor from "../../util/ReactSelectEditor";
 const breadcrumbItem = [{ name: "관리자" }, { name: "메뉴" }, { name: "메뉴권한관리" }];
 interface Props {
    item: any;
@@ -56,21 +56,29 @@ const Zz0202 = ({ item, activeComp, userInfo }: Props) => {
          await ZZ_B_BIZ();
          await ZZ_MENU_LIST();
          await ZZ_USER_LIST();
-
+   
          let gridDatas1 = await ZZ0202_S01();
-
-         let gId = gridDatas1[0].gId;
-         if (gId) {
-            let gridDatas2 = await ZZ0202_S02(gId);
-            let gridDatas3 = await ZZ0202_S03(gId);
-            setGridDatas1(gridDatas1);
-            setGridDatas2(gridDatas2);
-            setGridDatas3(gridDatas3);
+   
+         if (gridDatas1.length > 0) {
+            let gId = gridDatas1[0].gId;
+            if (gId) {
+               let gridDatas2 = await ZZ0202_S02(gId);
+               let gridDatas3 = await ZZ0202_S03(gId);
+               setGridDatas1(gridDatas1);
+               setGridDatas2(gridDatas2);
+               setGridDatas3(gridDatas3);
+            }
+         } else {
+            // gridDatas1에 값이 없으면 gridDatas2와 gridDatas3을 빈 배열로 설정
+            setGridDatas1([]);
+            setGridDatas2([]);
+            setGridDatas3([]);
          }
       } catch (error) {
          console.error("setGridData Error:", error);
       }
    };
+   
 
    const handleCallSearch = () => {
       setGridData();
@@ -158,9 +166,9 @@ const Zz0202 = ({ item, activeComp, userInfo }: Props) => {
       try {
          const param = {
             coCd: userInfo.coCd,
-            gName: searchRef1.current?.value,
-            menuId: "999",
-            usrId: "999",
+            gName: searchRef1.current?.value || "999",
+            menuId: searchRef2.current?.value || "999",
+            usrId: searchRef3.current?.value || "999",
             bpNm: "999",
          };
 
@@ -245,6 +253,10 @@ const Zz0202 = ({ item, activeComp, userInfo }: Props) => {
               ...rest,
            }))
          : [];
+console.log(formattedResult);
+         // 0번째 행에 전체 값을 추가
+         // formattedResult.unshift({ value: '999', label: '전체' });
+
          seChoice2(formattedResult);
          return result;
       } catch (error) {
@@ -273,6 +285,10 @@ const Zz0202 = ({ item, activeComp, userInfo }: Props) => {
               ...rest,
            }))
          : [];
+
+         // 0번째 행에 전체 값을 추가
+         // formattedResult.unshift({ value: '999', label: '전체' });
+
          seChoice3(formattedResult);
          return result;
       } catch (error) {
@@ -353,6 +369,9 @@ const Zz0202 = ({ item, activeComp, userInfo }: Props) => {
             const gridDatas3 = await ZZ0202_S03(gId);
             setGridDatas2(gridDatas2);
             setGridDatas3(gridDatas3);
+         } else {
+            setGridDatas2([]);
+            setGridDatas3([]);
          }
       }
    };
@@ -384,9 +403,18 @@ const Zz0202 = ({ item, activeComp, userInfo }: Props) => {
 
    //grid 삭제버튼
    const delGridRow1 = () => {
-      let grid = gridRef1.current.getInstance();
-      let { rowKey } = grid.getFocusedCell();
+      let grid = gridRef1.current.getInstance();      
+
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+      
+      // 행을 삭제
       grid.removeRow(rowKey, {});
+
+      // 남은 행이 있는 경우에만 포커스를 맞춤
+      if (grid.getRowCount() > 0) {
+         grid.focusAt(rowIndex, 1, true);
+      }
    };
    //grid 추가버튼
    const addGridRow2 = () => {
@@ -396,13 +424,29 @@ const Zz0202 = ({ item, activeComp, userInfo }: Props) => {
 		let gId =  gridRef1.current.getInstance().getValue(rowKey, 'gId');
 
       gridRef2.current.getInstance().appendRow({coCd: coCd, gId: gId, useYn : 'Y'}, {focus:true});
+
+      if (!gId) {
+         gridRef2.current.getInstance().removeRow(gridRef2.current.getInstance().getFocusedCell().rowKey);
+         let title = "그룹ID 미등록";
+         let msg = "그룹ID 먼저 저장 후에 추가해 주세요";
+         alertSwal(title, msg, "warning");
+      }
    };
 
    //grid 삭제버튼
    const delGridRow2 = () => {
-      let grid = gridRef2.current.getInstance();
-      let { rowKey } = grid.getFocusedCell();
+      let grid = gridRef2.current.getInstance();      
+
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+      
+      // 행을 삭제
       grid.removeRow(rowKey, {});
+
+      // 남은 행이 있는 경우에만 포커스를 맞춤
+      if (grid.getRowCount() > 0) {
+         grid.focusAt(rowIndex, 1, true);
+      }
    };
    //grid 추가버튼
    const addGridRow3 = () => {
@@ -416,9 +460,18 @@ const Zz0202 = ({ item, activeComp, userInfo }: Props) => {
 
    //grid 삭제버튼
    const delGridRow3 = () => {
-      let grid = gridRef3.current.getInstance();
-      let { rowKey } = grid.getFocusedCell();
+      let grid = gridRef3.current.getInstance();      
+
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+      
+      // 행을 삭제
       grid.removeRow(rowKey, {});
+
+      // 남은 행이 있는 경우에만 포커스를 맞춤
+      if (grid.getRowCount() > 0) {
+         grid.focusAt(rowIndex, 1, true);
+      }
    };
 
    const handleTabIndex = async (index: number) => {
@@ -430,10 +483,10 @@ const Zz0202 = ({ item, activeComp, userInfo }: Props) => {
    //---------------------- grid -----------------------------
 
    const columns1 = [
+      { header: "그룹ID", name: "gId", align: "center", width: 100 },
       { header: "시스템그룹", name: "sysGrp", align: "center", hidden: "false" },
-      { header: "사용처", name: "coCd", align: "center", formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: [] } } },
-      { header: "그룹ID", name: "gId", align: "center", hidden: "false" },
-      { header: "그룹명", name: "gName", align: "center", editor: "text" },
+      { header: "사용처", name: "coCd", align: "center", width: 150, formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: [] } } },
+      { header: "그룹명", name: "gName", width: 400, editor: "text" },
       {
          header: "사용여부",
          name: "useYn",
@@ -472,18 +525,19 @@ const Zz0202 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef1} columns={columns1} handleFocusChange={handleFocusChange} />
+         <TuiGrid01 gridRef={gridRef1} columns={columns1} handleFocusChange={handleFocusChange} height={window.innerHeight - 520}/>
       </div>
    );
 
    const columns2 = [
       { header: "회사코드", name: "coCd", align: "center", hidden: "false" },
       { header: "그룹ID", name: "gId", align: "center", hidden: "false" },
-      { header: "메뉴ID", name: "menuId", align: "center", formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: [] } } },
+      { header: "메뉴ID", name: "menuId", width : 600, formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: [] } } },
       {
          header: "권한",
          name: "auth",
          formatter: "listItemText",
+         hidden: "false",
          editor: {
             type: "checkbox",
             options: {
@@ -535,14 +589,14 @@ const Zz0202 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef2} columns={columns2} height={window.innerHeight-500} />
+         <TuiGrid01 gridRef={gridRef2} columns={columns2} height={window.innerHeight-550} />
       </div>
    );
 
    const columns3 = [
       { header: "회사코드", name: "coCd", align: "center", hidden: "false" },
       { header: "그룹ID", name: "gId", align: "center", hidden: "false" },
-      { header: "사용자ID", name: "usrId", align: "center", formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: [] } } },
+      { header: "사용자ID", name: "usrId", formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: [] } } },
       {
          header: "사용여부",
          name: "useYn",
