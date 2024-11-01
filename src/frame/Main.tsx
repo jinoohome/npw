@@ -184,7 +184,7 @@ function Main() {
       
       setCount(count + 1);
       const newComponent = {
-         id: `menu${components.length + count}`,
+         id: `menu${count}`,
          name: menuItem.menuName,
          menuId: menuItem.menuId,
          paMenuId: menuItem.paMenuId,
