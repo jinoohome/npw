@@ -31,6 +31,8 @@ function Main() {
    const [loading, setLoading] = useState(false); // 로딩 상태 추가
    const [searchMenus, setSearchMenus] = useState<ZZ_MENU_RES[]>([]);
 
+   const [count, setCount] = useState(0);
+
 
 
    //--------------- change --------------------------
@@ -172,14 +174,17 @@ function Main() {
    };
 
    //-------------util-------------------------
+   
    const addComponent = (menuItem: ZZ_MENU_RES) => {
       const [folder, fileName] = (menuItem.prgmFullPath ?? "").split('/');
       const componentName = capitalizeFirstLetter(fileName ?? "");
       const Component = loadable(() => import(`../work/${folder}/${componentName}`), {
          fallback: <div>Loading...</div>,
       });
+      
+      setCount(count + 1);
       const newComponent = {
-         id: `menu${components.length + 1}`,
+         id: `menu${components.length + count}`,
          name: menuItem.menuName,
          menuId: menuItem.menuId,
          paMenuId: menuItem.paMenuId,

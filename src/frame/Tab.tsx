@@ -24,6 +24,12 @@ const Tab = ({ components, onTabMenuClick, onTabCloseClick, activeComp, onAllTab
       }
    }, [components, tabRef]);
 
+   useEffect(() => {
+      if (dragRef.current) {
+         dragRef.current.scrollTo({ left: dragRef.current.scrollWidth, behavior: "smooth" });
+      }
+   }, [components]);
+
    const handleTabCloseClick = (item: any) => {
       onTabCloseClick(item);
    };
@@ -50,21 +56,23 @@ const Tab = ({ components, onTabMenuClick, onTabCloseClick, activeComp, onAllTab
    };
 
    const scrollLeft = () => {
-      if (tabRef.current) {
-         tabRef.current.scrollBy({ left: -100, behavior: 'smooth' });
+   
+      if (dragRef.current) {
+         dragRef.current.scrollBy({ left: -100, behavior: 'smooth' });
       }
    };
 
    const scrollRight = () => {
-      if (tabRef.current) {
-         tabRef.current.scrollBy({ left: 100, behavior: 'smooth' });
+   
+      if (dragRef.current) {
+         dragRef.current.scrollBy({ left: 100, behavior: 'smooth' });
       }
    };
 
    return (
       <div className={`${topMode === 'mobileClose' || topMode === 'mobileOpen' ? 'hidden' : ''}`}>
          <div className="bg-gray-100 w-full h-[40px] border-b flex items-center">
-            <div  ref={dragRef} {...events} className="w-[90%] h-full overflow-hidden" >
+            <div  ref={dragRef} {...events} className="w-[90%] h-full overflow-x-hidden" >
                <ul className="max-w-[1200px] h-full list-none flex gap-1 items-end px-2 whitespace-nowrap">
                   {components.map(renderMenuItem)}
                </ul>
