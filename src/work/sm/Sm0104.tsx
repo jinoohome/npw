@@ -1,4 +1,4 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, DatePickerComp, getGridCheckedDatas2, fetchPost, Breadcrumb, TuiGrid01, commas, reSizeGrid, InputComp, SelectSearchComp, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, DateRangePickerComp, date } from "../../comp/Import";
+import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, SelectSearch, alertSwal, DatePickerComp, getGridCheckedDatas2, fetchPost, Breadcrumb, TuiGrid01, commas, reSizeGrid, InputComp, SelectSearchComp, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, DateRangePickerComp, date } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
@@ -22,8 +22,6 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const searchRef2 = useRef<any>(null);
    const searchRef3 = useRef<any>(null);
    const searchRef4 = useRef<any>(null);
-   const searchRef5 = useRef<any>(null);
-   const searchRef6 = useRef<any>(null);
 
    const [gridDatas1, setGridDatas] = useState<any[]>();
 
@@ -76,6 +74,28 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          
          
       } 
+   }, [gridDatas1]);
+
+   useEffect(() => {
+      if (GridRef1.current && gridDatas1) {
+         const gridInstance = GridRef1.current.getInstance();
+         
+         // gridDatas1을 순회하며 조건에 따라 컬럼을 활성화 또는 비활성화
+         gridDatas1.forEach((row, index) => {
+            if (row) {
+               // 카드 입금일은 카드 결제금액이 0보다 클 때만 활성화
+               if (row.closeYn === "N") {
+                  gridInstance.enableColumn('purchaseAmt');
+                  gridInstance.enableColumn('purchaseNetAmt');
+                  gridInstance.enableColumn('purchaseVatAmt');
+               } else {
+                  gridInstance.disableColumn('purchaseAmt');
+                  gridInstance.disableColumn('purchaseNetAmt');
+                  gridInstance.disableColumn('purchaseVatAmt');
+               }
+            }
+         });
+      }
    }, [gridDatas1]);
 
    useEffect(() => {
@@ -287,8 +307,7 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                           onChange={(e)=>{
                           onInputChange('ownNmS', e);
                      }} />       
-            <SelectSearchComp title="마감여부" 
-                              ref={searchRef5}
+            <SelectSearch title="마감여부" 
                               value={inputValues.closeYnPoBpS}
                               onChange={(label, value) => {
                                     onInputChange('closeYnPoBpS', value);
@@ -297,14 +316,14 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                               //초기값 세팅시
                               datas={[{value : '999', label : '전체'},{value : 'Y', label : '마감완료'},{value : 'N', label : '마감전'}]}
             />
-            <SelectSearchComp title="관할구역" 
-                              ref={searchRef6}
+            <SelectSearch title="관할구역" 
                               value={inputValues.poBpS}
                               onChange={(label, value) => {
                                     onInputChange('poBpS', value);
                                  }}
 
-                              //readonly={userInfo.usrDiv !== '999'}
+                              //readonly={userInfo.usrDiv == 'ZZ0196'}
+                              addData={"999"}
 
                               //초기값 세팅시
                               stringify={true}
@@ -321,7 +340,7 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const grid1Columns = [
       { header: "", name: "coCd", hidden: true },
       { header: "마감주문번호", name: "closeSoNo", hidden: true },
-      { header: "마감", name: "closeYnPoBp", align: "center", width: 40},
+      { header: "마감", name: "closeYn", align: "center", width: 40},
       { header: "마감년월", name: "yyyyMm", align: "center", width: 80},
       { header: "주문번호", name: "soNo", align: "center", width: 100},
       { header: "고객사", name: "bpNm", width: 200 },
@@ -338,8 +357,63 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "비율", name: "bpRate", align: "center", width: 50},
       { header: "청구금액", name: "purchaseAmt", align: "right", editor: "text", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "공급금액", name: "purchaseNetAmt", align: "right", editor: "text", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "부가세", name: "purchaseVatAmt", align: "right", editor: "text", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "부가세", name: "purchaseVatAmt", align: "right", editor: "text", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "MOU여부", name: "mouYn", width: 80, align: "center" },
    ];
+
+   const summary = {
+      height: 40,
+      position: 'top', 
+      columnContent: {
+         // bpNm: {
+         //      template: (e:any) => {
+         //          return  `총 ${e.cnt}개`;
+              
+         //      }
+         //  },     
+         itemNm: {
+            template: (e:any) => {
+                return `합계 : `;
+            }
+         },
+         soAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },   
+         netAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+         vatAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },   
+         purchaseAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },   
+         purchaseNetAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+         purchaseVatAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },        
+      }
+   }
 
    const Grid1 = () => {
       const isCloseYnComplete = inputValues.closeYnPoBpS === 'Y'; // 마감완료
@@ -392,7 +466,7 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                </div>
             </div>
    
-            <TuiGrid01 columns={grid1Columns} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} height={window.innerHeight - 550}/>
+            <TuiGrid01 columns={grid1Columns} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} height={window.innerHeight - 590} summary={summary}/>
          </div>
       );
    };

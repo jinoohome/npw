@@ -1,6 +1,6 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, 
    updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
-   reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp, DateRangePickerComp, date, InputSearchComp, commas,
+   reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, TextArea, InputSearchComp1, SelectSearch, SelectComp1, SelectComp2, SelectSearchComp, DateRangePickerComp, date, InputSearchComp, commas,
     RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp } from "../../comp/Import";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 
@@ -27,7 +27,6 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    const refs = {
       preRcptNo: useRef<any>(null),
       rcptDt: useRef<any>(null),
-      rcptUserId: useRef<any>(null),
       reqNm: useRef<any>(null),
       reqTelNo: useRef<any>(null),
       bpCd: useRef<any>(null),
@@ -47,6 +46,9 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       startDate: date(-1, 'month'),
       endDate: date(),
       rcptUserId: "",
+      subCode: "",
+      hsCd: "",
+      consultMemo: "",
    });
 
    const onInputChange = (name: string, value: any) => {
@@ -69,6 +71,8 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       reSizeGrid({ ref: gridRef2, containerRef: gridContainerRef2, sec: 200 });
       reSizeGrid({ ref: gridRef3, containerRef: gridContainerRef3, sec: 200 });
       reSizeGrid({ ref: gridRef4, containerRef: gridContainerRef4, sec: 200 });
+
+      addGridRow();
    }, []);
 
    //--------------------init---------------------------
@@ -108,6 +112,8 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
 
          if (gridDatas2.length > 0) {
             grid2.focusAt(focusRowKey, 0, true);
+         } else {
+            addGridRow(); // 데이터가 없을 경우 addGridRow() 호출
          }
          
       }
@@ -164,7 +170,26 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       }
    };
 
+   // 주문확정, 취소, 삭제
+   const SO0101_U04 = async (data: any) => {
+      try {
+         const result = await fetchPost(`SO0101_U04`, data);
+         return result;
+      } catch (error) {
+         console.error("SO0101_U04 Error:", error);
+         throw error;
+      }
+   };
+
    //-------------------event--------------------------
+   const setChangeGridData = (columnName: string, value: any) => {
+      const grid = gridRef2.current.getInstance();
+      const { rowKey } = grid.getFocusedCell();
+      grid.setValue(rowKey, columnName, value, false);
+
+      onInputChange(columnName, value);
+
+   };
 
    const search = async (preRcptNo:any) => {
       const param = {    
@@ -173,28 +198,9 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       const data = JSON.stringify(param);
       const result = await fetchPost("SO0101_S01", {data});
 
-      let subCodeIn = await ZZ_CONT_INFO({ contNo: result[0].contNo, bpCd: result[0].bpCd, subCode: result[0].subCode, searchDiv: "SUB" });
-
-      if (refs.subCode.current) {
-         refs.subCode.current.updateChoices(
-            subCodeIn.map((item:any) => ({
-              value: item.subCode,
-              label: item.subCodeNm,
-            }))
-         );
-      };
-
-      let hsCdIn = await ZZ_CONT_INFO({ contNo: result[0].contNo, bpCd: result[0].bpCd, subCode: result[0].subCode, searchDiv: "HS" });
-
-      if (refs.hsCd.current) {
-         refs.hsCd.current.updateChoices(
-            hsCdIn.map((item:any) => ({
-            value: item.hsCode,
-            label: item.hsNm,
-            }))
-         );
-      };
-
+      if (result.length === 0) {
+         return;
+      }
       let itemIn = await ZZ_CONT_INFO({ contNo: result[0].contNo, bpCd: result[0].bpCd, subCode: result[0].subCode, searchDiv: "ITEM", hsCd: result[0].hsCd});
 
       setGridDatas(itemIn);
@@ -205,19 +211,29 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
 
       // InputSearchComp1에 값 설정      
       onInputChange('preRcptNo', result[0].preRcptNo);
+      onInputChange('contNo', result[0].contNo);
       onInputChange('reqNm', result[0].reqNm);
       onInputChange('rcptUserId', result[0].rcptUserId);
-      refs.rcptUserId.current.setChoiceByValue(result[0].rcptUserId);
       onInputChange('reqTelNo', result[0].reqTelNo);
       onInputChange('bpCd', result[0].bpCd);
       onInputChange('bpNm', result[0].bpNm);
       onInputChange('mouYn', result[0].mouYn);
       onInputChange('rcptDt', result[0].rcptDt);
       onInputChange('subCode', result[0].subCode);
-      refs.subCode.current.setChoiceByValue(result[0].subCode);
       onInputChange('hsCd', result[0].hsCd);
-      refs.hsCd.current.setChoiceByValue(result[0].hsCd);
       onInputChange('ownNm', result[0].ownNm);
+   };
+
+   const add = async () => {
+      setInputValues([]);
+      setGridDatas([]);
+      setGridDatas2([]);
+      setGridDatas3([]);
+      setGridDatas4([]);
+
+      onInputChange('startDate', date(-1, 'month'));
+      onInputChange('endDate', date());
+
    };
 
    const save = async () => {
@@ -229,9 +245,39 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
          }
       }
    };
+
+   const del = async () => {
+      if (inputValues.preRcptNo) {
+         alertSwal("사전상담삭제", "사전상담을 삭제하시겠습니까?", "warning", true).then(async (result) => {
+            if (result.isConfirmed) {
+               let preRcptNo = inputValues.preRcptNo;
+
+               let data = {
+                  menuId: activeComp.menuId,
+                  insrtUserId: userInfo.usrId,
+                  preRcptNo: preRcptNo
+               };
+
+               if (data) {
+                  let result = await SO0101_U04(data);
+                  if (result) {
+                     await returnResult(result);
+                  }
+               }
+            } else if (result.isDismissed) {
+               return;
+            }
+         });  
+      } else {
+         alertSwal("사전상담삭제", "접수번호가 없습니다.", "warning");
+      } 
+   }; 
+
    const returnResult = async(result:any) => {     
-      search(result.preRcptNoOut);
       alertSwal(result.msgText, result.msgCd, result.msgStatus);
+      if(result.preRcptNoOut){
+         search(result.preRcptNoOut);
+      }
    };
 
    // 모든 grid Data 내용을 가져옴
@@ -241,8 +287,6 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       } else {
          inputValues.status = 'U';
       }
-
-
 
       let preConsultHdr = [inputValues];
       let preConsultDtl = await getGridDatas(gridRef2);
@@ -263,16 +307,39 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    const addGridRow = () => {
       let grid = gridRef2.current.getInstance();
 
-      grid.appendRow({  useYn: "Y", coCd: "100", isNew: true}, { at: 0 });
+      grid.appendRow({  useYn: "Y", consultMemo:"", coCd: "100", isNew: true}, { at: 0 });
 
       grid.focusAt(0, 1, true);
    };
 
    //grid 삭제버튼
    const delGridRow = () => {
-      let grid = gridRef2.current.getInstance();
-      const { rowKey } = grid.getFocusedCell();
+      let grid = gridRef2.current.getInstance();      
+
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+      
+      // 행을 삭제
       grid.removeRow(rowKey, {});
+
+      // 남은 행이 있는 경우에만 포커스를 맞춤
+      if (grid.getRowCount() > 0) {
+         grid.focusAt(rowIndex, 1, true);
+      }
+   };
+
+   const handleFocusChange = async ({ rowKey }: any) => {
+      if (rowKey !== null && gridRef2.current) {
+         const grid = gridRef2.current.getInstance();
+         const rowData = grid.getRow(rowKey);
+
+         if (rowData) {
+            Object.entries(rowData).forEach(([key, value]) => {
+               
+               onInputChange(key, value);
+            }); 
+         }
+      }
    };
 
    //사전상담 팝업조회
@@ -303,21 +370,21 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
 
    //연락처 조회
    const handleCallSearch4 = async () => {
-      const param = {         
-         reqTelNo: inputValues.reqTelNo,
-      };
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0101_P02", { data });
+      if (!inputValues.preRcptNo) {
+         const param = {         
+            reqTelNo: inputValues.reqTelNo,
+         };
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0101_P02", { data });
 
-      if (result.length === 1) {
-         search(result[0].preRcptNo);
-      }
+         if (result.length > 0) {
+            search(result[0].preRcptNo);
+         }
+      }      
    };
 
    const handleDblClick = async () => {
-      refs.subCode.current.setChoiceByValue("");
       onInputChange('subCode', '');
-      refs.hsCd.current.setChoiceByValue("");
       onInputChange('hsCd', '');
       setGridDatas([]);
 
@@ -334,19 +401,6 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange('bpCd', bpCd);
       onInputChange('contNo', contNo);
       onInputChange('mouYn', mouYn);
-
-      let subCodeIn = await ZZ_CONT_INFO({ contNo: contNo, bpCd: bpCd, subCode: "999", searchDiv: "SUB" });
-
-      if (refs.subCode.current) {
-         refs.subCode.current.updateChoices(
-            subCodeIn.map((item:any) => ({
-              value: item.subCode,
-              label: item.subCodeNm,
-            }))
-         );
-      };
-
-      refs.hsCd.current.updateChoices();
       
       setIsOpen(false);
    };
@@ -395,9 +449,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       const result = await fetchPost("ZZ_B_PO_BP", { data });
       setGridDatas4(result);
       if (result.length === 1) {
-            refs.subCode.current.setChoiceByValue("");
             onInputChange('subCode', '');
-            refs.hsCd.current.setChoiceByValue("");
             onInputChange('hsCd', '');
             setGridDatas([]);
 
@@ -412,18 +464,6 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
             onInputChange('contNo', contNo);
             onInputChange('mouYn', mouYn);
 
-            let subCodeIn = await ZZ_CONT_INFO({ contNo: contNo, bpCd: bpCd, subCode: "999", searchDiv: "SUB" });
-
-            if (refs.subCode.current) {
-               refs.subCode.current.updateChoices(
-                  subCodeIn.map((item:any) => ({
-                  value: item.subCode,
-                  label: item.subCodeNm,
-                  }))
-               );
-            };
-
-            refs.hsCd.current.updateChoices();
          } else {
             await setIsOpen(true);
             setTimeout(() => {
@@ -483,7 +523,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
          <div className="w-full flex justify-between">
             <div className="grid grid-cols-2  gap-y-3  justify-start w-[60%]">
-               <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch3} title="거래처명"></InputComp1>               
+               <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch3} title="고객사명"></InputComp1>               
             </div>
             <div className="w-[40%] flex justify-end">
                <button type="button" onClick={handleCallSearch3} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
@@ -498,7 +538,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    //상단 버튼 div
    const buttonDiv = () => (
       <div className="flex justify-end space-x-2">
-         <button type="button" className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+         <button type="button" onClick={add} className="bg-orange-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
             <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
             신규
          </button>
@@ -506,7 +546,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
             <ServerIcon className="w-5 h-5 mr-1" />
             저장
          </button>
-         <button type="button" className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+         <button type="button" onClick={del} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
             <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
             삭제
          </button>
@@ -531,9 +571,9 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
                <InputComp title="접수일시" value={inputValues.rcptDt} readOnly= {true} onChange={(e)=>{
                         onInputChange('rcptDt', e);
                      }} />
-               <SelectSearchComp title="접수자" 
-                              ref={refs.rcptUserId}
+               <SelectSearch title="접수자" 
                               value={inputValues.rcptUserId}
+                              addData={"empty"}
                               onChange={(label, value) => {
                                     onInputChange('rcptUserId', value);
                                  }}
@@ -599,43 +639,38 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
                                     onInputChange('bpNm', e);                           
                                 }} />
                <Checkbox  title = "MOU" value={inputValues.mouYn}  checked={inputValues.mouYn == 'Y'} readOnly={true} />
-               <SelectSearchComp title="재직구분" 
-                              ref={refs.subCode}
+               <SelectSearch title="재직구분" 
                               value={inputValues.subCode}
                               onChange={async (label, value) => {
                                     onInputChange('subCode', value);
-                                    onInputChange('hsCd', '');
-                                    refs.hsCd.current.setChoiceByValue("");
-
-                                    let hsCdIn = await ZZ_CONT_INFO({ contNo: inputValues.contNo, bpCd: inputValues.bpCd, subCode: value, searchDiv: "HS" });
-
-                                    if (refs.hsCd.current) {
-                                       refs.hsCd.current.updateChoices(
-                                          hsCdIn.map((item:any) => ({
-                                          value: item.hsCode,
-                                          label: item.hsNm,
-                                          }))
-                                       );
-                                    };
-
-                                    let itemIn = await ZZ_CONT_INFO({ contNo: inputValues.contNo, bpCd: inputValues.bpCd, subCode: value, searchDiv: "ITEM", hsCd: inputValues.hsCd});
-
-                                    setGridDatas(itemIn);
+                                    onInputChange('hsCd', '');                                    
                                  }}   
-               />                           
-               <SelectSearchComp title="경조사유" 
-                              ref={refs.hsCd}
+
+                              //초기값 세팅시
+                              stringify={true}
+                              param={{ contNo : inputValues.contNo,
+                                       bpCd : inputValues.bpCd,
+                                       subCode : "999",
+                                       searchDiv : 'SUB' }}
+                              procedure="ZZ_CONT_INFO"  dataKey={{ label: 'subCodeNm', value: 'subCode' }} 
+               />                            
+               <SelectSearch title="경조사유" 
                               value={inputValues.hsCd}
                               onChange={async (label, value) => {                                    
                                     onInputChange('hsCd', value);
-
-                                    // const foundItem = hsCode.find((item: { hsCode: string; }) => item.hsCode === value);
-                                    // const foundhsType = foundItem ? foundItem.hsType : null;
 
                                     let itemIn = await ZZ_CONT_INFO({ contNo: inputValues.contNo, bpCd: inputValues.bpCd, subCode: inputValues.subCode, searchDiv: "ITEM", hsCd: value});
 
                                     setGridDatas(itemIn);
                                  }}
+
+                              //초기값 세팅시
+                              stringify={true}
+                              param={{ contNo : inputValues.contNo,
+                                       bpCd : inputValues.bpCd,
+                                       subCode : inputValues.subCode,
+                                       searchDiv : 'HS' }}
+                              procedure="ZZ_CONT_INFO"  dataKey={{ label: 'hsNm', value: 'hsCode' }} 
                />
                <InputComp value={inputValues.ownNm} title="대상자" target="ownNm" 
                           onChange={(e) => {
@@ -677,8 +712,8 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    const columns2 = [
       { header: "접수자", name: "insrtUserId", hidden: true },
       { header: "접수자", name: "insrtUserNm", width: 100, align: "center" },
-      { header: "접수일시", name: "insrtDt", width: 150, align: "center" },
-      { header: "메모", name: "consultMemo", editor: "text"},
+      { header: "접수일시", name: "insrtDt", align: "center" },
+      { header: "메모", name: "consultMemo", hidden: true},
    ];
 
    const grid2 = () => (
@@ -701,8 +736,20 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
                </button>
             </div>
          </div>
-
-         <TuiGrid01 gridRef={gridRef2} columns={columns2} perPageYn = {false} height={window.innerHeight-650}/>
+         <div className="w-full h-full flex space-x-2 p-2">
+            <div className="w-1/2 " ref={gridContainerRef}>
+               <TuiGrid01 gridRef={gridRef2} columns={columns2} handleFocusChange={handleFocusChange} perPageYn = {false} height={window.innerHeight-650}/>
+            </div>
+            <div className="w-1/2 flex flex-col h-full">
+            <TextArea title="" value={inputValues.consultMemo} 
+                       onChange={(e) => 
+                        setChangeGridData("consultMemo", e)
+                        }
+                       layout="vertical" textAlign="left"
+                   />
+            </div>
+         </div>
+         
       </div>
    );
 
@@ -733,8 +780,8 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    const columns4 = [
      
       { header: "회사코드", name: "coCd", hidden: true },
-      { header: "거래처코드", name: "bpCd", align : "center"},
-      { header: "거래처명", name: "bpNm" },
+      { header: "고객사코드", name: "bpCd", align : "center"},
+      { header: "고객사명", name: "bpNm" },
    ];
 
    const grid4 = () => (
@@ -744,7 +791,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
-               <div className="">거래처 정보</div>
+               <div className="">고객사 정보</div>
             </div>           
          </div>
 

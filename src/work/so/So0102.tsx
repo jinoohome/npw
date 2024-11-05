@@ -38,7 +38,6 @@ const So0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
   };
 
 
-   const [focusRow, setFocusRow] = useState<any>(0);
 
    const breadcrumbItem = [{ name: "주문관리" }, { name: "사전상담" }, { name: "사전상담 조회" }];
 
@@ -81,20 +80,6 @@ const So0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
  
    //---------------------- api -----------------------------
-
-   const ZZ_CODE = async (param: ZZ_CODE_REQ) => {
-      const result3 = await ZZ_CODE_API(param);
-      let formattedResult = Array.isArray(result3)
-         ? result3.map(({ code, codeName, ...rest }) => ({
-              value: code,
-              text: codeName,
-              label: codeName,
-              ...rest,
-           }))
-         : [];
-      return formattedResult;
-   };
-
    const SO0102_S01 = async () => {
       const param = {
          coCd: userInfo.coCd,
@@ -161,11 +146,11 @@ const So0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const grid1Columns = [
       { header: "", name: "coCd", hidden: true },
       { header: "접수번호", name: "preRcptNo", align: "center", width: 120, rowSpan: true },
-      { header: "접수일시", name: "rcptDt", align: "center", width: 150, rowSpan: true },
-      { header: "접수자", name: "rcptUserNm", align: "center", width: 100 },
-      { header: "신청자", name: "reqNm", align: "center", width: 100 },
-      { header: "고객사", name: "bpNm", width: 120 },
-      { header: "대상자", name: "ownNm", align: "center", width: 100 },
+      { header: "접수일시", name: "rcptDt", align: "center", width: 100 },
+      { header: "접수자", name: "rcptUserNm", align: "center", width: 80 },
+      { header: "신청자", name: "reqNm", align: "center", width: 80 },
+      { header: "고객사", name: "bpNm", width: 180 },
+      { header: "대상자", name: "ownNm", align: "center", width: 80 },
       { header: "재직구분", name: "subCodeNm", width: 150 },
       { header: "경조사유", name: "hsNm", width: 150 },
       { header: "메모", name: "consultMemo", whiteSpace: 'pre-wrap' },
@@ -182,7 +167,7 @@ const So0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 columns={grid1Columns} gridRef={GridRef1} />
+         <TuiGrid01 columns={grid1Columns} gridRef={GridRef1} height={window.innerHeight-540}/>
       </div>
    );
 

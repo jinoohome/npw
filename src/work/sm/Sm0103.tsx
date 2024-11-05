@@ -1,8 +1,9 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, DatePickerComp, getGridCheckedDatas2, fetchPost, Breadcrumb, TuiGrid01, commas, reSizeGrid, InputComp, SelectSearchComp, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, DateRangePickerComp, date } from "../../comp/Import";
+import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, SelectSearch, alertSwal, DatePickerComp, getGridCheckedDatas2, fetchPost, Breadcrumb, TuiGrid01, commas, reSizeGrid, InputComp, SelectSearchComp, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, DateRangePickerComp, date } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
+import { ro } from "date-fns/locale";
 
 interface Props {
    item: any;
@@ -22,8 +23,6 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const searchRef2 = useRef<any>(null);
    const searchRef3 = useRef<any>(null);
    const searchRef4 = useRef<any>(null);
-   const searchRef5 = useRef<any>(null);
-   const searchRef6 = useRef<any>(null);
 
    const [gridDatas1, setGridDatas] = useState<any[]>();
 
@@ -48,8 +47,6 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    useEffect(() => {
       reSizeGrid({ ref: GridRef1, containerRef: gridGridContainerRef, sec: 200 });
 
-      console.log("유저 구분:", userInfo.usrDiv);
-      console.log("관할구역:", userInfo.bpCd);
       if (userInfo.usrDiv !== '999') {
          setInputValues((prevValues) => ({
             ...prevValues,
@@ -105,8 +102,6 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
           yyyyMm: '999',
           closeYn: inputValues.closeYnPoBpS || '999',
         };
-
-        console.log('param:', param);  
     
         const data = JSON.stringify(param);
         const result = await fetchPost(`SM0103_S01`, { data });
@@ -202,6 +197,14 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    //마감취소버튼
    const delClose = async () => {
+      const gridInstance = GridRef1.current.getInstance();
+      const checkedRows = gridInstance.getCheckedRows();
+
+      if (!checkedRows || checkedRows.length === 0) {
+         alertSwal('마감할 데이터를 선택하시기 바랍니다.', '확인요청', 'error');
+         return;
+      }
+
       alertSwal("마감취소확인", "마감 취소 하시겠습니까?", "warning", true).then(async (result) => {
          if (result.isConfirmed) {
             const data = await getGridValues('D');
@@ -265,30 +268,29 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                           onChange={(e)=>{
                           onInputChange('empNmS', e);
                      }} />       
-            <SelectSearchComp title="마감여부" 
-                              ref={searchRef5}
-                              value={inputValues.closeYnPoBpS}
-                              onChange={(label, value) => {
-                                    onInputChange('closeYnPoBpS', value);
-                                 }}                           
+            <SelectSearch  title="마감여부" 
+                           value={inputValues.closeYnPoBpS}
+                           onChange={(label, value) => {
+                                 onInputChange('closeYnPoBpS', value);
+                              }}                           
 
-                              //초기값 세팅시
-                              datas={[{value : '999', label : '전체'},{value : 'Y', label : '마감완료'},{value : 'N', label : '마감전'}]}
+                           //초기값 세팅시
+                           datas={[{value : '999', label : '전체'},{value : 'Y', label : '마감완료'},{value : 'N', label : '마감전'}]}
             />
-            <SelectSearchComp title="관할구역" 
-                              ref={searchRef6}
-                              value={inputValues.poBpS}
-                              onChange={(label, value) => {
-                                    onInputChange('poBpS', value);
-                                 }}
+            <SelectSearch  title="관할구역" 
+                           value={inputValues.poBpS}
+                           onChange={(label, value) => {
+                                 onInputChange('poBpS', value);
+                              }}
 
-                              //readonly={userInfo.usrDiv !== '999'}
+                           readonly={userInfo.usrDiv == 'ZZ0196'}
+                           addData={"999"}
 
-                              //초기값 세팅시
-                              stringify={true}
-                              param={{ coCd: "100",bpType : "ZZ0003", bpNm : '999', bpDiv: '999' }}
-                              procedure="ZZ_B_PO_BP"
-                              dataKey={{ label: "bpNm", value: "bpCd" }}
+                           //초기값 세팅시
+                           stringify={true}
+                           param={{ coCd: "100",bpType : "ZZ0003", bpNm : '999', bpDiv: '999' }}
+                           procedure="ZZ_B_PO_BP"
+                           dataKey={{ label: "bpNm", value: "bpCd" }}
                />
          </div>
       </div>
@@ -300,7 +302,7 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "", name: "coCd", hidden: true },
       { header: "마감주문번호", name: "closeSoNo", hidden: true },
       { header: "마감", name: "closeYnPoBp", align: "center", width: 40},
-      { header: "주문번호", name: "soNo", align: "center", width: 100},
+      { header: "주문번호", name: "soNo", align: "center", width: 100, rowSpan: true },
       { header: "관할구역", name: "poBpNm", width: 120},
       { header: "주문일", name: "orderDt", align: "center", width: 80},
       { header: "배송지", name: "dlvyNm", width: 200},
@@ -309,11 +311,47 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "품목", name: "itemNm", width: 200 },
       { header: "수량", name: "soQty", width: 40, align: "center" },
       { header: "정산금액", name: "totalAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "비율", name: "bpRate", align: "center", width: 50},
+      { header: "비율", name: "bpRate", align: "center", width: 60},
       { header: "청구금액", name: "poAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "공급금액", name: "poNetAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "부가세", name: "poVatAmt", align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
    ];
+
+   const summary = {
+      height: 40,
+      position: 'top', 
+      columnContent: {
+         // bpNm: {
+         //      template: (e:any) => {
+         //          return  `총 ${e.cnt}개`;
+              
+         //      }
+         //  },     
+         bpRate: {
+            template: (e:any) => {
+                return `합계 : `;
+            }
+         },
+         poAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },   
+         poNetAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+         poVatAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },           
+      }
+   }
 
    const Grid1 = () => {
       const isCloseYnComplete = inputValues.closeYnPoBpS === 'Y'; // 마감완료
@@ -349,7 +387,7 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                </div>
             </div>
    
-            <TuiGrid01 columns={grid1Columns} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} height={window.innerHeight - 550}/>
+            <TuiGrid01 columns={grid1Columns} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} height={window.innerHeight - 590} summary={summary}/>
          </div>
       );
    };

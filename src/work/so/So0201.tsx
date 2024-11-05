@@ -78,7 +78,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       startDate2: date(-1, 'month'),   // 사전상담 팝업
       endDate2: date(),
       dealType: 'A',
-      rcptUserId: "",
+      rcptUserId: userInfo.usrId,
       rcptMeth: "FU0007",
       zzFU0004 : [], // 청구구분
       zzFU0005 : [], // 유무상구분
@@ -292,9 +292,20 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             gridInstance2.disableColumn('poPrice');
             gridInstance3.disableColumn('payDiv');
             gridInstance3.disableColumn('reason');
+           
          }
+
+      
       }
    }, [inputValues.dealType, gridDatas2]);
+
+   // useEffect(() => {
+   //   console.log(inputValues.dealType);
+   //   if (inputValues.dealType === 'A' && gridRef2.current) {
+   //     const gridInstance = gridRef2.current.getInstance();
+   //     gridInstance.disableRowCheck(1)
+   //   }
+   // }, [inputValues.dealType]);
 
    useEffect(() => {
       if (gridRef2.current && gridDatas2) {
@@ -305,6 +316,19 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
          if (gridDatas2.length > 0) {
             grid2.focusAt(focusRowKey, 0, true);
+            if(inputValues.dealType === 'A'){
+               gridDatas2.forEach((item: any, index: any) => {
+                  //console.log(index);
+                   grid2.disableRowCheck(index); // Uncomment this to disable row check
+               });
+
+            }else{
+               gridDatas2.forEach((item: any, index: any) => {
+                  //console.log(index);
+                   grid2.enableRowCheck(index); // Uncomment this to enable row check
+               });
+            }
+
          }
          
       }
@@ -371,13 +395,13 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    // 상품정보 팝업
    useEffect(() => {
       if (gridRef7.current && gridDatas7) {
-         let grid7 = gridRef7.current.getInstance();
+         let grid7 = gridRef7.current.getInstance();         
          
          // grid가 존재하는지 확인
          if (!grid7) return;
 
          // 기존에 등록된 클릭 이벤트가 있다면 제거
-        grid7.off('click');
+         grid7.off('click');
    
          grid7.on('click', async (e:any) => {                     
             if (e.columnName === 'tsBpBtn') {
@@ -695,28 +719,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
       handleTabIndex(0);
 
-      let subCodeIn = await ZZ_CONT_INFO({ contNo: result[0].contNo, bpCd: result[0].soldToParty, subCode: result[0].subCode, searchDiv: "SUB" });
-
-      if (refs.subCode.current) {
-         refs.subCode.current.updateChoices(
-            subCodeIn.map((item:any) => ({
-              value: item.subCode,
-              label: item.subCodeNm,
-            }))
-         );
-      };
-
-      let hsCdIn = await ZZ_CONT_INFO({ contNo: result[0].contNo, bpCd: result[0].soldToParty, subCode: result[0].subCode, searchDiv: "HS" });
-
-      if (refs.hsCd.current) {
-         refs.hsCd.current.updateChoices(
-            hsCdIn.map((item:any) => ({
-            value: item.hsCode,
-            label: item.hsNm,
-            }))
-         );
-      };
-
       // 고객사별 참고사항
       let tip = await SO0201_P05({ bpCd: result[0].soldToParty });
       setGridDatas1(tip);
@@ -754,19 +756,15 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange('coCd', result[0].coCd);
       onInputChange('soNo', result[0].soNo);
       onInputChange('rcptMeth', result[0].rcptMeth);
-      refs.rcptMeth.current.setChoiceByValue(result[0].rcptMeth);
       onInputChange('orderDt', result[0].orderDt);
       onInputChange('rcptUserId', result[0].rcptUserId);
-      refs.rcptUserId.current.setChoiceByValue(result[0].rcptUserId);
       onInputChange('ownNm', result[0].ownNm);
       onInputChange('ownTelNo', result[0].ownTelNo);
       onInputChange('soldToParty', result[0].soldToParty);
       onInputChange('bpNm', result[0].bpNm);
       onInputChange('contNo', result[0].contNo);
       onInputChange('subCode', result[0].subCode);
-      refs.subCode.current.setChoiceByValue(result[0].subCode);
       onInputChange('hsCd', result[0].hsCd);
-      refs.hsCd.current.setChoiceByValue(result[0].hsCd);
       onInputChange('deptNm', result[0].deptNm);
       onInputChange('roleNm', result[0].roleNm);
       onInputChange('dlvyHopeDt', result[0].dlvyHopeDt);
@@ -790,10 +788,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
    const create = async () => {
       setInputValues([]);
-      refs.rcptMeth.current.setChoiceByValue('FU0007');
-      refs.rcptUserId.current.setChoiceByValue('');
-      refs.subCode.current.setChoiceByValue('');
-      refs.hsCd.current.setChoiceByValue('');
       
       onInputChange('startDate', date(-1, 'month'));
       onInputChange('endDate', date());
@@ -1028,7 +1022,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       const data = JSON.stringify(param);
       const result = await fetchPost("SO0201_P02", { data });
 
-      if (result.length === 1) {
+      if (result.length > 0) {
          onInputChange('preRcptNo', result[0].preRcptNo);
 
          // 사전상담
@@ -1102,9 +1096,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
    // 거래처팝업 더블클릭
    const handleDblClick2 = async () => {
-      refs.subCode.current.setChoiceByValue("");
       onInputChange('subCode', '');
-      refs.hsCd.current.setChoiceByValue("");
       onInputChange('hsCd', '');
 
       const gridInstance = gridRefP2.current.getInstance();
@@ -1120,19 +1112,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange('soldToParty', bpCd);
       onInputChange('contNo', contNo);
       onInputChange('mouYn', mouYn);
-
-      let subCodeIn = await ZZ_CONT_INFO({ contNo: contNo, bpCd: bpCd, subCode: "999", searchDiv: "SUB" });
-
-      if (refs.subCode.current) {
-         refs.subCode.current.updateChoices(
-            subCodeIn.map((item:any) => ({
-              value: item.subCode,
-              label: item.subCodeNm,
-            }))
-         );
-      };
-
-      refs.hsCd.current.updateChoices();
 
       // 고객사별 참고사항
       const param = {       
@@ -1253,6 +1232,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          gridInstance7.setValue(rowKey7, 'tsBpNm', gridInstance.getValue(rowKey, 'poBpNm'));
          gridInstance2.setValue(rowKey7, 'tsBpCd', gridInstance.getValue(rowKey, 'poBpCd'));
          gridInstance2.setValue(rowKey7, 'tsBpNm', gridInstance.getValue(rowKey, 'poBpNm'));
+
+         gridInstance7.enableColumn('moveCost');
       }
 
       setIsOpen6(false);
@@ -1291,9 +1272,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       const result = await fetchPost("ZZ_B_PO_BP", { data });
       setGridDatasP2(result);
       if (result.length === 1) {
-            refs.subCode.current.setChoiceByValue("");
             onInputChange('subCode', '');
-            refs.hsCd.current.setChoiceByValue("");
             onInputChange('hsCd', '');
 
             const bpCd = result[0].bpCd 
@@ -1306,19 +1285,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             onInputChange('soldToParty', bpCd);
             onInputChange('contNo', contNo);
             onInputChange('mouYn', mouYn);
-
-            let subCodeIn = await ZZ_CONT_INFO({ contNo: contNo, bpCd: bpCd, subCode: "999", searchDiv: "SUB" });
-
-            if (refs.subCode.current) {
-               refs.subCode.current.updateChoices(
-                  subCodeIn.map((item:any) => ({
-                  value: item.subCode,
-                  label: item.subCodeNm,
-                  }))
-               );
-            };
-
-            refs.hsCd.current.updateChoices();
 
             // 고객사별 참고사항
             const param = {       
@@ -1394,6 +1360,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                onInputChange('dlvyCd', dlvyCd);
                onInputChange('dlvyNm', dlvyNm);
                onInputChange('dlvyAddr', addr1);
+
+               SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: dlvyCd, dealType: inputValues.dealType});
             }
          } else {
             await setIsOpen3(true);
@@ -1478,6 +1446,25 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
         }
       }
    };
+
+   // grid 포커스 변경 시
+   const handleFocusChange2 = async ({ rowKey }: any) => {
+      if (rowKey !== null && gridRef7.current) {
+      const grid = gridRef7.current.getInstance();
+   
+      setTimeout(() => {
+         let focusRowKey = grid.getFocusedCell().rowKey || 0;
+         let tsVal = grid.getValue(focusRowKey, 'tsBpCd');
+   
+         if (tsVal) {
+            grid.enableColumn('moveCost');
+         } else {
+            grid.disableColumn('moveCost');
+         }
+      }, 0); // 0ms의 지연을 추가해 비동기적으로 실행
+      }
+   };
+ 
 
    //gridRef2 상품정보 수량, 단가 변경
    const handleAfterChange = async (ev: any) => {
@@ -1782,9 +1769,9 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          <div className="space-y-5">
             <div className="grid grid-cols-2  gap-3  justify-around items-center pr-2 pb-[23px]">
                <InputSearchComp1 value={inputValues.soNo} readOnly={true} title="주문번호" target="soNo" handleInputSearch={handleInputSearch} />
-               <SelectSearchComp title="접수구분" 
-                              ref={refs.rcptMeth}
+               <SelectSearch title="접수구분" 
                               value={inputValues.rcptMeth}
+                              addData={"empty"}
                               onChange={(label, value) => {
                                     onInputChange('rcptMeth', value);
                                  }}
@@ -1795,17 +1782,18 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                />
                <InputComp title="접수일시" value={inputValues.orderDt} readOnly= {true} onChange={(e)=>{
                         onInputChange('orderDt', e);
-                     }} />
-               <SelectSearchComp title="접수자" 
-                              ref={refs.rcptUserId}
+                     }} />               
+               <SelectSearch title="접수자" 
                               value={inputValues.rcptUserId}
+                              addData={"empty"}
+                              readonly={true}
                               onChange={(label, value) => {
                                     onInputChange('rcptUserId', value);
                                  }}
 
                               //초기값 세팅시
                               stringify={true}
-                              param={ { coCd : '100',
+                              param={ { coCd : '999',
                                        usrId : '999',
                                        usrDiv : '999',
                                        useYn : '999' }}
@@ -1827,32 +1815,25 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                <InputComp value={inputValues.contNo} readOnly={true} title="계약번호" target="contNo" 
                           onChange={(e) => {
                            onInputChange('contNo', e);                           
-                        }}   />
-               <SelectSearchComp title="재직구분" 
-                              ref={refs.subCode}
+                        }}   />               
+               <SelectSearch title="재직구분" 
                               value={inputValues.subCode}
                               onChange={async (label, value) => {
                                     onInputChange('subCode', value);
-                                    onInputChange('subCodeNm', label);
-                                    onInputChange('hsCd', '');
-                                    refs.hsCd.current.setChoiceByValue("");
-
-                                    let hsCdIn = await ZZ_CONT_INFO({ contNo: inputValues.contNo, bpCd: inputValues.soldToParty, subCode: value, searchDiv: "HS" });
-
-                                    if (refs.hsCd.current) {
-                                       refs.hsCd.current.updateChoices(
-                                          hsCdIn.map((item:any) => ({
-                                          value: item.hsCode,
-                                          label: item.hsNm,
-                                          }))
-                                       );
-                                    };
+                                    onInputChange('hsCd', '');                                    
                                  }}   
-               />                           
-               <SelectSearchComp title="신청사유" 
-                              ref={refs.hsCd}
+
+                              //초기값 세팅시
+                              stringify={true}
+                              param={{ contNo : inputValues.contNo,
+                                       bpCd : inputValues.bpCd,
+                                       subCode : "999",
+                                       searchDiv : 'SUB' }}
+                              procedure="ZZ_CONT_INFO"  dataKey={{ label: 'subCodeNm', value: 'subCode' }} 
+               />         
+               <SelectSearch title="신청사유" 
                               value={inputValues.hsCd}
-                              onChange={async (label, value) => {    
+                              onChange={async (label, value) => {                                    
                                  const grid = gridRef2.current.getInstance();
                                  const firstRow = grid.getRow(0); // 첫 번째 행 가져오기
 
@@ -1887,13 +1868,21 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                                     if (result.isConfirmed) {
                                        await updateHSCode(value);
                                     } else if (result.isDismissed) {
-                                       refs.hsCd.current.setChoiceByValue(inputValues.hsCd);
+                                       //refs.hsCd.current.setChoiceByValue(inputValues.hsCd);
                                     }
                                     });
                                  } else {
                                     await updateHSCode(value);
                                  }
                               }}
+
+                              //초기값 세팅시
+                              stringify={true}
+                              param={{ contNo : inputValues.contNo,
+                                       bpCd : inputValues.soldToParty,
+                                       subCode : inputValues.subCode,
+                                       searchDiv : 'HS' }}
+                              procedure="ZZ_CONT_INFO"  dataKey={{ label: 'hsNm', value: 'hsCode' }} 
                />
                <InputComp value={inputValues.deptNm} title="부서" target="deptNm" 
                           onChange={(e) => {
@@ -1905,6 +1894,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                         }}   />
                <Checkbox  title = "MOU 여부" value={inputValues.mouYn} layout="flex" 
                            minWidth="80px"
+                           readOnly={true}
                            checked={inputValues.mouYn == 'Y'} 
                           onChange={(e) => {
                                     onInputChange('mouYn', e)}} />
@@ -2392,7 +2382,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             </div>           
          </div>
 
-         <TuiGrid01 gridRef={gridRef7} columns={columns7} handleAfterChange={handleAfterChange3} rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-750}/>
+         <TuiGrid01 gridRef={gridRef7} columns={columns7} handleFocusChange={handleFocusChange2} handleAfterChange={handleAfterChange3} rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-750}/>
       </div>
    );
 

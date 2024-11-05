@@ -190,6 +190,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    const grid1Columns = [
       { header: "", name: "coCd", hidden: true },
+      { header: "진행상태", name: "poStatusNm", align: "center", width: 100},
       { header: "주문번호", name: "soNo", align: "center", width: 120},
       { header: "주문일시", name: "orderDt", align: "center", width: 100},
       { header: "구분", name: "rcptMeth", align: "center", width: 80 },
@@ -221,7 +222,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 columns={grid1Columns} gridRef={GridRef1} />
+         <TuiGrid01 columns={grid1Columns} gridRef={GridRef1} height={window.innerHeight-540}/>
       </div>
    );
 

@@ -219,14 +219,29 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    //마감취소버튼
    const delClose = async () => {
-      const data = await getGridValues('D');
+      // 그리드에서 체크된 row 데이터 확인
+      const gridInstance = GridRef1.current.getInstance();
+      const checkedRows = gridInstance.getCheckedRows();
 
-      if (data) {
-         let result = await SM0101_U01(data);
-         if (result) {
-            await returnResult(result);
-         }
+      if (!checkedRows || checkedRows.length === 0) {
+         alertSwal('마감취소할 데이터를 선택하시기 바랍니다.', '확인요청', 'error');
+         return;
       }
+
+      alertSwal("마감확인", "마감 취소하시겠습니까?", "warning", true).then(async (result) => {
+         if (result.isConfirmed) {
+            const data = await getGridValues('D');
+
+            if (data) {
+               let result = await SM0101_U01(data);
+               if (result) {
+                  await returnResult(result);
+               }
+            }
+         } else if (result.isDismissed) {
+            return;
+         }
+      });      
    }; 
 
    //저장버튼
@@ -316,17 +331,67 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "마감주문번호", name: "closeSoNo", hidden: true },
       { header: "마감여부", name: "closeYn", align: "center", width: 60},
       { header: "마감년월", name: "yyyyMm", align: "center", width: 80},
-      { header: "주문번호", name: "soNo", align: "center", width: 120},
-      { header: "고객사", name: "bpNm", width: 280 },
-      { header: "품목", name: "itemNm", width: 280 },
-      { header: "패키지", name: "pkgItemNm", width: 120 },
+      { header: "주문번호", name: "soNo", align: "center", width: 100},
+      { header: "고객사", name: "bpNm", width: 230 },
+      { header: "재직구분", name: "subCodeNm", width: 100 },
+      { header: "대상자", name: "ownNm", width: 80, align: "center" },
+      { header: "품목", name: "itemNm", width: 280 },      
       { header: "매출금액", name: "soAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "미결제금액", name: "noPay", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "계산서발행", name: "receiptAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "카드결제", name: "cardAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "현금결제", name: "cashAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "입금일", name: "chkCashDt", align: "center", editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },
+      { header: "입금일", name: "chkCashDt", align: "center", width: 120, editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },
+      { header: "패키지", name: "pkgItemNm", width: 120 },
    ];
+
+   const summary = {
+      height: 40,
+      position: 'top', 
+      columnContent: {
+         // bpNm: {
+         //      template: (e:any) => {
+         //          return  `총 ${e.cnt}개`;
+              
+         //      }
+         //  },     
+          itemNm: {
+            template: (e:any) => {
+                return `합계 : `;
+            }
+         },
+         soAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },   
+         noPay: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+         receiptAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+         cardAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+         cashAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+      }
+   }
 
    const Grid1 = () => {
       const isCloseYnComplete = inputValues.closeYnS === 'Y'; // 마감완료
@@ -376,7 +441,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                </div>
             </div>
    
-            <TuiGrid01 columns={grid1Columns} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} />
+            <TuiGrid01 columns={grid1Columns} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} height={window.innerHeight-595} summary={summary}/>
          </div>
       );
    };

@@ -86,37 +86,12 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
          { value: "Y", label: "사용", selected: true },
          { value: "N", label: "미사용" },
       ]);
-
-      // Input Choices
-      initChoice(refs.coCd, (choice) => setInputChoices((prev) => ({ ...prev, coCd: choice })));
-      initChoice(refs.itemGrp, (choice) => setInputChoices((prev) => ({ ...prev, itemGrp: choice })));
-      initChoice(refs.itemDiv, (choice) => setInputChoices((prev) => ({ ...prev, itemDiv: choice })));
-      initChoice(refs.taxYn, (choice) => setInputChoices((prev) => ({ ...prev, taxYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.pkgItemYn, (choice) => setInputChoices((prev) => ({ ...prev, pkgItemYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.subsYn, (choice) => setInputChoices((prev) => ({ ...prev, subsYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.deduYn, (choice) => setInputChoices((prev) => ({ ...prev, deduYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
-      initChoice(refs.useYn, (choice) => setInputChoices((prev) => ({ ...prev, useYn: choice })), [
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);
    };
 
    const setGridData = async () => {
       try {
          let cd0004Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0004", div: "999" });
-         if (cd0004Data != null) {
+         if (cd0004Data !== null) {
             setCd0004(cd0004Data);
 
             let cd0004IntupData = cd0004Data.filter((item) => !(item.value === "999" && item.text === "전체"));
@@ -126,7 +101,7 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
          }
 
          let cd0005Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0005", div: "999" });
-         if (cd0005Data != null) {
+         if (cd0005Data !== null) {
             setCd0005(cd0005Data);
 
             let cd0005IntupData = cd0005Data.filter((item) => !(item.value === "999" && item.text === "전체"));
@@ -136,7 +111,7 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
          }
 
          let coCdData = await ZZ_B_BIZ();
-         if (coCdData != null) {
+         if (coCdData !== null) {
             setCoCds(coCdData);
          }
 
@@ -409,7 +384,7 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
 
    const handleFocusChange = async ({ rowKey }: any) => {
       
-      if(focusRow != rowKey) {
+      if(focusRow !== rowKey) {
          setErrorMsgs({})
       }
       

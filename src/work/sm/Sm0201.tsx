@@ -31,6 +31,7 @@ const So0201 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       startDate: date(-1, 'month'),
       endDate: date(),
       payYnS: '999',
+      workCd: '999',
       closeYnS: 'N',
    });
 
@@ -69,6 +70,34 @@ const So0201 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          
          
       } 
+   }, [gridDatas1]);
+
+   useEffect(() => {
+      if (GridRef1.current && gridDatas1) {
+         const gridInstance = GridRef1.current.getInstance();
+         
+         // gridDatas1을 순회하며 조건에 따라 컬럼을 활성화 또는 비활성화
+         gridDatas1.forEach((row, index) => {
+            if (row) {
+               // 카드 입금일은 카드 결제금액이 0보다 클 때만 활성화
+               if (row.closeYn === "N") {
+                  gridInstance.enableColumn('soAmt');
+                  gridInstance.enableColumn('soNetAmt');
+                  gridInstance.enableColumn('soVatAmt');
+                  gridInstance.enableColumn('poAmt');
+                  gridInstance.enableColumn('poNetAmt');
+                  gridInstance.enableColumn('poVatAmt');
+               } else {
+                  gridInstance.disableColumn('soAmt');
+                  gridInstance.disableColumn('soNetAmt');
+                  gridInstance.disableColumn('soVatAmt');
+                  gridInstance.disableColumn('poAmt');
+                  gridInstance.disableColumn('poNetAmt');
+                  gridInstance.disableColumn('poVatAmt');
+               }
+            }
+         });
+      }
    }, [gridDatas1]);
 
    // useEffect(() => {
@@ -275,6 +304,7 @@ const So0201 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                            onChange={(label, value) => {
                               onInputChange("workCd", value);
                            }}
+                           addData={"999"}
                            stringify={true}
                            param={{ coCd: "200" }}
                            procedure="ZZ_WORKS"
@@ -300,17 +330,71 @@ const So0201 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "마감주문번호", name: "closeSoNo", hidden: true },
       { header: "마감여부", name: "closeYn", align: "center", width: 60},
       { header: "마감년월", name: "yyyymm", align: "center", width: 80},
-      { header: "수주번호", name: "soNo", align: "center", width: 120},
+      { header: "수주번호", name: "soNo", align: "center", width: 130},
       { header: "사업장", name: "bpNm", width: 280 },
       { header: "협력업체", name: "poBpNm", width: 150 },
       { header: "작업명", name: "workNm", width: 280 },
-      { header: "계약금액", name: "soAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "공급금액", name: "soNetAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "부가세", name: "soVatAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "매입금액", name: "poAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "공급금액", name: "poNetAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "부가세", name: "poVatAmt", align: "center", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "계약금액", name: "soAmt", align: "right", width: 90, editor: "text",formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "공급금액", name: "soNetAmt", align: "right", width: 90, editor: "text", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "부가세", name: "soVatAmt", align: "right", width: 90, editor: "text", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "매입금액", name: "poAmt", align: "right", width: 90, editor: "text", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "공급금액", name: "poNetAmt", align: "right", width: 90, editor: "text", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "부가세", name: "poVatAmt", align: "center", editor: "text", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
    ];
+
+   const summary = {
+      height: 40,
+      position: 'top', 
+      columnContent: {
+         // bpNm: {
+         //      template: (e:any) => {
+         //          return  `총 ${e.cnt}개`;
+              
+         //      }
+         //  },     
+         workNm: {
+            template: (e:any) => {
+                return `합계 : `;
+            }
+         },
+         soAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },   
+         soNetAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+         soVatAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },   
+         poAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },   
+         poNetAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+         poVatAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },        
+      }
+   }
 
    const Grid1 = () => {
       const isCloseYnComplete = inputValues.closeYnS === 'Y'; // 마감완료
@@ -357,7 +441,7 @@ const So0201 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                </div>
             </div>
    
-            <TuiGrid01 columns={grid1Columns} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} />
+            <TuiGrid01 columns={grid1Columns} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} summary={summary}/>
          </div>
       );
    };

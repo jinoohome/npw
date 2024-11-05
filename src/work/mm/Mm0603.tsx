@@ -248,6 +248,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
       { header: "재직구분명", name: "subCodeNm", width: 150 }, // 재직 구분 명
       { header: "순번", name: "seqNo", hidden: true }, // 순번
       { header: "품목코드", name: "itemCd", width: 100, align: "center" }, // 품목 코드
+      { header: "품목명", name: "itemNm", width: 200 }, // 품목 명
       { header: "수량", name: "qty", width: 80, align: "center", formatter: (e: any) => commas(e.value) }, // 수량
       { header: "복리단가", name: "priceCom", width: 100, align: "right", formatter: (e: any) => commas(e.value) }, // 복리 단가
       { header: "개별단가", name: "pricePer", width: 100, align: "right", formatter: (e: any) => commas(e.value) }, // 개별 단가
