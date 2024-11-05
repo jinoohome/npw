@@ -10,7 +10,10 @@ import { set } from "date-fns";
 import { Input, Label } from "@headlessui/react";
 import ChoicesEditor from "../../util/ChoicesEditor";
 
+import LoadingMask from "../../comp/LoadingMask";
+
 import { ZZ0101_S02_API } from "../../ts/ZZ0101_S02";
+import { tr } from "date-fns/locale";
 
 interface Props {
    item: any;
@@ -39,6 +42,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    });
 
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
+   const [loading, setLoading] = useState(false);
 
    const gridRef = useRef<any>(null);
    const gridContainerRef = useRef(null);
@@ -279,7 +283,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    //-------------------event--------------------------
    const onInputChange = (name: string, value: any) => {
-      setInputValues((prevValues) => {
+      setInputValues((prevValues: any) => {
          // null, undefined, ""을 하나의 빈 값으로 취급
          const currentValue = prevValues[name] ?? "";
          const newValue = value ?? "";
@@ -365,6 +369,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const save = async () => {
+     
       if(!inputValues.soNo) {
          alertSwal("수주번호를 입력해주세요.", "", "warning");
          return;
@@ -390,9 +395,18 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
     };
 
 
+      try {
+         setLoading(true); 
+          const result = await fetchPost(`SP0103_U03`, data);
+          returnResult(result);
+      } catch (error) {
+            console.error("save Error:", error);
+      } finally {
+         setLoading(false);
+      }
 
-      const result = await fetchPost(`SP0103_U03`, data);
-      returnResult(result);
+      
+     
    };
 
    const del = async () => {
@@ -653,7 +667,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    //-------------------grid----------------------------
    const columns = [
     { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
-    { header: "수주번호", name: "soNo", width: 100, align: "center", hidden: true  },
+    { header: "수주번호", name: "soNo", width: 130, align: "center", hidden: true  },
     { header: "수주 순번", name: "soSeq", width: 80, align: "center", hidden: true  }, 
     { header: "품목 순번", name: "itemSeq", width: 100, align: "center", hidden: true  }, 
     { header: "품목코드", name: "itemCd", width: 120, align: "center" }, 
@@ -732,7 +746,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const columns2 = [
       { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
-      { header: "수주번호", name: "soNo", width: 120, align: "center", rowSpan: false }, // SO_NO: 수주 번호
+      { header: "수주번호", name: "soNo", width: 130, align: "center", rowSpan: false }, // SO_NO: 수주 번호
       { header: "구분번호", name: "soSeq", width: 120, align: "center", hidden: true }, // SO_NO: 수주 번호
       { header: "사업장", name: "bpNm", width: 300, rowSpan: false }, 
       { header: "사업장", name: "bpCd", width: 300,   hidden: true }, 
@@ -1004,6 +1018,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    return (
       <div className={`space-y-5 overflow-y-hidden h-screen`}>
+           <LoadingMask loading={loading} />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />
@@ -1027,6 +1042,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
             title="" >
             <div>{modalDiv2()}</div>
          </CommonModal>
+        
       </div>
    );
 };

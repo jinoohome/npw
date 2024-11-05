@@ -3,8 +3,8 @@ import {
 } from "../../comp/Import";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import "tui-date-picker/dist/tui-date-picker.css";
-import { useDropzone } from "react-dropzone";
-import imageCompression from "browser-image-compression";
+//import { useDropzone } from "react-dropzone";
+//import imageCompression from "browser-image-compression";
 
 interface Props {
    item: any;
@@ -13,7 +13,7 @@ interface Props {
 }
 
 const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
-   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "발주등록" }];
+   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "완료 보고 등록" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
       gridDatas2: [],
@@ -127,11 +127,11 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       const data = JSON.stringify(param);
       const result = await fetchPost("SP0107_S03", { data });
 
-      console.log(result);
+   
       const reportFiles = result.filter((item: any) => item.programId === "report");
       const photoFiles = result.filter((item: any) => item.programId === "photo");
 
-      console.log(reportFiles);
+
       onInputChange("reportFiles", reportFiles);
       onInputChange("photoFiles", photoFiles);
 
@@ -289,7 +289,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    //-------------------event--------------------------
    const onInputChange = (name: string, value: any) => {
-      setInputValues((prevValues) => {
+      setInputValues((prevValues:any) => {
          // null, undefined, ""을 하나의 빈 값으로 취급
          const currentValue = prevValues[name] ?? "";
          const newValue = value ?? "";

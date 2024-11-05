@@ -108,8 +108,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
     try {
       const param = { mgNo: mgNo };
       const data = JSON.stringify(param);
-
-      const response = await fetch(`http://localhost:8080/ZZ_FILE`, {
+      const baseURL = process.env.REACT_APP_API_URL;
+       
+  
+      const response = await fetch(`${baseURL}/ZZ_FILE`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -139,8 +141,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
       for (const file of uploadedFilesState) {
         const param = { mgNo: file.mgNo };
         const data = JSON.stringify(param);
+        const baseURL = process.env.REACT_APP_API_URL;
+       
   
-        const response = await fetch(`http://localhost:8080/ZZ_FILE`, {
+        const response = await fetch(`${baseURL}/ZZ_FILE`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

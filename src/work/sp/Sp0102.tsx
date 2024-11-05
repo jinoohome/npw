@@ -71,7 +71,7 @@ const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
          ZZ_B_PO_BP();
          ZZ_CODE("MA0004");
          ZZ_CODE("MA0005");
-         ZZ_ITEMS();
+         await ZZ_ITEMS();
       } catch (error) {
          console.error("setGridData Error:", error);
       }
@@ -259,6 +259,11 @@ const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
       
    }, []);
 
+   // 탭 클릭시 Grid 리사이즈
+   useEffect(() => {
+      refreshGrid(gridRef);
+    }, [activeComp]);
+
    useEffect(() => {
         search();
     }, [inputValues.searchWorkStatus]);
@@ -270,7 +275,7 @@ const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
          grid.resetData(inputValues.gridDatas1);
 
          if (inputValues.gridDatas1.length > 0) {
-            grid.focusAt(0, 0, true);
+           // grid.focusAt(0, 0, true);
          }
       }
    }, [inputValues.gridDatas1]);
@@ -281,7 +286,7 @@ const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
 
          grid.resetData(inputValues.gridDatas2);
          if (inputValues.gridDatas2.length > 0) {
-            grid.focusAt(inputValues.focusKey, 0, true);
+            //grid.focusAt(inputValues.focusKey, 0, true);
          }
 
          refreshGrid(gridRef2);
@@ -753,7 +758,7 @@ const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
 
    const columns2 = [
       { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
-      { header: "수주번호", name: "soNo", width: 120, align: "center", rowSpan: true,   }, // SO_NO: 수주 번호
+      { header: "수주번호", name: "soNo", width: 130, align: "center", rowSpan: true,   }, // SO_NO: 수주 번호
       { header: "구분번호", name: "soSeq", width: 120, align: "center", hidden: true }, // SO_NO: 수주 번호
       { header: "사업장", name: "bpNm", width: 150, rowSpan: false }, 
       { header: "사업장", name: "bpCd", width: 300,   hidden: true }, 

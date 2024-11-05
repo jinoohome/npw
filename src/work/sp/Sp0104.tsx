@@ -4,7 +4,7 @@ import {
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import "tui-date-picker/dist/tui-date-picker.css";
-import DatePicker from "tui-date-picker";
+//import DatePicker from "tui-date-picker";
 import { on } from "events";
 import { set } from "date-fns";
 import { Input, Label } from "@headlessui/react";
@@ -262,6 +262,11 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
       
    }, []);
 
+   // 탭 클릭시 Grid 리사이즈
+   useEffect(() => {
+      refreshGrid(gridRef);
+    }, [activeComp]);
+
    useEffect(() => {
         search();
     }, [inputValues.searchWorkStatus]);
@@ -273,7 +278,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
          grid.resetData(inputValues.gridDatas1);
 
          if (inputValues.gridDatas1.length > 0) {
-            grid.focusAt(0, 0, true);
+            // grid.focusAt(0, 0, true);
          }
       }
    }, [inputValues.gridDatas1]);
@@ -284,7 +289,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
 
          grid.resetData(inputValues.gridDatas2);
          if (inputValues.gridDatas2.length > 0) {
-            grid.focusAt(inputValues.focusKey, 0, true);
+            // grid.focusAt(inputValues.focusKey, 0, true);
          }
 
          refreshGrid(gridRef2);
@@ -677,7 +682,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
    //-------------------grid----------------------------
    const columns = [
     { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
-    { header: "발주번호", name: "soNo", width: 100, align: "center", hidden: true  },
+    { header: "발주번호", name: "soNo", width: 130, align: "center", hidden: true  },
     { header: "발주 순번", name: "soSeq", width: 80, align: "center", hidden: true  }, 
     { header: "품목 순번", name: "itemSeq", width: 100, align: "center", hidden: true  }, 
     { header: "품목코드", name: "itemCd", width: 100, align: "center" }, 
@@ -756,7 +761,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
 
    const columns2 = [
       { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
-      { header: "발주번호", name: "soNo", width: 120, align: "center", rowSpan: true,   }, // SO_NO: 발주 번호
+      { header: "발주번호", name: "soNo", width: 130, align: "center", rowSpan: true,   }, // SO_NO: 발주 번호
       { header: "구분번호", name: "soSeq", width: 120, align: "center", hidden: true }, // SO_NO: 발주 번호
       { header: "사업장", name: "bpNm", width: 150, rowSpan: false }, 
       { header: "사업장", name: "bpCd", width: 300,   hidden: true }, 

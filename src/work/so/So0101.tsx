@@ -242,7 +242,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
          inputValues.status = 'U';
       }
 
-      console.log(inputValues);
+
 
       let preConsultHdr = [inputValues];
       let preConsultDtl = await getGridDatas(gridRef2);

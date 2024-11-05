@@ -1,7 +1,7 @@
 import {
    React, useEffect, useState, commas, useRef, SelectSearch, getGridCheckedDatas, useCallback, getGridCheckedDatas2, initChoice, date, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
 } from "../../comp/Import";
-import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
+import { ArrowUpTrayIcon, ArrowDownTrayIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import "tui-date-picker/dist/tui-date-picker.css";
 import * as XLSX from "xlsx";  // 엑셀 파일 처리를 위한 라이브러리
 
@@ -150,7 +150,9 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const search = async () => {
+       console.log("search");
        const result = await SP0109_S01();
+       console.log(result);
        onInputChange("gridDatas3", result);
    };
 
@@ -322,7 +324,8 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
                   procedure="ZZ_B_PO_BP"
                   dataKey={{ label: "bpNm", value: "bpCd" }}
                />
-               <button type="button" onClick={save} className="bg-green-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
+               <button type="button" onClick={save} className=" bg-blue-500 text-white rounded-3xl px-3 py-1 flex items-center shadow h-[30px]">
+                  <PlusIcon className="w-5 h-5" />
                   발주등록
                </button>
             </div>
@@ -354,7 +357,8 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
                <div className="">엑셀 일괄 발주 리스트</div>
             </div>
             <div className="flex space-x-1">
-               <button type="button" onClick={del} className="bg-red-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
+               <button type="button" onClick={del} className="bg-red-500 text-white rounded-3xl px-3 py-1  flex items-center shadow">
+                  <MinusIcon className="w-5 h-5" />
                   발주삭제
                </button>
             </div>
@@ -381,8 +385,13 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
             onChange={handleFileChange}
          />
          <button type="button" onClick={excel} className="bg-green-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
-            <ChevronDoubleDownIcon className="w-5 h-5 mr-1" />
+            <ArrowUpTrayIcon className="w-5 h-5 mr-1" />
             엑셀
+         </button>
+
+         <button type="button"  onClick={() => handleDownloadFile('MG202411040323102859')} className="bg-orange-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+            <ArrowDownTrayIcon className="w-5 h-5 mr-1" />
+             포맷
          </button>
       </div>
    );
@@ -413,6 +422,38 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
          </div>
       </div>
    );
+
+   
+  const handleDownloadFile = async (mgNo: string) => {
+   try {
+     const param = { mgNo: mgNo };
+     const data = JSON.stringify(param);
+     const baseURL = process.env.REACT_APP_API_URL;
+       
+  
+     const response = await fetch(`${baseURL}/ZZ_FILE`, {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+       },
+       body: data,
+     });
+
+    
+
+     const blob = await response.blob();
+     const url = window.URL.createObjectURL(blob);
+     const a = document.createElement('a');
+     a.href = url;
+     a.download = "엑셀일괄발주.xlsx";
+     document.body.appendChild(a);
+     a.click();
+     document.body.removeChild(a);
+     window.URL.revokeObjectURL(url);
+   } catch (error) {
+     console.error("파일 다운로드 오류:", error);
+   }
+ };
 
    return (
       <div className={`space-y-5 overflow-y-auto h-screen`}>

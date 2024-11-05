@@ -2,7 +2,7 @@ import {
    React, useEffect, useState, commas, useRef, SelectSearch, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
-import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
+import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon, ArrowUturnDownIcon } from "@heroicons/react/24/outline";
 import "tui-date-picker/dist/tui-date-picker.css";
 import DatePicker from "tui-date-picker";
 import { on } from "events";
@@ -291,7 +291,10 @@ useEffect(() => {
        let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
  
        grid.removeRow(rowKey, {});
-       grid.focusAt(rowIndex, 1, true);
+       if (rowIndex > 0){
+           grid.focusAt(rowIndex, 1, true);
+
+       }
    };
 
    const validateData = (action: string, dataString: any) => {
@@ -317,6 +320,7 @@ useEffect(() => {
    };
 
    const search = async () => {
+        console.log(inputValues.soNo);
          const result = await SP0101_S01(inputValues.soNo);
         SP0101_S02(inputValues.soNo);
 
@@ -331,9 +335,11 @@ useEffect(() => {
    const save = async () => {
        let datas = await getGridDatas(gridRef);
        
+
        inputValues.gridDatas = datas;
        inputValues.soNo ? inputValues.status = 'U' : inputValues.status = 'I';
       
+       console.log(inputValues.gridDatas);
 
        let data = {
             oilSoHdr: JSON.stringify(inputValues),
@@ -342,7 +348,7 @@ useEffect(() => {
             insrtUserId: userInfo.usrId,
        };
 
-
+    
         const result = await fetchPost(`SP0101_U03`, data);
         returnResult(result);
    };
@@ -359,6 +365,23 @@ useEffect(() => {
     };
        const result = await fetchPost(`SP0101_U03`, data);
        returnResult(result);
+   };
+   const init = async () => {
+          setInputValues((prevValues) => ({
+              ...prevValues, // 유지해야 할 데이터는 그대로 두고
+              gridDatas1: [], // 초기화할 필드들
+              gridDatas2: [],
+              bpCd: '',
+              soNo: '',
+              reqUserId: '',
+              reqTelNo: '',
+              addrCd1: '',
+              addrCd2: '',
+              remark: '',
+              orderStatus: '',
+              reqDt: '',
+    
+          }));
    };
 
    const returnResult = async (result: any) => {
@@ -381,7 +404,8 @@ useEffect(() => {
 
             }));
            } else {
-               inputValues.contNo = result.contNoOut;
+                console.log(result);
+               inputValues.soNo = result.soNoOut;
                search();
            }
        }
@@ -503,7 +527,7 @@ useEffect(() => {
 
    const columns2 = [
        { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
-       { header: "수주번호", name: "soNo", width: 120, align: "center" }, // SO_NO: 수주 번호
+       { header: "수주번호", name: "soNo", width: 140, align: "center" }, // SO_NO: 수주 번호
        { header: "고객사", name: "bpNmS", width: 300 }, // BP_NM_S: 고객사 (BP 코드와 이름의 조합)
        { header: "수주일자", name: "orderDt", width: 120, align: "center" }, // ORDER_DT: 수주 일자
        { header: "요청일자", name: "reqDt", width: 120, align: "center" }, // REQ_DT: 요청 일자
@@ -528,6 +552,10 @@ useEffect(() => {
 
    const buttonDiv = () => (
        <div className="flex justify-end space-x-2">
+          <button type="button" onClick={init} className="bg-green-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+               <ArrowUturnDownIcon className="w-5 h-5 mr-1" />
+               입력
+           </button>
            <button type="button" onClick={del} className="bg-rose-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
                <TrashIcon className="w-5 h-5 mr-1" />
                삭제
@@ -603,6 +631,7 @@ useEffect(() => {
                    <InputComp title="연락처"
                        value={inputValues.reqTelNo}
                        onChange={(e) => onInputChange("reqTelNo", e)}
+                       
                    />
 
                    <SelectSearch
