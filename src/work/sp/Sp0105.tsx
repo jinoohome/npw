@@ -1,16 +1,10 @@
 import {
-   React, useEffect, useState, commas, useRef, SelectSearch, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
+   React, useEffect, useState, commas, useRef, SelectSearch, date, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import "tui-date-picker/dist/tui-date-picker.css";
 //import DatePicker from "tui-date-picker";
-import { on } from "events";
-import { set } from "date-fns";
-import { Input, Label } from "@headlessui/react";
-import ChoicesEditor from "../../util/ChoicesEditor";
-
-import { ZZ0101_S02_API } from "../../ts/ZZ0101_S02";
 
 interface Props {
    item: any;
@@ -19,7 +13,7 @@ interface Props {
 }
 
 const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
-   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "발주확인" }];
+   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발주관리" }, { name: "발주확인" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
       gridDatas2: [],
@@ -38,10 +32,12 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
       zzMA0005: [],
       zzItmes: [],
       focusKey: 0,
-      searchWorkStatus :'999'
+      searchWorkStatus :'999',
+      searchWorkNm :'999',
+      startDt: date(-1, 'month'),
+      endDt: date(),
+     
    });
-
-   const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
 
    const gridRef = useRef<any>(null);
    const gridContainerRef = useRef(null);
@@ -52,18 +48,10 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
    const gridRef3 = useRef<any>(null);
    const gridContainerRef3 = useRef(null);
    
-
-
-   const bpNmRef = useRef<HTMLInputElement>(null);
-   const contNoRef = useRef<HTMLInputElement>(null);
    const searchItemNmRef = useRef<HTMLInputElement>(null);
    const searchBpNmRef = useRef<HTMLInputElement>(null);
    const searchSoNoRef = useRef<HTMLInputElement>(null);
-   const hsTypeRef = useRef<any>(null);
-   const subCodeRef = useRef<any>(null);
-   const contTypeRef = useRef<any>(null);
-   const payCondRef = useRef<any>(null);
-   const chargeDeptRef = useRef<any>(null);
+
 
    const setGridData = async () => {
       try {
@@ -113,7 +101,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
          startDt: inputValues.startDt || "999",
          endDt: inputValues.endDt || "999",
          poBpNm: inputValues.searchPoBpNm || "999",
-         poBpCd: userInfo.coCd,
+         poBpCd: userInfo.bpCd,
          workNm: inputValues.searchWorkNm || "999",
          workStatus: inputValues.searchWorkStatus ,
       };
@@ -264,7 +252,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
 
    useEffect(() => {
         search();
-    }, [inputValues.searchWorkStatus]);
+    }, [inputValues.searchWorkStatus, inputValues.searchWorkNm]);
     
 
    useEffect(() => {
@@ -688,24 +676,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
     {
        header: "수량", name: "qty", width: 60, align: "right", editor: "text",
        formatter: function (e: any) { return commas(e.value);},
-    }, // QTY: 수량
-    {
-       header: "판매단가", name: "soPrice", width: 100, align: "right", editor: "text", hidden: true,
-       formatter: function (e: any) { return commas(e.value); },
-    }, // SO_PRICE: 수주 가격
-    {
-       header: "금액", name: "soAmt", width: 120, align: "right", hidden: true,
-       formatter: function (e: any) { return commas(e.value); },
-    }, // SO_AMT: 수주 금액
-    {
-       header: "공급가액", name: "soNetAmt", width: 120, align: "right", hidden: true,
-       formatter: function (e: any) {  return commas(e.value); },
-       
-    }, // SO_NET_AMT: 수주 순 금액
-    {
-       header: "부가세", name: "soVatAmt", width: 120, align: "right", hidden: true,
-       formatter: function (e: any) { return commas(e.value); },
-    }, // SO_VAT_AMT: 수주 부가세
+    }, // QTY: 수량    
     {
        header: "단가", name: "poPrice", width: 80, align: "right", editor: "text",
        formatter: function (e: any) {  return commas(e.value); },
@@ -724,6 +695,36 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
     }, // PO_VAT_AMT: 발주 부가세
    { header: "비고", name: "remark", editor: "text", width: 250 }, // REMARK: 비고
  ];
+
+ const summary = {
+   height: 40,
+   position: 'top', 
+   columnContent: {
+      qty: {
+         template: (e:any) => {
+             return `합계 : `;
+         }
+      },      
+      poAmt: {
+         template: (e:any) => {                  
+            const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+            return `${commas(data)}`; // 합계 표시
+            }
+      },  
+      poNetAmt: {
+         template: (e:any) => {                  
+            const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+            return `${commas(data)}`; // 합계 표시
+            }
+      },  
+      poVatAmt: {
+         template: (e:any) => {                  
+            const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+            return `${commas(data)}`; // 합계 표시
+            }
+      },  
+   }
+}
  
    const grid = () => (
       <div className="border rounded-md p-2 space-y-2 w-full">
@@ -750,7 +751,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
 
          <TuiGrid01 gridRef={gridRef} columns={columns} headerHeight={30} 
             handleFocusChange={() => {}} handleAfterChange={handleGridChange} 
-            perPageYn={false} height={window.innerHeight-695} />
+            perPageYn={false} height={window.innerHeight-695} summary={summary}/>
       </div>
    );
 
@@ -998,9 +999,30 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
      const searchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
          <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
+            <DateRangePickerComp 
+                  title="발주확정일시"
+                  startValue= {inputValues.startDt}
+                  endValue= {inputValues.endDt}
+                  onChange={(startDt, endDt) => {
+                     onInputChange('startDt', startDt);
+                     onInputChange('endDt', endDt);   
+            }
+            
+            } /> 
             <InputComp title="발주번호" ref={searchSoNoRef} value={inputValues.searchSoNo} handleCallSearch={search}  onChange={(e) => onInputChange("searchSoNo", e)} />
             <InputComp title="사업장" ref={searchBpNmRef} value={inputValues.searchBpNm}   handleCallSearch={search} onChange={(e) => onInputChange("searchBpNm", e)} />
-            <InputComp title="작업명" value={inputValues.searchWorkNm}  handleCallSearch={search} onChange={(e) => onInputChange("searchWorkNm", e)} />
+            <SelectSearch
+                  title="작업명"
+                  value={inputValues.searchWorkNm}
+                  addData={"999"}
+                  onChange={(label, value) => {
+                     onInputChange("searchWorkNm", value);
+                  }}
+                  stringify={true}
+                  param={{ coCd: "200" }}
+                  procedure="ZZ_WORKS"
+                  dataKey={{ label: "workNm", value: "workCd" }}
+               />   
             
             <SelectSearch
                   title="진행상태"

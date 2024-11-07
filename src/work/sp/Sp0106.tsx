@@ -1,5 +1,5 @@
 import {
-   React, useEffect, useState, commas, useRef, SelectSearch, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
+   React, useEffect, useState, commas, useRef, SelectSearch, date, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
@@ -19,7 +19,7 @@ interface Props {
 }
 
 const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
-   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "완료보고" }];
+   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발주관리" }, { name: "완료보고" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
       gridDatas2: [],
@@ -38,7 +38,10 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
       zzMA0005: [],
       zzItmes: [],
       focusKey: 0,
-      searchWorkStatus :'999'
+      searchWorkStatus :'999',
+      searchWorkNm : '999',
+      startDt: date(-1, 'month'),
+      endDt: date(),
    });
 
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
@@ -113,7 +116,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
          startDt: inputValues.startDt || "999",
          endDt: inputValues.endDt || "999",
          poBpNm: inputValues.searchPoBpNm || "999",
-         poBpCd: userInfo.coCd,
+         poBpCd: userInfo.bpCd,
          workNm: inputValues.searchWorkNm || "999",
          workStatus: inputValues.searchWorkStatus ,
       };
@@ -269,7 +272,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
 
    useEffect(() => {
         search();
-    }, [inputValues.searchWorkStatus]);
+    }, [inputValues.searchWorkStatus, inputValues.searchWorkNm]);
     
 
    useEffect(() => {
@@ -763,25 +766,24 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
       { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
       { header: "발주번호", name: "soNo", width: 130, align: "center", rowSpan: true,   }, // SO_NO: 발주 번호
       { header: "구분번호", name: "soSeq", width: 120, align: "center", hidden: true }, // SO_NO: 발주 번호
-      { header: "사업장", name: "bpNm", width: 150, rowSpan: false }, 
+      { header: "사업장", name: "bpNm", width: 200, rowSpan: false }, 
       { header: "사업장", name: "bpCd", width: 300,   hidden: true }, 
       { header: "작업명", name: "workCd", width: 250,  hidden: true }, 
-      { header: "작업명", name: "workNm", width: 100 }, 
+      { header: "작업명", name: "workNm", width: 200 }, 
       { header: "협력업체", name: "poBpCd", width: 300,  hidden: true }, 
-      { header: "협력업체", name: "poBpNm", width: 100 }, 
-      { header: "신청일자", name: "orderDt", width: 120, align: "center", }, // ORDER_DT: 발주 일자
-      { header: "요청일자", name: "reqDt", width: 120, align: "center" }, // REQ_DT: 요청 일자
+      { header: "협력업체", name: "poBpNm", width: 200 }, 
+      // { header: "신청일자", name: "orderDt", width: 80, align: "center", }, // ORDER_DT: 발주 일자
+      { header: "요청일자", name: "reqDt", width: 80, align: "center" }, // REQ_DT: 요청 일자
       { header: "발주상태", name: "orderStatus", width: 100, align: "center", hidden: true }, // 
-      { header: "진행상태", name: "workStatus", width: 100, align: "center", hidden: true }, // 
-      { header: "진행상태", name: "workStatusNm", width: 100, align: "center",  }, // 
-      { header: "설치희망일", name: "hopeDt", width: 100, align: "center" }, // 
-      { header: "설치요청일", name: "workReqDt", width: 100, align: "center" }, // 
-      { header: "설치예정일", name: "expectDt", width: 100, align: "center" }, //
-      { header: "설치완료일", name: "finishDt", width: 100, align: "center" }, // 
-      { header: "수량", name: "qty", width: 100, align: "center"}, // 
-      { header: "구분", name: "workDiv", width: 100, align: "center" }, // 
-      { header: "비고", name: "remark", width: 100, align: "center"}, // 
-      { header: "확정여부", name: "cfmFlag", width: 100, align: "center" }, // 
+      { header: "진행상태", name: "workStatus", width: 80, align: "center", hidden: true }, // 
+      { header: "진행상태", name: "workStatusNm", width: 80, align: "center",  }, // 
+      { header: "설치희망일", name: "hopeDt", width: 90, align: "center" }, // 
+      { header: "설치요청일", name: "workReqDt", width: 90, align: "center" }, // 
+      { header: "설치예정일", name: "expectDt", width: 90, align: "center" }, //
+      { header: "설치완료일", name: "finishDt", width: 90, align: "center" }, // 
+      { header: "수량", name: "qty", width: 60, align: "center"}, // 
+      { header: "구분", name: "workDiv", width: 80, align: "center" }, // 
+      { header: "비고", name: "remark", align: "center"}, // 
    
  
    ];
@@ -1000,9 +1002,30 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
      const searchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
          <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
+            <DateRangePickerComp 
+                  title="발주확정일시"
+                  startValue= {inputValues.startDt}
+                  endValue= {inputValues.endDt}
+                  onChange={(startDt, endDt) => {
+                     onInputChange('startDt', startDt);
+                     onInputChange('endDt', endDt);   
+            }
+            
+            } /> 
             <InputComp title="발주번호" ref={searchSoNoRef} value={inputValues.searchSoNo} handleCallSearch={search}  onChange={(e) => onInputChange("searchSoNo", e)} />
             <InputComp title="사업장" ref={searchBpNmRef} value={inputValues.searchBpNm}   handleCallSearch={search} onChange={(e) => onInputChange("searchBpNm", e)} />
-            <InputComp title="작업명" value={inputValues.searchWorkNm}  handleCallSearch={search} onChange={(e) => onInputChange("searchWorkNm", e)} />
+            <SelectSearch
+                  title="작업명"
+                  value={inputValues.searchWorkNm}
+                  addData={"999"}
+                  onChange={(label, value) => {
+                     onInputChange("searchWorkNm", value);
+                  }}
+                  stringify={true}
+                  param={{ coCd: "200" }}
+                  procedure="ZZ_WORKS"
+                  dataKey={{ label: "workNm", value: "workCd" }}
+               />   
             
             <SelectSearch
                   title="진행상태"

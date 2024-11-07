@@ -1,5 +1,5 @@
 import {
-   React, useEffect, useState, commas, useRef, SelectSearch, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
+   React, useEffect, useState, commas, useRef, SelectSearch, date, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
@@ -22,7 +22,7 @@ interface Props {
 }
 
 const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
-   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "발주등록" }];
+   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발주관리" }, { name: "발주등록" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
       gridDatas2: [],
@@ -39,6 +39,8 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       zzMA0004: [],
       zzMA0005: [],
       zzItmes: [],
+      startDt: date(-1, 'month'),
+      endDt: date(),
    });
 
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
@@ -302,6 +304,11 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const addGridRow =async () => {
 
+      if(!inputValues.workCd) {
+         alertSwal("작업명을 선택 해주세요.", "", "warning");
+         return;
+      }
+
       onInputChange("isOpen2", true);
 
       const result = await SP0103_P02('');
@@ -409,6 +416,47 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
      
    };
 
+   const confirm = async () => {
+     
+      if(!inputValues.soNo) {
+         alertSwal("수주번호를 입력해주세요.", "", "warning");
+         return;
+      }
+
+      alertSwal("발주확정확인", "발주확정 하시겠습니까?", "warning", true).then(async (result) => {
+         if (result.isDismissed) {
+            return;
+         }
+      });
+      
+      let datas = await getGridDatas(gridRef);
+
+      inputValues.gridDatas = datas;
+      inputValues.status = "C";
+      inputValues.workStatus = "MA0016"      
+
+      let data = {
+         oilSoHdrDtl: JSON.stringify(inputValues),
+         oilSoDtlItem: JSON.stringify(inputValues.gridDatas),
+         menuId: activeComp.menuId,
+         insrtUserId: userInfo.usrId,
+    };
+
+
+      try {
+         setLoading(true); 
+          const result = await fetchPost(`SP0103_U03`, data);
+          returnResult(result);
+      } catch (error) {
+            console.error("save Error:", error);
+      } finally {
+         setLoading(false);
+      }
+
+      
+     
+   };
+
    const del = async () => {
 
       if(!inputValues.soNo) {
@@ -456,110 +504,139 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const handleDblClick2 = async (e: any) => {
-   
       let grid = gridRef.current.getInstance();
       let gridInstance = gridRef3.current.getInstance();
       const rowData = gridInstance.getRow(e.rowKey);
-     
-      
-      if(rowData) {
-         const qty = rowData.qty ?? 1; // 기본 수량
-         const soPrice = rowData.salePrice ?? 0; // 판매 가격
-         const poPrice = rowData.costPrice ?? 0; // 원가
-         const soAmt = qty * soPrice; // 수주 금액 (판매 금액 * 수량)
-         const soNetAmt = soAmt / 1.1; // 수주 순 금액 (공급가액)
-         const soVatAmt = soAmt - soNetAmt; // 수주 부가세
-     
-         const poAmt = qty * poPrice; // 발주 금액 (원가 * 수량)
-         const poNetAmt = poAmt / 1.1; // 발주 순 금액 (공급가액)
-         const poVatAmt = poAmt - poNetAmt; // 발주 부가세
-     
-         const newRowData = {
-             useYn: "Y", // 사용 여부
-             coCd: "200", // 회사 코드
-             soNo: inputValues.soNo, // 수주 번호
-             soSeq: inputValues.soSeq, // 수주 순번
-             itemGrp: rowData.itemGrp, // 품목 그룹
-             itemDiv: rowData.itemDiv, // 품목 구분
-             itemCd: rowData.itemCd, // 품목 코드
-             itemNm: rowData.itemNm, // 품목 명
-             workCd: rowData.workCd, // 작업 코드
-             qty: qty, // 수량
-             soPrice: soPrice, // 판매 가격
-             soAmt: soAmt, // 수주 금액 (판매 금액 * 수량)
-             soNetAmt: Math.round(soNetAmt), // 수주 순 금액 (공급가액), 소수점 반올림
-             soVatAmt: Math.round(soVatAmt), // 수주 부가세, 소수점 반올림
-             poPrice: poPrice, // 원가
-             poAmt: Math.round(poAmt), // 발주 금액 (원가 * 수량), 소수점 반올림
-             poNetAmt: Math.round(poNetAmt), // 발주 순 금액 (공급가액), 소수점 반올림
-             poVatAmt: Math.round(poVatAmt), // 발주 부가세, 소수점 반올림
-         };
-     
-         // grid에 새 행 추가
-         grid.appendRow(newRowData, { focus: true });
-          
+   
+      if (rowData) {
+         // 현재 그리드에 있는 데이터에서 itemCd를 확인
+         const existingItemCds = new Set(grid.getData().map((row: any) => row.itemCd));
+   
+         // itemCd가 중복되지 않을 때만 행을 추가
+         if (!existingItemCds.has(rowData.itemCd)) {
+            const qty = rowData.qty ?? 1; // 기본 수량
+            const soPrice = rowData.salePrice ?? 0; // 판매 가격
+            const poPrice = rowData.costPrice ?? 0; // 원가
+            const soAmt = qty * soPrice; // 수주 금액 (판매 금액 * 수량)
+            const soNetAmt = soAmt / 1.1; // 수주 순 금액 (공급가액)
+            const soVatAmt = soAmt - soNetAmt; // 수주 부가세
+   
+            const poAmt = qty * poPrice; // 발주 금액 (원가 * 수량)
+            const poNetAmt = poAmt / 1.1; // 발주 순 금액 (공급가액)
+            const poVatAmt = poAmt - poNetAmt; // 발주 부가세
+   
+            const newRowData = {
+               useYn: "Y", // 사용 여부
+               coCd: "200", // 회사 코드
+               soNo: inputValues.soNo, // 수주 번호
+               soSeq: inputValues.soSeq, // 수주 순번
+               itemGrp: rowData.itemGrp, // 품목 그룹
+               itemDiv: rowData.itemDiv, // 품목 구분
+               itemCd: rowData.itemCd, // 품목 코드
+               itemNm: rowData.itemNm, // 품목 명
+               workCd: rowData.workCd, // 작업 코드
+               qty: qty, // 수량
+               soPrice: soPrice, // 판매 가격
+               soAmt: soAmt, // 수주 금액 (판매 금액 * 수량)
+               soNetAmt: Math.round(soNetAmt), // 수주 순 금액 (공급가액), 소수점 반올림
+               soVatAmt: Math.round(soVatAmt), // 수주 부가세, 소수점 반올림
+               poPrice: poPrice, // 원가
+               poAmt: Math.round(poAmt), // 발주 금액 (원가 * 수량), 소수점 반올림
+               poNetAmt: Math.round(poNetAmt), // 발주 순 금액 (공급가액), 소수점 반올림
+               poVatAmt: Math.round(poVatAmt), // 발주 부가세, 소수점 반올림
+            };
+   
+            // 그리드에 새 행 추가
+            grid.appendRow(newRowData, { focus: true });
          }
-         onInputChange("isOpen2", false);
+      }
+   
+      // 모달을 닫음
+      onInputChange("isOpen2", false);
    };
+   
+   
 
    const handleMakeItem = async () => {
       let grid = gridRef.current.getInstance();
       let grid3Instance = gridRef3.current.getInstance();
-  
+   
       // grid3에서 체크된 행 데이터 가져오기
       const checkedRows = grid3Instance.getCheckedRows();
-  
+   
       if (checkedRows.length === 0) {
-          alertSwal("선택한 품목이 없습니다.", "", "warning");
-          return;
+         alertSwal("선택한 품목이 없습니다.", "", "warning");
+         return;
       }
-
-      // 체크된 각 행을 grid에 추가
+   
+      // 이미 추가된 itemCd를 Set으로 생성하여 중복 확인
+      const existingItemCds = new Set(grid.getData().map((row: any) => row.itemCd));
+   
+      // 체크된 각 행을 확인하고, 중복이 없는 경우에만 추가
       checkedRows.forEach((rowData: any) => {
-         const qty = rowData.qty ?? 1; // 기본 수량
-         const soPrice = rowData.salePrice ?? 0; // 판매 가격
-         const poPrice = rowData.costPrice ?? 0; // 원가
-         const soAmt = qty * soPrice; // 수주 금액 (판매 금액 * 수량)
-         const soNetAmt = soAmt / 1.1; // 수주 순 금액 (공급가액)
-         const soVatAmt = soAmt - soNetAmt; // 수주 부가세
-     
-         const poAmt = qty * poPrice; // 발주 금액 (원가 * 수량)
-         const poNetAmt = poAmt / 1.1; // 발주 순 금액 (공급가액)
-         const poVatAmt = poAmt - poNetAmt; // 발주 부가세
-     
-         const newRowData = {
-             useYn: "Y", // 사용 여부
-             coCd: "200", // 회사 코드
-             soNo: inputValues.soNo, // 수주 번호
-             soSeq: inputValues.soSeq, // 수주 순번
-             itemGrp: rowData.itemGrp, // 품목 그룹
-             itemDiv: rowData.itemDiv, // 품목 구분
-             itemCd: rowData.itemCd, // 품목 코드
-             itemNm: rowData.itemNm, // 품목 명
-             workCd: rowData.workCd, // 작업 코드
-             qty: qty, // 수량
-             soPrice: soPrice, // 판매 가격
-             soAmt: soAmt, // 수주 금액 (판매 금액 * 수량)
-             soNetAmt: Math.round(soNetAmt), // 수주 순 금액 (공급가액), 소수점 반올림
-             soVatAmt: Math.round(soVatAmt), // 수주 부가세, 소수점 반올림
-             poPrice: poPrice, // 원가
-             poAmt: Math.round(poAmt), // 발주 금액 (원가 * 수량), 소수점 반올림
-             poNetAmt: Math.round(poNetAmt), // 발주 순 금액 (공급가액), 소수점 반올림
-             poVatAmt: Math.round(poVatAmt), // 발주 부가세, 소수점 반올림
-         };
-     
-         // grid에 새 행 추가
-         grid.appendRow(newRowData, { focus: true });
-     });
-     
- 
-  
+         if (!existingItemCds.has(rowData.itemCd)) {
+            const qty = rowData.qty ?? 1; // 기본 수량
+            const soPrice = rowData.salePrice ?? 0; // 판매 가격
+            const poPrice = rowData.costPrice ?? 0; // 원가
+            const soAmt = qty * soPrice; // 수주 금액 (판매 금액 * 수량)
+            const soNetAmt = soAmt / 1.1; // 수주 순 금액 (공급가액)
+            const soVatAmt = soAmt - soNetAmt; // 수주 부가세
+   
+            const poAmt = qty * poPrice; // 발주 금액 (원가 * 수량)
+            const poNetAmt = poAmt / 1.1; // 발주 순 금액 (공급가액)
+            const poVatAmt = poAmt - poNetAmt; // 발주 부가세
+   
+            const newRowData = {
+               useYn: "Y", // 사용 여부
+               coCd: "200", // 회사 코드
+               soNo: inputValues.soNo, // 수주 번호
+               soSeq: inputValues.soSeq, // 수주 순번
+               itemGrp: rowData.itemGrp, // 품목 그룹
+               itemDiv: rowData.itemDiv, // 품목 구분
+               itemCd: rowData.itemCd, // 품목 코드
+               itemNm: rowData.itemNm, // 품목 명
+               workCd: rowData.workCd, // 작업 코드
+               qty: qty, // 수량
+               soPrice: soPrice, // 판매 가격
+               soAmt: soAmt, // 수주 금액 (판매 금액 * 수량)
+               soNetAmt: Math.round(soNetAmt), // 수주 순 금액 (공급가액), 소수점 반올림
+               soVatAmt: Math.round(soVatAmt), // 수주 부가세, 소수점 반올림
+               poPrice: poPrice, // 원가
+               poAmt: Math.round(poAmt), // 발주 금액 (원가 * 수량), 소수점 반올림
+               poNetAmt: Math.round(poNetAmt), // 발주 순 금액 (공급가액), 소수점 반올림
+               poVatAmt: Math.round(poVatAmt), // 발주 부가세, 소수점 반올림
+            };
+   
+            // grid에 새 행 추가
+            grid.appendRow(newRowData, { focus: true });
+   
+            // 새로 추가된 itemCd를 Set에 추가하여 중복 방지
+            existingItemCds.add(rowData.itemCd);
+         }
+      });
+   
       // 마지막 행에 포커스 설정
       const lastRowKey = grid.getRowCount() - 1;
-      grid.focus(0, "itemCd");
-
+      if (lastRowKey >= 0) {
+         grid.focus(lastRowKey, "itemCd");
+      }
+   
       onInputChange("isOpen2", false);
+   };
+   
 
+   const handleClick = (ev: any) => {
+      const { rowKey, columnName } = ev;
+
+      const grid3 = gridRef3.current.getInstance();
+      const isChecked = grid3.getCheckedRows().some((row: any) => row.rowKey === rowKey);
+
+      // Toggle the checkbox state by using check and uncheck methods
+      if (isChecked) {
+         grid3.uncheck(rowKey);
+      } else {
+         grid3.check(rowKey);
+      }
    };
 
    const handleGridChange = (ev: any) => {
@@ -676,7 +753,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
     { header: "퓸목구분", name: "itemDiv", width: 120, align: "center", hidden: true },
     { header: "작업코드", name: "workCd", width: 250, align: "center", hidden: true  }, 
     {
-       header: "수량", name: "qty", width: 60, align: "right", editor: "text",
+       header: "수량", name: "qty", width: 60, align: "center", editor: "text",
        formatter: function (e: any) { return commas(e.value);},
     }, // QTY: 수량
     {
@@ -714,6 +791,54 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
     }, // PO_VAT_AMT: 발주 부가세
    { header: "비고", name: "remark", editor: "text", width: 250 }, // REMARK: 비고
  ];
+
+ const summary = {
+   height: 40,
+   position: 'top', 
+   columnContent: {
+      qty: {
+         template: (e:any) => {
+             return `합계 : `;
+         }
+      },
+      soAmt: {
+         template: (e:any) => {                  
+            const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+            return `${commas(data)}`; // 합계 표시
+            }
+      },  
+      soNetAmt: {
+         template: (e:any) => {                  
+            const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+            return `${commas(data)}`; // 합계 표시
+            }
+      },  
+      soVatAmt: {
+         template: (e:any) => {                  
+            const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+            return `${commas(data)}`; // 합계 표시
+            }
+      },    
+      poAmt: {
+         template: (e:any) => {                  
+            const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+            return `${commas(data)}`; // 합계 표시
+            }
+      },  
+      poNetAmt: {
+         template: (e:any) => {                  
+            const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+            return `${commas(data)}`; // 합계 표시
+            }
+      },  
+      poVatAmt: {
+         template: (e:any) => {                  
+            const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+            return `${commas(data)}`; // 합계 표시
+            }
+      },  
+   }
+}
  
    const grid = () => (
       <div className="border rounded-md p-2 space-y-2 w-full">
@@ -740,7 +865,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
          <TuiGrid01 gridRef={gridRef} columns={columns} headerHeight={30} 
             handleFocusChange={() => {}} handleAfterChange={handleGridChange} 
-            perPageYn={false} height={window.innerHeight-550} />
+            perPageYn={false} height={window.innerHeight-550} summary={summary}/>
       </div>
    );
 
@@ -754,17 +879,18 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       { header: "작업명", name: "workNm", width: 250 }, 
       { header: "협력업체", name: "poBpCd", width: 300,  hidden: true }, 
       { header: "협력업체", name: "poBpNm", width: 300 }, 
-      { header: "신청일자", name: "orderDt", width: 120, align: "center" }, // ORDER_DT: 수주 일자
-      { header: "요청일자", name: "reqDt", width: 120, align: "center" }, // REQ_DT: 요청 일자
+      { header: "신청일자", name: "orderDt", width: 120, align: "center",  hidden: true }, // ORDER_DT: 수주 일자
+      { header: "요청일자", name: "reqDt", align: "center" }, // REQ_DT: 요청 일자
+      { header: "발주확정일자", name: "cfmDt", align: "center" }, // CFM_DT: 발주확정 일자
       { header: "수주상태", name: "orderStatus", width: 100, align: "center", hidden: true }, // 
-      { header: "진행상태", name: "orderStatusNm", width: 100, align: "center" }, // 
+      { header: "진행상태", name: "orderStatusNm", width: 100, align: "center",  hidden: true }, // 
       { header: "설치희망일", name: "hopeDt", width: 100, align: "center",  hidden: true }, // 
       { header: "설치예정일", name: "expectDt", width: 100, align: "center",  hidden: true }, //
       { header: "설치완료일", name: "finishDt", width: 100, align: "center", hidden: true }, // 
       { header: "수량", name: "qty", width: 100, align: "center",  hidden: true }, // 
       { header: "구분", name: "workDiv", width: 100, align: "center",  hidden: true }, // 
-      { header: "비고", name: "remark", width: 100, align: "center",  hidden: true }, // 
-      { header: "확정여부", name: "cfmFlag", width: 100, align: "center",  hidden: true }, // 
+      { header: "비고", name: "remark", align: "center",  hidden: true }, // 
+      { header: "확정여부", name: "cfmFlag", align: "center",  hidden: true }, // 
    
  
    ];
@@ -802,12 +928,11 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       { header: "등록일", name: "insrtDt", width: 150, align: "center", hidden: true }, // INSRT_DT: 등록일
       { header: "수정자", name: "updtUserId", width: 120, align: "center", hidden: true }, // UPDT_USER_ID: 수정자
       { header: "수정일", name: "updtDt", width: 150, align: "center", hidden: true } // UPDT_DT: 수정일
-    ];
-    
+    ];    
 
    const grid3 = () => (
       <div className="border rounded-md p-2 space-y-2 w-full">
-         <TuiGrid01  rowHeaders={["rowNum", "checkbox"]} gridRef={gridRef3} columns={columns3} headerHeight={30} handleFocusChange={() => {}} handleDblClick={handleDblClick2} perPageYn={false} height={window.innerHeight - 640} />
+         <TuiGrid01  rowHeaders={["rowNum", "checkbox"]} gridRef={gridRef3} handleClick={handleClick} columns={columns3} headerHeight={30} handleFocusChange={() => {}} handleDblClick={handleDblClick2} perPageYn={false} height={window.innerHeight - 640} />
       </div>
    );
 
@@ -827,6 +952,10 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
             <ServerIcon className="w-5 h-5 mr-1" />
             저장
          </button>
+         <button type="button" onClick={confirm} className="bg-blue-500 text-white  rounded-lg px-2 py-1 flex items-center shadow">
+            <ServerIcon className="w-5 h-5 mr-1" />
+            발주확정
+         </button>
       </div>
    );
 
@@ -840,11 +969,11 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
                <SelectSearch
                   title="진행상태"
-                  value={inputValues.orderStatus}
+                  value={inputValues.workStatus}
                   onChange={(label, value) => {
-                     onInputChange("orderStatus", value);
+                     onInputChange("workStatus", value);
                   }}
-                  param={{ coCd: "999", majorCode: "MA0001", div: "" }}
+                  param={{ coCd: "999", majorCode: "MA0005", div: "" }}
                   procedure="ZZ_CODE"
                   dataKey={{ label: "codeName", value: "code" }}
                   readonly={true}
@@ -855,6 +984,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                <DatePickerComp
                   title="신청일자"
                   value={inputValues.reqDt}
+                  readonly={true}
                   onChange={(e) => {onInputChange("reqDt", e); }}
                  
                />
@@ -865,6 +995,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                   onChange={(label, value) => {
                      onInputChange("bpCd", value);
                   }}
+                  readonly={true}
                   stringify={true}
                   param={{ coCd: "200", bpType: "ZZ0002", bpNm: "999", bpDiv: "999" }}
                   procedure="ZZ_B_PO_BP"
@@ -942,14 +1073,22 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                />
             </div>
             <div className="flex justify-between w-full">
-               <div className="w-5/6">
+               <div className="w-1/2">
                   <TextArea title="비고" value={inputValues.remarkDtl} onChange={(e) => onInputChange("remarkDtl", e)} layout="flex" minWidth="90px" />
                </div>
-
-               <div className="self-end">
+               <div className="flex justify-end space-x-11 grid grid-cols-2">        
+                  <DatePickerComp
+                           title="발주확정일"
+                           value={inputValues.cfmDt}
+                           readonly={true}
+                           onChange={(e) => {
+                              onInputChange("cfmDt", e);
+                           }}
+                        />          
                   <Checkbox title="발주확정" 
                   layout="flex"
                   value={inputValues.cfmFlag} 
+                  readOnly={true}
                   onChange={(e) => onInputChange("cfmFlag", e)} />
                </div>
             </div>
@@ -962,14 +1101,6 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
          <div className="bg-gray-100 rounded-lg p-3 search text-sm search h-full">
             <div className="w-full flex justify-between">
                <div className="grid grid-cols-3 gap-y-2  justify-start ">
-                  <InputComp title="수주번호" ref={searchSoNoRef} value={inputValues.searchSoNo} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchSoNo", e)} />
-
-                  <InputComp title="고객사" ref={searchBpNmRef} value={inputValues.searchBpNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchBpNm", e)} />
-                 
-                  <InputComp title="협력업체" value={inputValues.searchPoBpNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchPoBpNm", e)} />
-                  
-                  <InputComp title="작업명" value={inputValues.searchWorkNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchWorkNm", e)} />
-
                   <DateRangePickerComp
                      title="신청기간"
                      startValue={inputValues.startDt}
@@ -980,6 +1111,10 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                         onInputChange("endDt", endDate);
                      }}
                   />
+                  <InputComp title="수주번호" ref={searchSoNoRef} value={inputValues.searchSoNo} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchSoNo", e)} />
+                  <InputComp title="고객사" ref={searchBpNmRef} value={inputValues.searchBpNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchBpNm", e)} />                 
+                  <InputComp title="협력업체" value={inputValues.searchPoBpNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchPoBpNm", e)} />                  
+                  <InputComp title="작업명" value={inputValues.searchWorkNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchWorkNm", e)} />                  
                </div>
                <div className="w-[20%] flex justify-end h-8">
                   <button type="button" onClick={searchModalDiv} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">

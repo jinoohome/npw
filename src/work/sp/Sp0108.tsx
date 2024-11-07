@@ -24,6 +24,7 @@ const Sp0108 = ({ item, activeComp, userInfo }: Props) => {
       dtDiv: "999",
       poBpCd: "999",
       workCd: "999",
+      bpCd: "999",
    });
 
    const [loading, setLoading] = useState(false);
@@ -48,6 +49,7 @@ const Sp0108 = ({ item, activeComp, userInfo }: Props) => {
       try {
          setLoading(true);
          const param = {
+            bpCd: inputValues.bpCd,
             poBpCd: inputValues.poBpCd,
             startDate: moment(start).format("YYYY-MM-DD"),
             endDate: moment(end).format("YYYY-MM-DD"),
@@ -78,7 +80,7 @@ const Sp0108 = ({ item, activeComp, userInfo }: Props) => {
 
    useEffect(() => {
       search(); // Search when filters change
-   }, [inputValues.poBpCd, inputValues.workCd, inputValues.dtDiv]);
+   }, [inputValues.bpCd, inputValues.poBpCd, inputValues.workCd, inputValues.dtDiv]);
 
    const handleNavigate = (date: Date) => {
       setCurrentDate(date); // Update the current calendar date
@@ -133,7 +135,20 @@ const Sp0108 = ({ item, activeComp, userInfo }: Props) => {
    // 검색창 div
    const searchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search flex justify-between items-center">
-         <div className="grid grid-cols-3 gap-y-3 justify-start w-[60%]">
+         <div className="grid grid-cols-4 gap-y-3 justify-start w-[70%]">
+            <SelectSearch
+                       title="사업장"
+                       value={inputValues.bpCd}
+                       addData={"999"}
+                       onChange={(label, value) => {
+                           onInputChange("bpCd", value);
+                       }}
+
+                       stringify={true}
+                       param={{ coCd: "200",bpType : "ZZ0002", bpNm : '999', bpDiv: '999' }}
+                       procedure="ZZ_B_PO_BP"
+                       dataKey={{ label: "bpNm", value: "bpCd" }}
+                   />
             <SelectSearch
                title="협력업체"
                value={inputValues.poBpCd}

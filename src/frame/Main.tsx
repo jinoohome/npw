@@ -240,6 +240,8 @@ function Main() {
          try {
             const data = JSON.stringify(param);
             let result = await fetchPost(`ZZ_USER_INFO`, { data });
+            result.bpCd = result.usrDiv === '999' ? '999' : result.bpCd;
+            console.log("ZZ_USER_INFO:", result);
             setUserInfor(result);
          } catch (error) {
             console.error("ZZ_USER_INFO Error:", error);
