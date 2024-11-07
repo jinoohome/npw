@@ -134,10 +134,10 @@ const Mm0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          formatter: function(e: any) {if(e.value){return commas(e.value);} } },
       { header: "패키지 사용여부", name: "useYn", align: "center", width: 120, hidden: true },
       { header: "품목코드", name: "itemCd", align: "center", width: 100 },
-      { header: "품목명", name: "itemNm", width: 450 },
+      { header: "품목명", name: "itemNm", width: 550 },
       { header: "정렬순서", name: "sort", align: "center", width: 100 },
-      { header: "필수체크", name: "mandatoryYn", align: "center", width: 100 },
-      { header: "품목 사용여부", name: "itemUseYn", align: "center" },
+      { header: "필수체크", name: "mandatoryYn", align: "center" },
+      { header: "품목 사용여부", name: "itemUseYn", align: "center", hidden: true },
    ];
 
    const Grid1 = () => (

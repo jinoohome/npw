@@ -95,6 +95,12 @@ const InputComp = forwardRef<HTMLInputElement, InputCompProps>(
          }
       };
 
+      const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+         if (type === "number") {
+           event.target.select(); // 포커스될 때 모든 텍스트 선택
+         }
+       };
+
       return (
          <div>
             <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""}
@@ -122,6 +128,7 @@ const InputComp = forwardRef<HTMLInputElement, InputCompProps>(
                         focus:outline-orange-300`}
                      onChange={handleChange}
                      onKeyDown={handleKeyDown}
+                     onFocus={handleFocus}
                   />
                </div>
             </div>

@@ -1,8 +1,8 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, 
    updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
-   reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, TextArea, InputSearchComp1, SelectSearch, SelectComp1, SelectComp2, SelectSearchComp, DateRangePickerComp, date, InputSearchComp, commas,
+   reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, TextArea2, InputSearchComp1, SelectSearch, SelectComp1, SelectComp2, SelectSearchComp, DateRangePickerComp, date, InputSearchComp, commas,
     RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp } from "../../comp/Import";
-import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, ArrowUturnDownIcon } from "@heroicons/react/24/outline";
 
 interface Props {
    item: any;
@@ -45,7 +45,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       startDate: date(-1, 'month'),
       endDate: date(),
-      rcptUserId: "",
+      rcptUserId: userInfo.usrId,
       subCode: "",
       hsCd: "",
       consultMemo: "",
@@ -538,8 +538,8 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    //상단 버튼 div
    const buttonDiv = () => (
       <div className="flex justify-end space-x-2">
-         <button type="button" onClick={add} className="bg-orange-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
-            <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
+         <button type="button" onClick={add} className="bg-green-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+         <ArrowUturnDownIcon className="w-5 h-5 mr-1" />
             신규
          </button>
          <button type="button" onClick={save} className="bg-blue-500 text-white  rounded-lg px-2 py-1 flex items-center shadow">
@@ -577,12 +577,13 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
                               onChange={(label, value) => {
                                     onInputChange('rcptUserId', value);
                                  }}
+                              readonly={true}
 
                               //초기값 세팅시
                               stringify={true}
-                              param={ { coCd : '100',
+                              param={ { coCd : '999',
                                        usrId : '999',
-                                       usrDiv : 'ZZ0186',
+                                       usrDiv : '999',
                                        useYn : '999' }}
                               procedure="ZZ_USER_LIST"  dataKey={{ label: 'usrNm2', value: 'usrId' }} 
             />
@@ -741,7 +742,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
                <TuiGrid01 gridRef={gridRef2} columns={columns2} handleFocusChange={handleFocusChange} perPageYn = {false} height={window.innerHeight-650}/>
             </div>
             <div className="w-1/2 flex flex-col h-full">
-            <TextArea title="" value={inputValues.consultMemo} 
+            <TextArea2 title="" value={inputValues.consultMemo} 
                        onChange={(e) => 
                         setChangeGridData("consultMemo", e)
                         }

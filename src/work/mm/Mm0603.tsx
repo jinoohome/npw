@@ -300,7 +300,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={() => {}} height={window.innerHeight - 480} summary={summary} perPageYn={false} />
+         <TuiGrid01 gridRef={gridRef} columns={columns} handleFocusChange={() => {}} height={window.innerHeight - 520} summary={summary} perPageYn={true} />
       </div>
    );
 

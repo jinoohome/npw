@@ -370,7 +370,7 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                               setChangeGridData("paBpCd", value);
                               onInputChange("paBpCd", value);
                         }}
-
+                        addData={"empty"}
                         stringify={true}
                         layout="vertical"
                         param={{ coCd: "200",
@@ -424,13 +424,39 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                <InputComp2 ref={refs.prsnNm} title="담당자명" target="prsnNm" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.telNo} title="전화번호1" target="telNo" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.telNo2} title="전화번호2" target="telNo2" setChangeGridData={setChangeGridData} /> 
-               <InputComp2 ref={refs.jiBon} title="지본" target="jiBon" setChangeGridData={setChangeGridData} /> 
-               <InputComp2 ref={refs.siGun} title="시군지부" target="siGun" setChangeGridData={setChangeGridData} /> 
+               <SelectSearch
+                       title="지본"
+                       value={inputValues.jiBon}
+                       layout="vertical"
+                       onChange={(label, value) => {
+                           setChangeGridData("jiBon", value);
+                           onInputChange("jiBon", value);
+                       }}
+
+                       param={{ coCd: "999", majorCode: "MA0002", div: "" }}
+                       procedure="ZZ_CODE"
+                       dataKey={{ label: "codeName", value: "code" }}
+
+                   />
+               <SelectSearch
+                       title="시군지부"
+                       value={inputValues.siGun}
+                       layout="vertical"
+                       onChange={(label, value) => {
+                           setChangeGridData("siGun", value);
+                           onInputChange("siGun", value);
+                       }}
+
+                       param={{ coCd: "999", majorCode: "MA0003", div: "" }}
+                       procedure="ZZ_CODE"
+                       dataKey={{ label: "codeName", value: "code" }}
+
+                   />
                <InputComp2 ref={refs.erpCode} title="ERP코드(업로드용)" target="erpCode" setChangeGridData={setChangeGridData} /> 
             </div>
 
             <div className="grid grid-cols-3  gap-12  justify-around items-center">
-               <div className="flex space-x-2">
+               <div className="flex space-x-2 items-end">
                   <InputComp2 ref={refs.zipCd} title="우편번호" target="zipCd" setChangeGridData={setChangeGridData} />
                   <DaumPostcodeComp onComplete={handleAddressSelect} /> {/* Daum 주소 검색 버튼 */}
                </div>
@@ -438,7 +464,7 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                <InputComp2 ref={refs.addr2} title="상세주소" target="addr2" setChangeGridData={setChangeGridData} />
             </div>
 
-            <div className="grid grid-cols-3  gap-12  justify-around items-center">
+            <div className="grid grid-cols-4  gap-12  justify-around items-center">
                <SelectSearch
                        title="은행"
                        value={inputValues.bankCd}
@@ -455,6 +481,16 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                    />
                <InputComp2 ref={refs.bankAcctNo} title="은행계좌번호" target="bankAcctNo" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.bankHolder} title="예금주" target="bankHolder" setChangeGridData={setChangeGridData} />    
+               <SelectSearch title="사용유무" 
+                        value={inputValues.useYn}
+                        onChange={(label, value) => {
+                              setChangeGridData("useYn", value);
+                              onInputChange('useYn', value);
+                           }}
+                        layout="vertical"                           
+                        //초기값 세팅시
+                        datas={[{value : '999', label : '전체'},{value : 'Y', label : '사용'},{value : 'N', label : '미사용'}]}
+                     />  
             </div>
          </div>
       </div>

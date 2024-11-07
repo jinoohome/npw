@@ -665,6 +665,58 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
       return data;
    };
 
+   const handleClick = (ev: any) => {
+      const { rowKey, columnName } = ev;
+   
+      const gridP1 = gridRefP1.current.getInstance();
+      const isChecked = gridP1.getCheckedRows().some((row: any) => row.rowKey === rowKey);
+   
+      // Toggle the checkbox state by using check and uncheck methods
+      if (isChecked) {
+         gridP1.uncheck(rowKey);
+      } else {
+         gridP1.check(rowKey);
+      }
+   };
+
+   const handleClick2 = (ev: any) => {
+      const { rowKey, columnName } = ev;
+   
+      const gridP2 = gridRefP2.current.getInstance();
+      const isChecked = gridP2.getCheckedRows().some((row: any) => row.rowKey === rowKey);
+   
+      // Toggle the checkbox state by using check and uncheck methods
+      if (isChecked) {
+         gridP2.uncheck(rowKey);
+      } else {
+         gridP2.check(rowKey);
+      }
+   };
+
+   const handleAfterChange = (ev: any) => {
+      const changesArray = ev.changes; // ev.changes가 배열이므로 이를 사용
+      
+      // 배열을 순회하며 변경 사항 처리
+      changesArray.forEach((change: any) => {   
+         const gridInstance4 = gridRef4.current.getInstance();
+         
+         // 현재 변경된 값이 onhandQty일 때만 처리
+         if (change.columnName === "priceCom" || change.columnName === "pricePer" || change.columnName === "itemQty") {
+            const rowKey = change.rowKey;
+            const value = change.value; // 변경된 값을 가져옴
+   
+            // 숫자가 아닌 문자를 제거하여 정제
+            const sanitizedValue = typeof value === 'string' ? value.replace(/[^0-9.-]/g, '') : value;
+   
+            // 정제 후 숫자가 아닐 경우 0으로 설정
+            const numericValue = isNaN(Number(sanitizedValue)) ? 0 : Number(sanitizedValue);
+   
+            // 그리드의 데이터 값을 정제된 숫자 값으로 설정
+            gridInstance4.setValue(rowKey, change.columnName, numericValue);
+         }
+      });
+   };
+
    //grid 포커스변경시
    const handleFocusChange = async ({ rowKey }: any) => {
       if (rowKey !== null && gridRef1.current) {
@@ -861,7 +913,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    const addGridRow1 = () => {
       let grid = gridRef1.current.getInstance();
 
-      grid.appendRow({ bpCd: searchRef1.current?.value, hsTypeNm: "", coCd: "100", useYn: "Y" }, { at: 0 });
+      grid.appendRow({ bpCd: searchRef1.current?.value, hsTypeNm: "", coCd: "100", useYn: "Y" }, { focus: true, at: 0 });
       grid.getPagination().movePageTo(0);
       grid.focusAt(0, 1, true);
    };
@@ -921,7 +973,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    const addGridRow3 = () => {
       let grid = gridRef3.current.getInstance();
 
-      grid.appendRow({ bpCd: searchRef1.current?.value, coCd: "100", useYn: "Y" }, { at: 0 });
+      grid.appendRow({ bpCd: searchRef1.current?.value, coCd: "100", useYn: "Y" }, { focus: true, at: 0 });
       grid.getPagination().movePageTo(0);
       grid.focusAt(0, 1, true);
    };
@@ -973,7 +1025,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    const addGridRow5 = () => {
       let grid = gridRef5.current.getInstance();
 
-      grid.appendRow({ bpCd: searchRef1.current?.value, coCd: "100", useYn: "Y" }, { at: 0 });
+      grid.appendRow({ bpCd: searchRef1.current?.value, coCd: "100", useYn: "Y" }, { focus: true, at: 0 });
       grid.getPagination().movePageTo(0);
       grid.focusAt(0, 1, true);
    };
@@ -998,7 +1050,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    const addGridRow6 = () => {
       let grid = gridRef6.current.getInstance();
 
-      grid.appendRow({ bpCd: searchRef1.current?.value, coCd: "100", alarmYn: "", subCode: "", useYn: "Y" }, { at: 0 });
+      grid.appendRow({ bpCd: searchRef1.current?.value, coCd: "100", alarmYn: "", subCode: "", useYn: "Y" }, { focus: true, at: 0 });
       grid.getPagination().movePageTo(0);
       grid.focusAt(0, 1, true);
    };
@@ -1267,7 +1319,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef4} columns={columns4} height={window.innerHeight-535}  />
+         <TuiGrid01 gridRef={gridRef4} columns={columns4} height={window.innerHeight-535} handleAfterChange={handleAfterChange} />
       </div>
    );
 
@@ -1385,7 +1437,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
       <div className="border rounded-md p-2 space-y-2">
          <div className="flex justify-between items-center text-sm">
             <div className="flex items-center space-x-1 text-orange-500 ">
-               <div>※ 더블클릭 시 단일 품목이 선택 됩니다.</div>
+               <div>※ 더블클릭 시 단일 경조사유가 선택 됩니다.</div>
             </div>
             <div className="flex space-x-1">
                <button type="button" onClick={addItems} className="bg-orange-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
@@ -1394,7 +1446,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
                </button>
             </div>
          </div>
-         <TuiGrid01 gridRef={gridRefP1} columns={gridP1Columns} rowHeaders={['checkbox','rowNum']} handleDblClick={handleDblClick} height = {window.innerHeight - 530}
+         <TuiGrid01 gridRef={gridRefP1} columns={gridP1Columns} handleClick={handleClick} rowHeaders={['checkbox','rowNum']} handleDblClick={handleDblClick} height = {window.innerHeight - 530}
          />
       </div>
    );
@@ -1430,7 +1482,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
                </button>
             </div>
          </div>
-         <TuiGrid01 gridRef={gridRefP2} columns={gridP2Columns} rowHeaders={['checkbox','rowNum']} handleDblClick={handleDblClick2} height = {window.innerHeight - 530}
+         <TuiGrid01 gridRef={gridRefP2} columns={gridP2Columns} handleClick={handleClick2} rowHeaders={['checkbox','rowNum']} handleDblClick={handleDblClick2} height = {window.innerHeight - 530}
          />
       </div>
    );

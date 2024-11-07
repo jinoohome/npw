@@ -298,7 +298,7 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
       let inBpCd = grid1.getValue(grid1.getFocusedCell().rowKey, "bpCd");
 
-      grid2.appendRow({  coCd: "100", status: "I", bpCd: inBpCd, useYn: "Y"}, { at: 0 });
+      grid2.appendRow({  coCd: "100", status: "I", bpCd: inBpCd, useYn: "Y"}, { focus: true, at: 0 });
       grid2.focusAt(0, 1, true);
       grid3.clear();
    };
@@ -463,6 +463,20 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       closeModal();
   };
 
+  const handleClick = (ev: any) => {
+   const { rowKey, columnName } = ev;
+
+   const grid4 = GridRef4.current.getInstance();
+   const isChecked = grid4.getCheckedRows().some((row: any) => row.rowKey === rowKey);
+
+   // Toggle the checkbox state by using check and uncheck methods
+   if (isChecked) {
+      grid4.uncheck(rowKey);
+   } else {
+      grid4.check(rowKey);
+   }
+};
+
   const handleDblClick = (ev: any) => {
       const { rowKey } = ev;
 
@@ -495,6 +509,30 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       setIsOpen(false);
    };
 
+   const handleAfterChange = (ev: any) => {
+      const changesArray = ev.changes; // ev.changes가 배열이므로 이를 사용
+      
+      // 배열을 순회하며 변경 사항 처리
+      changesArray.forEach((change: any) => {   
+         const gridInstance3 = GridRef3.current.getInstance();
+         
+         // 현재 변경된 값이 onhandQty일 때만 처리
+         if (change.columnName === "onhandQty") {
+            const rowKey = change.rowKey;
+            const value = change.value; // 변경된 값을 가져옴
+   
+            // 숫자가 아닌 문자를 제거하여 정제
+            const sanitizedValue = typeof value === 'string' ? value.replace(/[^0-9.-]/g, '') : value;
+   
+            // 정제 후 숫자가 아닐 경우 0으로 설정
+            const numericValue = isNaN(Number(sanitizedValue)) ? 0 : Number(sanitizedValue);
+   
+            // 그리드의 데이터 값을 정제된 숫자 값으로 설정
+            gridInstance3.setValue(rowKey, change.columnName, numericValue);
+         }
+      });
+   };
+   
    //-------------------div--------------------------
 
    //상단 버튼 div
@@ -690,7 +728,7 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 columns={grid3Columns} gridRef={GridRef3} />
+         <TuiGrid01 columns={grid3Columns} gridRef={GridRef3} handleAfterChange={handleAfterChange}/>
       </div>
    );
 
@@ -707,7 +745,7 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                </button>
             </div>
          </div>
-         <TuiGrid01 gridRef={GridRef4} columns={grid4Columns} rowHeaders={['checkbox','rowNum']} handleDblClick={handleDblClick} height = {window.innerHeight - 530}
+         <TuiGrid01 gridRef={GridRef4} columns={grid4Columns} rowHeaders={['checkbox','rowNum']} handleClick={handleClick} handleDblClick={handleDblClick} height = {window.innerHeight - 530}
          />
       </div>
    );

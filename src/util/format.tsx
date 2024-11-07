@@ -1,7 +1,7 @@
 const commas = (input: string | number | null | undefined) => {
   // 입력값이 null 또는 undefined인 경우 빈 문자열 반환
   if (input === null || input === undefined) {
-      return '';
+      return '0';
   }
 
   // 입력값이 문자열인 경우 숫자로 변환

@@ -17,6 +17,9 @@ const Mm0104 = ({ item, activeComp, userInfo }: Props) => {
 
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       coCd: '',
+      bpType: '999',
+      bpDiv: '999',
+      useYn: '999',
    });
 
    const [gridDatas, setGridDatas] = useState<any[]>();

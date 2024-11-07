@@ -404,7 +404,7 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
                <InputComp2 ref={refs.telNo} title="전화번호" target="telNo" setChangeGridData={setChangeGridData} />
    
                {/* 우편번호 및 주소 입력 필드와 DaumPostcodeComp 추가 */}
-               <div className="flex space-x-2 col-span-2">
+               <div className="flex space-x-2 items-end col-span-2">
                   <InputComp2 ref={refs.zipCd} title="우편번호" target="zipCd" setChangeGridData={setChangeGridData} />
                   <DaumPostcodeComp onComplete={handleAddressSelect} /> {/* Daum 주소 검색 버튼 */}
                </div>

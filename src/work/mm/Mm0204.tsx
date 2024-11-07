@@ -215,58 +215,58 @@ const Mm0204 = ({ item, activeComp, userInfo }: Props) => {
    //-------------------grid----------------------------
    const columns = [
       { header: "회사코드", name: "coCd", width: 80, align: "center", hidden: true},
-      { header: "사업부서", name: "bpNm", width: 80, align: "center", sortable: true},
+      { header: "사업부서", name: "bpNm", width: 80, align: "center"},
       { header: "작업코드", name: "workCd", width: 100, align: "center", hidden: true},
-      { header: "작업", name: "workNm", width: 150, sortable: true},
-      { header: "품목코드", name: "itemCd", width: 100, align: "center", sortable: true},
-      { header: "품목명", name: "itemNm", width: 300, sortable: true},
-      { header: "규격", name: "spec", width:200, sortable: true},
+      { header: "작업", name: "workNm", width: 150},
+      { header: "품목코드", name: "itemCd", width: 100, align: "center"},
+      { header: "품목명", name: "itemNm", width: 300},
+      { header: "규격", name: "spec", width:200},
       { header: "품목그룹코드", name: "itemGrp", align: "center", width:120, hidden: true},
-      { header: "품목그룹", name: "itemGrpNm", width:200, sortable: true},
+      { header: "품목그룹", name: "itemGrpNm", width:200},
       { header: "품목구분코드", name: "itemDiv", align: "center", width:120,  hidden: true},
-      { header: "품목구분", name: "itemDivNm", width:200, sortable: true},
-      { header: "판매단가", name: "salePrice", align: "right", width: 100, sortable: true, 	
+      { header: "품목구분", name: "itemDivNm", width:200},
+      { header: "판매단가", name: "salePrice", align: "right", width: 100, 	
          formatter: function(e: any) {
             if(e.value){return commas(e.value);}
          }
       },
-      { header: "발주단가", name: "costPrice", align: "right", width: 100, sortable: true,
+      { header: "발주단가", name: "costPrice", align: "right", width: 100,
          formatter: function(e: any) {
          if(e.value){return commas(e.value);}
       }
       },
-      { header: "사용여부", name: "useYn", align: "center", sortable: true},
+      { header: "사용여부", name: "useYn", align: "center"},
    ];
 
-   const summary = {
-      height: 40,
-      position: 'top', 
-      columnContent: {
-         // bpNm: {
-         //      template: (e:any) => {
-         //          return  `총 ${e.cnt}개`;
+   // const summary = {
+   //    height: 40,
+   //    position: 'top', 
+   //    columnContent: {
+   //       // bpNm: {
+   //       //      template: (e:any) => {
+   //       //          return  `총 ${e.cnt}개`;
               
-         //      }
-         //  },     
-          itemDivNm: {
-            template: (e:any) => {
-                return `합계 : `;
-            }
-         },
-         salePrice: {
-            template: (e:any) => {                  
-               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
-               return `${commas(data)}`; // 합계 표시
-               }
-         },   
-         costPrice: {
-            template: (e:any) => {                  
-               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
-               return `${commas(data)}`; // 합계 표시
-               }
-         },  
-      }
-   }
+   //       //      }
+   //       //  },     
+   //        itemDivNm: {
+   //          template: (e:any) => {
+   //              return `합계 : `;
+   //          }
+   //       },
+   //       salePrice: {
+   //          template: (e:any) => {                  
+   //             const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+   //             return `${commas(data)}`; // 합계 표시
+   //             }
+   //       },   
+   //       costPrice: {
+   //          template: (e:any) => {                  
+   //             const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+   //             return `${commas(data)}`; // 합계 표시
+   //             }
+   //       },  
+   //    }
+   // }
 
    const grid = () => (
       <div className="border rounded-md p-2 space-y-2">
@@ -280,7 +280,7 @@ const Mm0204 = ({ item, activeComp, userInfo }: Props) => {
          </div>
 
          <TuiGrid01 gridRef={gridRef} columns={columns}
-                  height = {window.innerHeight - 590} summary={summary}/>
+                  height = {window.innerHeight - 590} />
       </div>
    );
 

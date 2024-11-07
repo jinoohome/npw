@@ -362,6 +362,7 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                               setChangeGridData("paBpCd", value);
                               onInputChange("paBpCd", value);
                         }}
+                        addData={"empty"}
 
                         stringify={true}
                         layout="vertical"
@@ -419,7 +420,7 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>
 
             <div className="grid grid-cols-3  gap-12  justify-around items-center">
-               <div className="flex space-x-2">
+               <div className="flex space-x-2 items-end">
                   <InputComp2 ref={refs.zipCd} title="우편번호" target="zipCd" setChangeGridData={setChangeGridData} />
                   <DaumPostcodeComp onComplete={handleAddressSelect} /> {/* Daum 주소 검색 버튼 */}
                </div>
@@ -427,7 +428,7 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                <InputComp2 ref={refs.addr2} title="상세주소" target="addr2" setChangeGridData={setChangeGridData} />
             </div>
 
-            <div className="grid grid-cols-3  gap-12  justify-around items-center">
+            <div className="grid grid-cols-4  gap-12  justify-around items-center">
                <SelectSearch
                        title="은행"
                        value={inputValues.bankCd}
@@ -443,8 +444,21 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
                    />
                <InputComp2 ref={refs.bankAcctNo} title="은행계좌번호" target="bankAcctNo" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.bankHolder} title="예금주" target="bankHolder" setChangeGridData={setChangeGridData} />    
+               <InputComp2 ref={refs.bankHolder} title="예금주" target="bankHolder" setChangeGridData={setChangeGridData} />  
+            
+               <SelectSearch title="사용유무" 
+                        value={inputValues.useYn}
+                        onChange={(label, value) => {
+                              setChangeGridData("useYn", value);
+                              onInputChange('useYn', value);
+                           }}
+                        layout="vertical"                           
+                        //초기값 세팅시
+                        datas={[{value : '999', label : '전체'},{value : 'Y', label : '사용'},{value : 'N', label : '미사용'}]}
+                     />  
+
             </div>
+           
          </div>
       </div>
    );

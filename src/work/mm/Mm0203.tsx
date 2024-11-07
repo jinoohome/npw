@@ -459,6 +459,7 @@ const Mm0203 = ({ item, activeComp, userInfo }: Props) => {
                <SelectSearch
                        title="작업그룹"
                        value={inputValues.workCd}
+                       addData={"empty"}
                        onChange={(label, value) => {
                            setChangeGridData("workCd", value);
                            onInputChange("workCd", value);
@@ -498,7 +499,7 @@ const Mm0203 = ({ item, activeComp, userInfo }: Props) => {
                        dataKey={{ label: "codeName", value: "code" }}
 
                    />
-               <InputComp ref={refs.salePrice} value={inputValues.salePrice} layout="vertical" title="기준단가" target="salePrice" setChangeGridData={setChangeGridData}  type="number"/>              
+               <InputComp ref={refs.salePrice} value={inputValues.salePrice} layout="vertical" title="판매단가" target="salePrice" setChangeGridData={setChangeGridData}  type="number"/>              
             </div>     
             <div className="grid grid-cols-4  gap-12  justify-around items-center">
                <InputComp ref={refs.costPrice} value={inputValues.costPrice} layout="vertical" title="발주단가" target="costPrice" setChangeGridData={setChangeGridData} type="number"/>

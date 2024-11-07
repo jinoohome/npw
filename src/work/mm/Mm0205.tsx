@@ -197,7 +197,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             itemNm: searchRef3.current?.value || "999",
             itemGrp: searchRef4.current?.value || "999",
             itemDiv: searchRef5.current?.value || "999",
-            pkgItemYn: "999",
+            pkgItemYn: "Y",
             subsYn:  "999",
             deduYn:  "999",
             useYn: 'Y',
@@ -247,7 +247,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       let grid1 = GridRef1.current.getInstance();
       let grid2 = GridRef2.current.getInstance();
 
-      grid1.appendRow({}, { focus: true });
+      grid1.appendRow({}, { focus: true, at:0 });
       let { rowKey } = GridRef1.current.getInstance().getFocusedCell();
       grid1.setValue(rowKey, "coCd", userInfo.coCd, false);
       grid1.setValue(rowKey, "useYn", "Y", false);
@@ -313,6 +313,44 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       } else {
          GridRef2.current.getInstance().clear();
       }
+   };
+
+   const handleClick = (ev: any) => {
+      const { rowKey, columnName } = ev;
+
+      const grid3 = GridRef3.current.getInstance();
+      const isChecked = grid3.getCheckedRows().some((row: any) => row.rowKey === rowKey);
+
+      // Toggle the checkbox state by using check and uncheck methods
+      if (isChecked) {
+         grid3.uncheck(rowKey);
+      } else {
+         grid3.check(rowKey);
+      }
+   };
+
+   const handleAfterChange = (ev: any) => {
+      const changesArray = ev.changes; // ev.changes가 배열이므로 이를 사용
+      
+      // 배열을 순회하며 변경 사항 처리
+      changesArray.forEach((change: any) => {   
+         const gridInstance1 = GridRef1.current.getInstance();
+         
+         // 현재 변경된 값이 onhandQty일 때만 처리
+         if (change.columnName === "pkgAmt") {
+            const rowKey = change.rowKey;
+            const value = change.value; // 변경된 값을 가져옴
+   
+            // 숫자가 아닌 문자를 제거하여 정제
+            const sanitizedValue = typeof value === 'string' ? value.replace(/[^0-9.-]/g, '') : value;
+   
+            // 정제 후 숫자가 아닐 경우 0으로 설정
+            const numericValue = isNaN(Number(sanitizedValue)) ? 0 : Number(sanitizedValue);
+   
+            // 그리드의 데이터 값을 정제된 숫자 값으로 설정
+            gridInstance1.setValue(rowKey, change.columnName, numericValue);
+         }
+      });
    };
 
    const handleCallSearch = async () => {
@@ -557,7 +595,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 columns={grid1Columns} handleFocusChange={handleMajorFocusChange} gridRef={GridRef1} height = {window.innerHeight - 530}/>
+         <TuiGrid01 columns={grid1Columns} handleFocusChange={handleMajorFocusChange} handleAfterChange={handleAfterChange} gridRef={GridRef1} height = {window.innerHeight - 530}/>
       </div>
    );
 
@@ -600,7 +638,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                </button>
             </div>
          </div>
-         <TuiGrid01 gridRef={GridRef3} columns={grid3Columns} rowHeaders={['checkbox','rowNum']} handleDblClick={handleDblClick} height = {window.innerHeight - 530}
+         <TuiGrid01 gridRef={GridRef3} columns={grid3Columns} rowHeaders={['checkbox','rowNum']} handleClick={handleClick} handleDblClick={handleDblClick} height = {window.innerHeight - 530}
          />
       </div>
    );

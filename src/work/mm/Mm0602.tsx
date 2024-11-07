@@ -682,6 +682,57 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
    }
 
+   const handleClick = (ev: any) => {
+      const { rowKey, columnName } = ev;
+   
+      const grid3 = gridRef3.current.getInstance();
+      const isChecked = grid3.getCheckedRows().some((row: any) => row.rowKey === rowKey);
+   
+      // Toggle the checkbox state by using check and uncheck methods
+      if (isChecked) {
+         grid3.uncheck(rowKey);
+      } else {
+         grid3.check(rowKey);
+      }
+   };
+
+   const handleClick2 = (ev: any) => {
+      const { rowKey, columnName } = ev;
+   
+      const gridP1 = gridRefP1.current.getInstance();
+      const isChecked = gridP1.getCheckedRows().some((row: any) => row.rowKey === rowKey);
+   
+      // Toggle the checkbox state by using check and uncheck methods
+      if (isChecked) {
+         gridP1.uncheck(rowKey);
+      } else {
+         gridP1.check(rowKey);
+      }
+   };
+
+   const handleAfterChange = (ev: any) => {
+      const changesArray = ev.changes; // ev.changes가 배열이므로 이를 사용
+      
+      // 배열을 순회하며 변경 사항 처리
+      changesArray.forEach((change: any) => {   
+         const gridInstance4 = gridRef4.current.getInstance();
+         
+         // 현재 변경된 값이 onhandQty일 때만 처리
+         if (change.columnName === "priceCom" || change.columnName === "pricePer" || change.columnName === "qty") {
+            const rowKey = change.rowKey;
+            const value = change.value; // 변경된 값을 가져옴
+   
+            // 숫자가 아닌 문자를 제거하여 정제
+            const sanitizedValue = typeof value === 'string' ? value.replace(/[^0-9.-]/g, '') : value;
+   
+            // 정제 후 숫자가 아닐 경우 0으로 설정
+            const numericValue = isNaN(Number(sanitizedValue)) ? 0 : Number(sanitizedValue);
+   
+            // 그리드의 데이터 값을 정제된 숫자 값으로 설정
+            gridInstance4.setValue(rowKey, change.columnName, numericValue);
+         }
+      });
+   };
 
    const setCoCdChange = async (e: any) => {
       MM0602_S02(e);
@@ -932,7 +983,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef3} columns={columns3} headerHeight={30} 
+         <TuiGrid01 gridRef={gridRef3} columns={columns3} headerHeight={30} handleClick={handleClick}
                       rowHeaders={["rowNum", "checkbox"]}
          handleFocusChange={() => {}} perPageYn={false} height={window.innerHeight - 1040} />
       </div>
@@ -1036,7 +1087,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef4} columns={columns4} headerHeight={30} 
+         <TuiGrid01 gridRef={gridRef4} columns={columns4} headerHeight={30} handleAfterChange={handleAfterChange}
                       rowHeaders={["rowNum", "checkbox"]}
          handleFocusChange={() => {}} perPageYn={false} height={window.innerHeight - 640} />
       </div>
@@ -1111,7 +1162,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRefP1} columns={columnsP1} headerHeight={30} handleDblClick={handleDblClick3}
+         <TuiGrid01 gridRef={gridRefP1} columns={columnsP1} headerHeight={30} handleDblClick={handleDblClick3} handleClick={handleClick2}
                       rowHeaders={["rowNum", "checkbox"]}
          handleFocusChange={() => {}} perPageYn={false} />
       </div>

@@ -70,14 +70,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    useEffect(() => {
       if (GridRef1.current && gridDatas1) {
          let grid1 = GridRef1.current.getInstance();
-         grid1.resetData(gridDatas1);
-
-         let focusRowKey = grid1.getFocusedCell()?.rowKey || 0;
-
-         if (gridDatas1.length > 0) {
-            grid1.focusAt(focusRowKey, 0, true);
-         }
-         
+         grid1.resetData(gridDatas1);      
          
       } 
    }, [gridDatas1]);
@@ -151,7 +144,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             }
             
             } /> 
-            <InputComp title="거래처명" ref={searchRef1} value={inputValues.bpNmS} handleCallSearch={handleCallSearch} 
+            <InputComp title="고객사" ref={searchRef1} value={inputValues.bpNmS} handleCallSearch={handleCallSearch} 
                           onChange={(e)=>{
                           onInputChange('bpNmS', e);
                      }} />

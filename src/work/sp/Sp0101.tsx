@@ -554,7 +554,7 @@ useEffect(() => {
        <div className="flex justify-end space-x-2">
           <button type="button" onClick={init} className="bg-green-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
                <ArrowUturnDownIcon className="w-5 h-5 mr-1" />
-               입력
+               신규
            </button>
            <button type="button" onClick={del} className="bg-rose-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
                <TrashIcon className="w-5 h-5 mr-1" />

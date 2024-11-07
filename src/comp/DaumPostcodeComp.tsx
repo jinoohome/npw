@@ -34,9 +34,9 @@ const DaumPostcodeComp: React.FC<DaumPostcodeCompProps> = ({ onComplete }) => {
       <button
          type="button"
          onClick={handleClick}
-         className="bg-blue-500 text-white  rounded-lg px-2 py-1 flex items-center shadow"
+         className="bg-blue-500 text-white h-[32px] rounded-md px-2 py-1 flex items-center  shadow"
       >
-         주소 검색
+         주소검색
       </button>
    );
 };
