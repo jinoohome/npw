@@ -568,6 +568,54 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
     
    };
 
+   const handleStartDateChange = (date: Date | null) => {
+      if (date) {
+        // 시간을 명시적으로 설정하여 타임존 문제 방지
+        date.setHours(12, 0, 0, 0);
+      }
+      const updatedDate = date || undefined;
+      setStartDate(updatedDate);
+    
+      // date를 바로 출력해 확인
+    //  console.log('선택한 시작 날짜:', updatedDate ? formatDate(updatedDate) : '없음');
+      updateDates();
+    };
+    
+    const handleEndDateChange = (date: Date | null) => {
+      if (date) {
+        // 시간을 명시적으로 설정하여 타임존 문제 방지
+        date.setHours(12, 0, 0, 0);
+      }
+      const updatedDate = date || undefined;
+      setEndDate(updatedDate);
+    
+      // date를 바로 출력해 확인
+    //  console.log('선택한 종료 날짜:', updatedDate ? formatDate(updatedDate) : '없음');
+      updateDates();
+    };
+    
+
+    const updateDates = () => {
+      if (onChange) {
+        const formattedStartDate = formatDate(startDate);
+        const formattedEndDate = formatDate(endDate);
+        onChange(formattedStartDate, formattedEndDate);
+      }
+    };
+
+
+    const formatDate = (date: Date | undefined): string | undefined => {
+      if (!date) return undefined;
+      
+      // 로컬 타임존을 기준으로 연, 월, 일을 가져옵니다.
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+    
+      console.log('year:', year, 'month:', month, 'day:', day);
+      return `${year}-${month}-${day}`;
+    };
+
    const CustomInput = forwardRef<HTMLInputElement, any>(({ value, onClick, onKeyDown, placeholder }, ref) => (
       <input
         ref={ref}
@@ -588,7 +636,8 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
                <div className="relative w-full">
                    <ReactDatePicker
                        selected={startDate}
-                       onChange={(date: Date | null) => setStartDate(date || undefined)}
+                      // onChange={(date: Date | null) => setStartDate(date || undefined)}
+                       onChange={handleStartDateChange}
                        selectsStart
                        startDate={startDate}
                        endDate={endDate}
@@ -606,7 +655,7 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
                <div className="relative w-full">
                    <ReactDatePicker
                        selected={endDate}
-                       onChange={(date: Date | null) => setEndDate(date || undefined)}
+                       onChange={handleEndDateChange}
                        selectsEnd
                        startDate={startDate}
                        endDate={endDate}

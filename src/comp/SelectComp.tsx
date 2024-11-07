@@ -339,7 +339,7 @@ interface SelectSearchProps {
    title: string;
    value?: string; // 초기 선택 값
    handleCallSearch?: () => void;
-   onChange?: (label: string, value: string) => void;
+   onChange?: (label: string, value: string, result?: any[]) => void;
    onClick?: () => void;
    procedure?: string;
    param?: any;
@@ -374,7 +374,7 @@ interface SelectSearchProps {
    addData,
  }: SelectSearchProps) => {
    const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
-
+   const [resultData, setResultData] = useState<any[]>([]);
    useEffect(() => {
       let isMounted = true;
 
@@ -408,6 +408,7 @@ interface SelectSearchProps {
         getData(procedure, param)
           .then((result) => {
             if (isMounted && Array.isArray(result)) {
+              setResultData(result);
               let items = result.map((item: any) => ({
                 value: item[dataKey.value],
                 label: item[dataKey.label],
@@ -457,7 +458,7 @@ interface SelectSearchProps {
          handleCallSearch();
        }
        if (onChange) {
-         onChange(selectedOption.label, selectedOption.value);
+         onChange(selectedOption.label, selectedOption.value, resultData);
        }
      }
    };

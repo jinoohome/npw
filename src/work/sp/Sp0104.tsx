@@ -1,5 +1,5 @@
 import {
-   React, useEffect, useState, commas, useRef, SelectSearch, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
+   React, useEffect, useState, commas, date, useRef, SelectSearch, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
@@ -19,7 +19,7 @@ interface Props {
 }
 
 const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
-   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "발주조회" }];
+   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "발주 상세조회" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
       gridDatas2: [],
@@ -38,7 +38,10 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
       zzMA0005: [],
       zzItmes: [],
       focusKey: 0,
-      searchWorkStatus :'999'
+      searchWorkStatus :'999',
+      startDt: date(-1, "month"),
+      endDt: date(),
+      searchWorkNm: "999",
    });
 
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
@@ -106,20 +109,20 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
       return result;
    };
 
-   const SP0102_S01 = async (soNo: string) => {
+   const SP0104_S01 = async (soNo: string) => {
       const param = {
          soNo: soNo || "999",
          bpNm: inputValues.searchBpNm || "999",
          startDt: inputValues.startDt || "999",
          endDt: inputValues.endDt || "999",
          poBpNm: inputValues.searchPoBpNm || "999",
-         poBpCd: userInfo.coCd,
+         poBpCd: userInfo.bpCd || "999",
          workNm: inputValues.searchWorkNm || "999",
          workStatus: inputValues.searchWorkStatus ,
       };
 
       const data = JSON.stringify(param);
-      const result = await fetchPost("SP0102_S01", { data });
+      const result = await fetchPost("SP0104_S01", { data });
 
       
       return result;
@@ -211,9 +214,9 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
 
       if (majorCode === "MA0004") onInputChange("zzMA0004", formattedResult);
       if (majorCode === "MA0005"){
-         formattedResult = formattedResult.filter(
-            (item: any) => item.value == "999" || item.value == "MA0016"  || item.value == "MA0017" 
-        ); 
+      //    formattedResult = formattedResult.filter(
+      //       (item: any) => item.value == "999" || item.value == "MA0016"  || item.value == "MA0017" 
+      //   ); 
       onInputChange("zzMA0005", formattedResult);
       
       }
@@ -379,7 +382,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
 
    const search = async () => {
 
-      const result = await SP0102_S01(inputValues.searchSoNo);
+      const result = await SP0104_S01(inputValues.searchSoNo);
       onInputChange("gridDatas2", result);
    };
 
@@ -638,7 +641,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
   
 
    const searchModalDiv =  () => {
-      const result =  SP0102_S01(inputValues.searchSoNo);
+      const result =  SP0104_S01(inputValues.searchSoNo);
       onInputChange("gridDatas2", result);
    };
    const searchModalDiv2 = async () => {
@@ -673,7 +676,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
 
    const handleSoNoOnIconClick = async (e: any) => {
      
-      const result = await SP0102_S01(e);
+      const result = await SP0104_S01(e);
       onInputChange("gridDatas2", result);
     
 
@@ -769,8 +772,9 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
       { header: "작업명", name: "workNm", width: 100 }, 
       { header: "협력업체", name: "poBpCd", width: 300,  hidden: true }, 
       { header: "협력업체", name: "poBpNm", width: 100 }, 
-      { header: "신청일자", name: "orderDt", width: 120, align: "center", }, // ORDER_DT: 발주 일자
-      { header: "요청일자", name: "reqDt", width: 120, align: "center" }, // REQ_DT: 요청 일자
+     // { header: "신청일자", name: "orderDt", width: 120, align: "center", }, // ORDER_DT: 발주 일자
+      { header: "수주일자", name: "reqDt", width: 120, align: "center" }, // REQ_DT: 요청 일자
+      { header: "발주확정일자", name: "cfmDt", width: 120, align: "center" }, // REQ_DT: 요청 일자
       { header: "발주상태", name: "orderStatus", width: 100, align: "center", hidden: true }, // 
       { header: "진행상태", name: "workStatus", width: 100, align: "center", hidden: true }, // 
       { header: "진행상태", name: "workStatusNm", width: 100, align: "center",  }, // 
@@ -779,12 +783,61 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
       { header: "설치예정일", name: "expectDt", width: 100, align: "center" }, //
       { header: "설치완료일", name: "finishDt", width: 100, align: "center" }, // 
       { header: "수량", name: "qty", width: 100, align: "center"}, // 
+   
+      {
+         header: "단가", name: "poPrice", width: 80, align: "right", editor: "text",
+         formatter: function (e: any) {  return commas(e.value); },
+      }, // PO_PRICE: 발주 가격
+      {
+         header: "금액", name: "poAmt", width: 80, align: "right", 
+         formatter: function (e: any) {  return commas(e.value); },
+      }, // PO_AMT: 발주 금액
+      {
+         header: "공급금액", name: "poNetAmt", width: 100, align: "right",
+         formatter: function (e: any) {  return commas(e.value); },
+      }, // PO_NET_AMT: 발주 순 금액
+      {
+         header: "부가세", name: "poVatAmt", width: 100, align: "right", 
+         formatter: function (e: any) {  return commas(e.value);  },
+      }, // PO_VAT_AMT: 발주 부가세
       { header: "구분", name: "workDiv", width: 100, align: "center" }, // 
       { header: "비고", name: "remark", width: 100, align: "center"}, // 
-      { header: "확정여부", name: "cfmFlag", width: 100, align: "center" }, // 
+      { header: "확정여부", name: "cfmFlag", width: 100, align: "center", hidden:true }, // 
    
  
    ];
+
+   const summary = {
+      height: 40,
+      position: 'top', 
+      columnContent: {
+
+         poPrice: {
+            template: (e:any) => {
+                return `합계 : `;
+            }
+         },
+       
+         poAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+         poNetAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+         poVatAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+      }
+   }
 
    const grid2 = () => (
       <div className="border rounded-md p-2 space-y-2 w-full">
@@ -799,7 +852,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
          </div>
 
          <TuiGrid01 gridRef={gridRef2} columns={columns2} headerHeight={30} handleFocusChange={handleFocusChange} 
-         handleDblClick={handleDblClick} perPageYn={false} height={window.innerHeight - 410} />
+         handleDblClick={handleDblClick} perPageYn={false} height={window.innerHeight - 470}  summary={summary} />
       </div>
    );
 
@@ -1000,10 +1053,43 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
      const searchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
          <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
+            <DateRangePickerComp 
+                     title="발주확정일"
+                     startValue= {inputValues.startDt}
+                     endValue= {inputValues.endDt}
+                     handleCallSearch={search}
+                     onChange={(startDt, endDt) => {
+                        onInputChange('startDt', startDt);
+                        onInputChange('endDt', endDt);   
+                        search();
+                     }
+                    
+               
+               } /> 
             <InputComp title="발주번호" ref={searchSoNoRef} value={inputValues.searchSoNo} handleCallSearch={search}  onChange={(e) => onInputChange("searchSoNo", e)} />
             <InputComp title="사업장" ref={searchBpNmRef} value={inputValues.searchBpNm}   handleCallSearch={search} onChange={(e) => onInputChange("searchBpNm", e)} />
-            <InputComp title="작업명" value={inputValues.searchWorkNm}  handleCallSearch={search} onChange={(e) => onInputChange("searchWorkNm", e)} />
+            {/* <InputComp title="작업명" value={inputValues.searchWorkNm}  handleCallSearch={search} onChange={(e) => onInputChange("searchWorkNm", e)} /> */}
+         
+         
+            <SelectSearch
+                  title="작업명"
+                  value={inputValues.searchWorkNm}
+                  onChange={(label, value) => {
+                     onInputChange("searchWorkNm", value);
+                  }}
+                  addData={"999"}
+                  stringify={true}
+                  param={{ coCd: "200" }}
+                  procedure="ZZ_WORKS"
+                  dataKey={{ label: "workNm", value: "workCd" }}
+                
+               />
             
+            
+            {userInfo.coCd === '999' && (
+               <InputComp title="협력업체" value={inputValues.searchPoBpNm}  handleCallSearch={search} onChange={(e) => onInputChange("searchPoBpNm", e)} />
+            )}
+
             <SelectSearch
                   title="진행상태"
                   value={inputValues.searchWorkStatus}
@@ -1014,10 +1100,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
                   datas={inputValues.zzMA0005}
                   
                />
-            
-            {userInfo.coCd === '999' && (
-               <InputComp title="협력업체" value={inputValues.searchPoBpNm}  handleCallSearch={search} onChange={(e) => onInputChange("searchPoBpNm", e)} />
-            )}
+
           
          </div>
       </div>

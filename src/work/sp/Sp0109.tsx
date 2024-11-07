@@ -26,6 +26,7 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
    const gridRef3 = useRef<any>(null);
    const gridContainerRef2 = useRef(null);
    const gridContainerRef3 = useRef(null);
+   const fileInputRef = useRef<HTMLInputElement>(null);
 
    const searchBpNmRef = useRef<HTMLInputElement>(null);
    const searchSoNoRef = useRef<HTMLInputElement>(null);
@@ -157,7 +158,7 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const excel = async () => {
-      document.getElementById("excelFileInput")?.click();
+      fileInputRef.current?.click();
    };
 
    const save = async () => {
@@ -338,7 +339,7 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
 
    const columns3 = [
       { header: "등록일", name: "orderDt", width: 120, align: "center" }, 
-      { header: "수주번호", name: "soNo", width: 120, align: "center" }, 
+      { header: "수주번호", name: "soNo", width: 130, align: "center" }, 
       { header: "지본", name: "addrCd1", width: 120, align: "center" }, 
       { header: "시군지부", name: "addrCd2", width: 150 },
       { header: "코드", name: "erpBpCd", width: 150, align: "center" },
@@ -379,7 +380,7 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
          </button>
          <input
             type="file"
-            id="excelFileInput"
+            ref={fileInputRef} 
             accept=".xlsx, .xls"
             style={{ display: "none" }}
             onChange={handleFileChange}

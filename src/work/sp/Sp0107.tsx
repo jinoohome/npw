@@ -1,7 +1,7 @@
 import {
    React, useEffect, useState, commas, useRef, SelectSearch, FileUpload, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
 } from "../../comp/Import";
-import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
+import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon, CheckIcon } from "@heroicons/react/24/outline";
 import "tui-date-picker/dist/tui-date-picker.css";
 //import { useDropzone } from "react-dropzone";
 //import imageCompression from "browser-image-compression";
@@ -152,6 +152,25 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
       const data = JSON.stringify(param);
       const result = await fetchPost("SP0107_P01", { data });
+
+      return result;
+   };
+
+
+   const SP0107_U05 = async (soNo: string, cfmYn2: string) => {
+      const param = {
+         soNo: soNo || "999",
+         cfmYn2 : cfmYn2
+      };
+
+      const data = {
+         menuId : activeComp.menuId,
+         insrtUserId: userInfo.usrId,
+         data : JSON.stringify(param)
+
+      }
+      console.log(data);
+      const result = await fetchPost("SP0107_U05", { data });
 
       return result;
    };
@@ -430,6 +449,15 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
          console.error("파일 저장 중 오류 발생:", error);
       }
    };
+
+   const cfmSave = async (cfmYn2:string) => {
+
+      if(!inputValues.soNo){
+         alertSwal("발주번호를 선택해주세요.", "", "warning");
+         return;
+      }
+      SP0107_U05(inputValues.soNo, cfmYn2);
+   }
 
    const del = async () => {
       if (!inputValues.soNo) {
@@ -896,6 +924,10 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
             <ServerIcon className="w-5 h-5 mr-1" />
             저장
          </button>
+         <button type="button" onClick={()=>cfmSave('Y')} className="bg-rose-500 text-white  rounded-lg px-2 py-1 flex items-center shadow">
+            <CheckIcon className="w-5 h-5 mr-1" />
+            최종완료
+         </button>
       </div>
    );
 
@@ -1088,9 +1120,9 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                   </div>
                </div>
             </div>
-            <div>
+            {/* <div>
                <Checkbox title="최종완료확인" value={inputValues.cfmFlag2} onChange={(e) => onInputChange("cfmFlag2", e)} />
-            </div>
+            </div> */}
          </div>
 
          <div className="grid grid-cols-2 w-[80%]">
