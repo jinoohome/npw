@@ -1,7 +1,7 @@
 import {
    React, useEffect, useState, commas, useRef, SelectSearch, FileUpload, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
 } from "../../comp/Import";
-import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import "tui-date-picker/dist/tui-date-picker.css";
 //import { useDropzone } from "react-dropzone";
 //import imageCompression from "browser-image-compression";
@@ -34,6 +34,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       photoFiles: [],
       deleteFiles: [],
       searchWorkStatus: "MA0017",
+
    });
 
    const [files1, setFiles1] = useState<File[]>([]);
@@ -152,14 +153,16 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
       const data = JSON.stringify(param);
       const result = await fetchPost("SP0107_P01", { data });
+      console.log(result)
 
       return result;
    };
 
 
-   const SP0107_U05 = async (soNo: string, cfmYn2: string) => {
+   const SP0107_U05 = async (soNo: string, soSeq:string, cfmYn2: string) => {
       const param = {
-         soNo: soNo || "999",
+         soNo: soNo ,
+         soSeq: soSeq,
          cfmYn2 : cfmYn2
       };
 
@@ -169,8 +172,9 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
          data : JSON.stringify(param)
 
       }
-      console.log(data);
-      const result = await fetchPost("SP0107_U05", { data });
+
+      const result = await fetchPost("SP0107_U05", data);
+      returnResult(result);
 
       return result;
    };
@@ -451,12 +455,16 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const cfmSave = async (cfmYn2:string) => {
+   
+      // if(!inputValues.soNo){
+      //    alertSwal("발주번호를 선택해주세요.", "", "warning");
+      //    return;
+      // }
+      // const result = SP0107_U05(inputValues.soNo, inputValues.soSeq, cfmYn2);
+     
+      inputValues.cfmFlag2 = cfmYn2;
+      save();
 
-      if(!inputValues.soNo){
-         alertSwal("발주번호를 선택해주세요.", "", "warning");
-         return;
-      }
-      SP0107_U05(inputValues.soNo, cfmYn2);
    }
 
    const del = async () => {
@@ -497,6 +505,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
       if (rowData) {
          Object.entries(rowData).forEach(([key, value]) => {
+            console.log(key, value);
             onInputChange(key, value);
          });
 
@@ -703,7 +712,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    //-------------------grid----------------------------
    const columns = [
       { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
-      { header: "발주번호", name: "soNo", width: 100, align: "center", hidden: true },
+      { header: "발주번호", name: "soNo", width: 130, align: "center", hidden: true },
       { header: "수주 순번", name: "soSeq", width: 80, align: "center", hidden: true },
       { header: "품목 순번", name: "itemSeq", width: 100, align: "center", hidden: true },
       { header: "품목코드", name: "itemCd", width: 120, align: "center" },
@@ -831,7 +840,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const columns2 = [
       { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
-      { header: "발주번호", name: "soNo", width: 120, align: "center", rowSpan: false }, // SO_NO: 수주 번호
+      { header: "발주번호", name: "soNo", width: 150, align: "center", rowSpan: false }, // SO_NO: 수주 번호
       { header: "구분번호", name: "soSeq", width: 120, align: "center", hidden: true }, // SO_NO: 수주 번호
       { header: "사업장", name: "bpNm", width: 300, rowSpan: false },
       { header: "사업장", name: "bpCd", width: 300, hidden: true },
@@ -922,12 +931,10 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
          </button>
          <button type="button" onClick={save} className="bg-blue-500 text-white  rounded-lg px-2 py-1 flex items-center shadow">
             <ServerIcon className="w-5 h-5 mr-1" />
-            저장
+            저장 
          </button>
-         <button type="button" onClick={()=>cfmSave('Y')} className="bg-rose-500 text-white  rounded-lg px-2 py-1 flex items-center shadow">
-            <CheckIcon className="w-5 h-5 mr-1" />
-            최종완료
-         </button>
+
+       
       </div>
    );
 
@@ -1076,6 +1083,29 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                </div>
                <div className="min-w-[100px]">완료정보등록</div>
             </div>
+            <div className="flex items-center justify-end w-full">
+               {inputValues.cfmFlag2 === 'N' && (
+                  <button
+                     type="button"
+                     onClick={() => cfmSave('Y')}
+                     className="bg-green-500  text-white rounded-3xl px-2 py-1 flex items-center shadow"
+                  >
+                     <CheckIcon className="w-5 h-5 mr-1" />
+                     최종완료
+                  </button>
+               )}
+
+               {inputValues.cfmFlag2 === 'Y' && (
+                  <button
+                     type="button"
+                     onClick={() => cfmSave('N')}
+                     className="bg-rose-500  text-white rounded-3xl px-2 py-1 flex items-center shadow"
+                  >
+                     <XMarkIcon className="w-5 h-5 mr-1" />
+                     완료취소
+                  </button>
+               )}
+            </div>
          </div>
 
          <div className="flex space-x-8">
@@ -1120,9 +1150,11 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                   </div>
                </div>
             </div>
-            {/* <div>
-               <Checkbox title="최종완료확인" value={inputValues.cfmFlag2} onChange={(e) => onInputChange("cfmFlag2", e)} />
-            </div> */}
+            <div>
+               <Checkbox title="최종완료확인" value={inputValues.cfmFlag2} onChange={(e) => onInputChange("cfmFlag2", e)} 
+               readOnly={true}
+               />
+            </div> 
          </div>
 
          <div className="grid grid-cols-2 w-[80%]">
@@ -1148,6 +1180,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                         onInputChange("searchWorkStatus", value);
                      }}
                      datas={inputValues.zzMA0005}
+                     
                   />
 
                   {userInfo.cocd === "999" && <InputComp title="협력업체" value={inputValues.searchPoBpNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchPoBpNm", e)} />}

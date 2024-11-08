@@ -963,6 +963,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
                   onChange={(e) => {
                      onInputChange("expectDt", e);
                   }}
+                  require={true}
                />
                <DatePickerComp
                   title="설치요청일"

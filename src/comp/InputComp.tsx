@@ -400,10 +400,11 @@ interface Props4 {
    minWidth?: string;
    textAlign?: "left" | "center" | "right";
    readonly?: boolean;
+   require?: boolean;
 }
 
 const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
-   ({ title, value = '', format = 'yyyy-MM-dd', timePicker = false, readonly =false, textAlign = "right", onChange, onClick, layout = 'horizontal', minWidth }, ref) => {
+   ({ title, value = '', format = 'yyyy-MM-dd', timePicker = false, readonly =false, require=false, textAlign = "right", onChange, onClick, layout = 'horizontal', minWidth }, ref) => {
        const [selectedDate, setSelectedDate] = useState<Date | null>(value ? new Date(value) : null);
 
        useEffect(() => {
@@ -481,6 +482,7 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
                            locale={ko}
                            className={`border rounded-md h-8 p-2 w-full focus:outline-orange-300
                                        ${readonly ? "bg-gray-100 text-[#999]" : ""}
+                                       ${require ? "border-orange-500" : ""}
                                     `}
                            wrapperClassName="w-full z-50"
                            popperClassName="custom-datepicker-popper"  
