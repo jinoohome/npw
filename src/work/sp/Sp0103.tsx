@@ -424,37 +424,72 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       }
 
       alertSwal("발주확정확인", "발주확정 하시겠습니까?", "warning", true).then(async (result) => {
-         if (result.isDismissed) {
+         if (result.isConfirmed) {
+            let datas = await getGridDatas(gridRef);
+
+            inputValues.gridDatas = datas;
+            inputValues.status = "confirm";
+            inputValues.workStatus = "MA0016"      
+
+            let data = {
+               oilSoHdrDtl: JSON.stringify(inputValues),
+               oilSoDtlItem: JSON.stringify(inputValues.gridDatas),
+               menuId: activeComp.menuId,
+               insrtUserId: userInfo.usrId,
+            };
+
+
+            try {
+               setLoading(true); 
+               const result = await fetchPost(`SP0103_U03`, data);
+               returnResult(result);
+            } catch (error) {
+                  console.error("save Error:", error);
+            } finally {
+               setLoading(false);
+            }
+         } else if (result.isDismissed) {
             return;
          }
-      });
-      
-      let datas = await getGridDatas(gridRef);
+      });  
+   };
 
-      inputValues.gridDatas = datas;
-      inputValues.status = "C";
-      inputValues.workStatus = "MA0016"      
-
-      let data = {
-         oilSoHdrDtl: JSON.stringify(inputValues),
-         oilSoDtlItem: JSON.stringify(inputValues.gridDatas),
-         menuId: activeComp.menuId,
-         insrtUserId: userInfo.usrId,
-    };
-
-
-      try {
-         setLoading(true); 
-          const result = await fetchPost(`SP0103_U03`, data);
-          returnResult(result);
-      } catch (error) {
-            console.error("save Error:", error);
-      } finally {
-         setLoading(false);
+   const cancel = async () => {
+     
+      if(!inputValues.soNo) {
+         alertSwal("수주번호를 입력해주세요.", "", "warning");
+         return;
       }
 
-      
-     
+      alertSwal("발주취소확인", "발주확정 취소 하시겠습니까?", "warning", true).then(async (result) => {
+         if (result.isConfirmed) {
+            let datas = await getGridDatas(gridRef);
+
+            inputValues.gridDatas = datas;
+            inputValues.status = "cancel";
+            inputValues.workStatus = "MA0015"      
+
+            let data = {
+               oilSoHdrDtl: JSON.stringify(inputValues),
+               oilSoDtlItem: JSON.stringify(inputValues.gridDatas),
+               menuId: activeComp.menuId,
+               insrtUserId: userInfo.usrId,
+         };
+
+
+            try {
+               setLoading(true); 
+               const result = await fetchPost(`SP0103_U03`, data);
+               returnResult(result);
+            } catch (error) {
+                  console.error("save Error:", error);
+            } finally {
+               setLoading(false);
+            }
+         } else if (result.isDismissed) {
+            return;
+         }
+      });    
    };
 
    const del = async () => {
@@ -952,10 +987,26 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
             <ServerIcon className="w-5 h-5 mr-1" />
             저장
          </button>
-         <button type="button" onClick={confirm} className="bg-blue-500 text-white  rounded-lg px-2 py-1 flex items-center shadow">
-            <ServerIcon className="w-5 h-5 mr-1" />
-            발주확정
-         </button>
+         {inputValues.workStatus === "MA0015" && (
+            <button
+               type="button"
+               onClick={confirm}
+               className="bg-blue-500 text-white rounded-lg px-2 py-1 flex items-center shadow"
+            >
+               <ServerIcon className="w-5 h-5 mr-1" />
+               발주확정
+            </button>
+         )}
+         {inputValues.workStatus === "MA0016" && (
+            <button
+               type="button"
+               onClick={cancel}
+               className="bg-blue-500 text-white rounded-lg px-2 py-1 flex items-center shadow"
+            >
+               <ServerIcon className="w-5 h-5 mr-1" />
+               발주취소
+            </button>
+         )}
       </div>
    );
 
