@@ -455,15 +455,32 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const cfmSave = async (cfmYn2:string) => {
-   
-      // if(!inputValues.soNo){
-      //    alertSwal("발주번호를 선택해주세요.", "", "warning");
-      //    return;
-      // }
-      // const result = SP0107_U05(inputValues.soNo, inputValues.soSeq, cfmYn2);
-     
+ 
       inputValues.cfmFlag2 = cfmYn2;
-      save();
+
+      if(cfmYn2 === "Y"){
+         alertSwal("최종완료확인", "최종완료 하시겠습니까?", "warning", true).then(async (result) => {
+            if (result.isConfirmed) {
+               save();
+            } else if (result.isDismissed) {
+               return;
+            }
+         });  
+
+      }else{
+         alertSwal("최종완료취소", "최종완료 취소하시겠습니까?", "warning", true).then(async (result) => {
+            if (result.isConfirmed) {
+               save();
+            } else if (result.isDismissed) {
+               return;
+            }
+         });  
+
+
+      }
+
+
+    
 
    }
 
@@ -1151,7 +1168,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                </div>
             </div>
             <div>
-               <Checkbox title="최종완료확인" value={inputValues.cfmFlag2} onChange={(e) => onInputChange("cfmFlag2", e)} 
+               <Checkbox title="최종완료확인" value={inputValues.cfmFlag2} 
                readOnly={true}
                />
             </div> 

@@ -2,7 +2,7 @@ import {
    React, useEffect, useState, commas, useRef, SelectSearch, date, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
-import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
+import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import "tui-date-picker/dist/tui-date-picker.css";
 import DatePicker from "tui-date-picker";
 import { on } from "events";
@@ -894,6 +894,26 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                      <MinusIcon className="w-5 h-5" />
                      삭제
                   </button>
+                  {inputValues.workStatus === "MA0015" && (
+                     <button
+                        type="button"
+                        onClick={confirm}
+                        className="bg-blue-500 text-white rounded-3xl px-2 py-1 flex items-center shadow"
+                     >
+                        <CheckIcon className="w-5 h-5 mr-1" />
+                        발주확정
+                     </button>
+                  )}
+                  {inputValues.workStatus === "MA0016" && (
+                     <button
+                        type="button"
+                        onClick={cancel}
+                        className="bg-rose-500 text-white rounded-3xl px-2 py-1 flex items-center shadow"
+                     >
+                        <XMarkIcon className="w-5 h-5 mr-1" />
+                        발주취소
+                     </button>
+                  )}
                </div>
             </div>
          </div>
@@ -987,26 +1007,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
             <ServerIcon className="w-5 h-5 mr-1" />
             저장
          </button>
-         {inputValues.workStatus === "MA0015" && (
-            <button
-               type="button"
-               onClick={confirm}
-               className="bg-blue-500 text-white rounded-lg px-2 py-1 flex items-center shadow"
-            >
-               <ServerIcon className="w-5 h-5 mr-1" />
-               발주확정
-            </button>
-         )}
-         {inputValues.workStatus === "MA0016" && (
-            <button
-               type="button"
-               onClick={cancel}
-               className="bg-blue-500 text-white rounded-lg px-2 py-1 flex items-center shadow"
-            >
-               <ServerIcon className="w-5 h-5 mr-1" />
-               발주취소
-            </button>
-         )}
+         
       </div>
    );
 
