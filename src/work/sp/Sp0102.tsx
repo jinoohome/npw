@@ -58,7 +58,7 @@ const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
          startDt: inputValues.startDt || "999",
          endDt: inputValues.endDt || "999",
          poBpNm: inputValues.searchPoBpNm || "999",
-         poBpCd: userInfo.coCd,
+         poBpCd: userInfo.bpCd,
          workNm: inputValues.searchWorkNm || "999",
          workStatus: inputValues.searchWorkStatus ,
       };
@@ -279,7 +279,7 @@ const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
                   dataKey={{ label: "codeName", value: "code" }}
                />
             
-            {userInfo.coCd === '999' && (
+            {userInfo.usrDiv === '999' && (
                <InputComp title="협력업체" value={inputValues.searchPoBpNm}  handleCallSearch={search} onChange={(e) => onInputChange("searchPoBpNm", e)} />
             )}
           

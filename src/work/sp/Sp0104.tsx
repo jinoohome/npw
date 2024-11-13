@@ -42,6 +42,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
       startDt: date(-1, "month"),
       endDt: date(),
       searchWorkNm: "999",
+      searchExcelYn : "999",
    });
 
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
@@ -119,8 +120,10 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
          poBpCd: userInfo.bpCd || "999",
          workNm: inputValues.searchWorkNm || "999",
          workStatus: inputValues.searchWorkStatus ,
+         excelYn : inputValues.searchExcelYn || "999",
       };
 
+      console.log(param)
       const data = JSON.stringify(param);
       const result = await fetchPost("SP0104_S01", { data });
 
@@ -1098,6 +1101,18 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
                   }}
                 
                   datas={inputValues.zzMA0005}
+                  
+               />
+
+               
+            <SelectSearch
+                  title="엑셀등록"
+                  value={inputValues.searchExcelYn}
+                  onChange={(label, value) => {
+                     onInputChange("searchExcelYn", value);
+                  }}
+                  handleCallSearch={search}
+                  datas={[{value : '999', label : '전체'},{value : 'Y', label : '사용'},{value : 'N', label : '미사용'}]}
                   
                />
 

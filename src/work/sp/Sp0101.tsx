@@ -30,7 +30,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
        compSmsYn: "N",
        etcSmsYn: "N",
        coCd: '200',
-       reqDt: new Date(),
+       reqDt: date(),
        subCodeDatas: [],
        hsTypeDatas: [],
        zzWorks : [],
@@ -38,7 +38,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
        zzMA0004 : [],
        zzMA0005 : [],
        startDt: date(-30),
-       endDt: new Date(),
+       endDt: date(0),
    });
 
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
@@ -497,9 +497,11 @@ useEffect(() => {
        { header: "요청일", name: "reqDt", width: 120, align: "center" ,
        editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },  
        { header: "예정일", name: "expectDt", width: 120, align: "center",
-       editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },  
+       // editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } 
+        },  
        { header: "완료일", name: "finishDt", width: 120, align: "center",
-       editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },  
+     //  editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } 
+    },  
        { header: "수량", name: "qty", width: 80, align: "right", editor: 'text',
            formatter: function (e: any) { if (e.value) { return commas(e.value); } }
        }, // QTY: 수량
