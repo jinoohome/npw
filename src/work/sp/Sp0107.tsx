@@ -146,7 +146,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
          startDt: inputValues.startDt || "999",
          endDt: inputValues.endDt || "999",
          poBpNm: inputValues.searchPoBpNm || "999",
-         poBpCd: userInfo.coCd,
+         poBpCd: userInfo.bpCd || "999",
          workNm: inputValues.searchWorkNm || "999",
          workStatus: inputValues.searchWorkStatus,
       };
@@ -635,53 +635,32 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       const { columnName, rowKey, value } = ev.changes[0];
       const gridInstance = gridRef.current.getInstance();
       const rowData = gridInstance.getRow(rowKey);
-
-      if (columnName === "soPrice") {
+   
+      if (columnName === "soPrice" || columnName === "poPrice" || columnName === "qty") {
          const qty = rowData.qty;
          const soPrice = rowData.soPrice;
+         const poPrice = rowData.poPrice;
+   
          const soAmt = qty * soPrice;
          const soNetAmt = soAmt / 1.1;
          const soVatAmt = soAmt - soNetAmt;
-
-         gridInstance.setValue(rowKey, "soAmt", Math.round(soAmt));
-         gridInstance.setValue(rowKey, "soNetAmt", Math.round(soNetAmt));
-         gridInstance.setValue(rowKey, "soVatAmt", Math.round(soVatAmt));
-      }
-
-      if (columnName === "poPrice") {
-         const qty = rowData.qty;
-         const poPrice = rowData.poPrice;
+   
          const poAmt = qty * poPrice;
          const poNetAmt = poAmt / 1.1;
          const poVatAmt = poAmt - poNetAmt;
-
-         gridInstance.setValue(rowKey, "poAmt", Math.round(poAmt));
-         gridInstance.setValue(rowKey, "poNetAmt", Math.round(poNetAmt));
-         gridInstance.setValue(rowKey, "poVatAmt", Math.round(poVatAmt));
-      }
-
-      if (columnName === "qty") {
-         const qty = rowData.qty;
-
-         const soPrice = rowData.soPrice;
-         const soAmt = qty * soPrice;
-         const soNetAmt = soAmt / 1.1;
-         const soVatAmt = soAmt - soNetAmt;
-
+   
          gridInstance.setValue(rowKey, "soAmt", Math.round(soAmt));
          gridInstance.setValue(rowKey, "soNetAmt", Math.round(soNetAmt));
          gridInstance.setValue(rowKey, "soVatAmt", Math.round(soVatAmt));
-
-         const poPrice = rowData.poPrice;
-         const poAmt = qty * poPrice;
-         const poNetAmt = poAmt / 1.1;
-         const poVatAmt = poAmt - poNetAmt;
-
+   
          gridInstance.setValue(rowKey, "poAmt", Math.round(poAmt));
          gridInstance.setValue(rowKey, "poNetAmt", Math.round(poNetAmt));
          gridInstance.setValue(rowKey, "poVatAmt", Math.round(poVatAmt));
+   
+         
       }
    };
+   
 
    const searchModalDiv = async () => {
       const result = await SP0107_P01(inputValues.searchSoNo);
@@ -747,17 +726,21 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
             return commas(e.value);
          },
       }, // QTY: 수량
+      ...(userInfo.bpCd === "999"
+      ? [
       {
-         header: "판매단가",
+         header: "최초단가",
          name: "soPrice",
          width: 100,
          align: "right",
          editor: "text",
-         hidden: true,
+         //hidden: true,
          formatter: function (e: any) {
             return commas(e.value);
          },
       }, // SO_PRICE: 수주 가격
+      ]
+      : []),
       {
          header: "금액",
          name: "soAmt",
@@ -795,7 +778,14 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
          align: "right",
          editor: "text",
          formatter: function (e: any) {
-            return commas(e.value);
+            if(userInfo.bpCd == "999"){
+               return `<div style="background-color:#f9d5d58f; border-radius:5px;">${commas(e.value)}</div>`;
+            }else{
+               return `<div>${commas(e.value)}</div>`;
+
+            }
+
+
          },
       }, // PO_PRICE: 발주 가격
       {
@@ -1101,7 +1091,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                <div className="min-w-[100px]">완료정보등록</div>
             </div>
             <div className="flex items-center justify-end w-full">
-               {inputValues.cfmFlag2 === 'N' && (
+               {inputValues.cfmFlag2 === 'N' && userInfo.bpCd == '999' && (
                   <button
                      type="button"
                      onClick={() => cfmSave('Y')}
@@ -1249,6 +1239,8 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    return (
       <div className={`space-y-5 overflow-y-auto h-full work-scroll `}>
+
+
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />
