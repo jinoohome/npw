@@ -1,5 +1,5 @@
 import {
-   React, useEffect, useState,commas, useRef,SelectSearch, getGridCheckedDatas, date, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
+   React, useEffect, useState,commas, useRef,SelectSearch, getGridCheckedDatas2, date, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
 } from "../../comp/Import";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import "tui-date-picker/dist/tui-date-picker.css";
@@ -429,7 +429,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    const search = async () => {
       const result = await MM0602_S01(inputValues.contNo, '');
 
-      console.log(result);
+      
       
       if(result.length == 1){
          Object.entries(result[0]).forEach(([key, value]) => {
@@ -444,7 +444,8 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    
 
    const save = async() => {
-      let datas = await getGridCheckedDatas(gridRef4);
+      let datas = await getGridCheckedDatas2(gridRef4);
+      console.log(datas);
       inputValues.gridDatas4 = datas;
       inputValues.contNo ? inputValues.status = 'U' : inputValues.status = 'I';
 
@@ -457,13 +458,14 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
          insrtUserId: userInfo.usrId,
       };
 
+   
       const result = await fetchPost(`MM0602_U03`, data);
       returnResult(result);
      
    };
 
    const del = async() => {
-      let datas = await getGridCheckedDatas(gridRef4);
+      let datas = await getGridCheckedDatas2(gridRef4);
       inputValues.gridDatas4 = datas;
       inputValues.status = 'D';
       let data = {
@@ -569,68 +571,81 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       }
    };
 
-   const handleDblClick3 = (e: any) => {
+
+   const handleAddItems = (type: "dblClick" | "add" | "make", e?: any) => {
       const gridInstance1 = gridRef.current.getInstance();
       const gridInstance2 = gridRef2.current.getInstance();
-      const gridInstance3 = gridRefP1.current.getInstance();
+      const gridInstance3 = type === "make" ?  gridRef3.current.getInstance() : gridRefP1.current.getInstance();
       const gridInstance4 = gridRef4.current.getInstance();
-     
-      // 포커스된 셀을 기반으로 행을 가져오는 방법
+    
+      // 포커스된 셀에서 데이터를 가져오기
       const focusedCell1 = gridInstance1.getFocusedCell();
       const focusedCell2 = gridInstance2.getFocusedCell();
-     
-      // 포커스된 셀이 있는 경우 해당 행의 데이터를 가져옴
       const row1 = focusedCell1 ? gridInstance1.getRow(focusedCell1.rowKey) : null;
       const row2 = focusedCell2 ? gridInstance2.getRow(focusedCell2.rowKey) : null;
-   
-      // e에서 rowKey를 사용하여 gridInstance3에서 행 데이터 가져오기
-      const row3 = gridInstance3.getRow(e.rowKey);
-   
-      // gridInstance4에 이미 존재하는 모든 행 데이터 가져오기
-      const existingRows = gridInstance4.getData();
-   
-      // 새로 추가할 행 만들기
-      const newRow = {
-         coCd: row1?.coCd || "",
-         contNo: row1?.contNo || "",
-         hsType: row1?.hsType || row2?.hsType || "",
-         hsTypeNm: row1?.hsTypeNm || row2?.hsTypeNm || "",
-         subCode: row2?.subCode || "",
-         subCodeNm: row2?.subCodeNm || "",
-         seqNo: (existingRows.length + 1).toString(), // 새로운 순번 설정
-         itemCd: row3.itemCd || "",
-         itemNm: row3.itemNm || "",
-         qty: row3.qty || "1",
-         priceCom: row3.priceCom || "",
-         pricePer: row3.pricePer || "",
-         branchGroup: row3.branchGroup || "",
-         branchGroupNm: row3.branchGroupNm || "",
-         mandatoryYn: row3.mandatoryYn || "",
-         remark: row3.remark || "",
-         status: "I",
-         _attributes: { checked: true }
-      };
-   
-      // 중복 체크: hsType, subCode, itemCd가 같은 행이 있는지 확인
-      const isDuplicate = existingRows.some(
-         (existingRow: any) =>
-            existingRow.hsType === newRow.hsType &&
-            existingRow.subCode === newRow.subCode &&
-            existingRow.itemCd === newRow.itemCd
-      );
-   
-      if (!isDuplicate) {
-         // 중복이 아닌 경우, 행 추가
-         gridInstance4.appendRow(newRow);
-      } else {
-         // 중복된 항목이 있을 경우 경고 메시지 표시 및 해당 행으로 포커스 이동
-         alertSwal("품목중복", "중복된 품목이 있습니다.", "warning");
+    
+      // row1이 없는 경우 경고 메시지를 표시하고 함수 종료 (경조구분 필수)
+      if (!row1) {
+        alertSwal("경고", "경조구분을 선택해주세요.", "warning");
+        return;
       }
-   
+    
+      // 행 데이터 가져오기: 더블 클릭 시 특정 행, 그렇지 않으면 체크된 행들
+      const rows = type === "dblClick" ? [gridInstance3.getRow(e.rowKey)] : gridInstance3.getCheckedRows();
+      const currentRowCount = gridInstance4.getRowCount();
+      const existingRows = gridInstance4.getData();
+
+      if(rows.length === 0){
+         alertSwal("품목선택", "품목을 선택해주세요.", "warning");
+         return;
+      }  
+    
+      // 새로운 행들을 생성하고 중복 확인
+      const newRows = rows
+        .map((row:any, index:number) => ({
+          coCd: row1?.coCd || "",
+          contNo: row1?.contNo || "",
+          hsType: row1?.hsType || row2?.hsType || "",
+          hsTypeNm: row1?.hsTypeNm || row2?.hsTypeNm || "",
+          subCode: row2?.subCode || "",
+          subCodeNm: row2?.subCodeNm || "",
+          seqNo: (currentRowCount + index + 1).toString(),
+          itemCd: row.itemCd || "",
+          itemNm: row.itemNm || "",
+          qty: row.qty || row.itemQty || "1",
+          priceCom: row.priceCom || "",
+          pricePer: row.pricePer || "",
+          branchGroup: row.branchGroup || "",
+          branchGroupNm: row.branchGroupNm || "",
+          mandatoryYn: row.mandatoryYn || "",
+          remark: row.remark || "",
+          status: "I",
+          _attributes: { checked: true },
+        }))
+        .filter((newRow:any) => {
+          // 중복 체크
+          return !existingRows.some(
+            (existingRow:any) =>
+              existingRow.hsType === newRow.hsType &&
+              existingRow.subCode === newRow.subCode &&
+              existingRow.itemCd === newRow.itemCd
+          );
+        });
+    
+      if (newRows.length > 0) {
+        // 중복이 아닌 새로운 행들을 추가
+        gridInstance4.appendRows(newRows);
+        onInputChange("gridDatas4", gridInstance4.getData()); 
+       
+      } else {
+        // 중복된 항목이 있으면 경고 메시지
+        alertSwal("품목중복", "중복된 품목이 있습니다.", "warning");
+      }
+    
       // 모달 닫기
-      onInputChange("isOpen3", false);
-   };
-   
+      if (type !== "make") onInputChange("isOpen3", false);
+    };
+    
 
    const searchModalDiv = async () => {
       
@@ -751,149 +766,8 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       MM0601_S04();
    };
 
-   const addItems = () => {
-      const gridInstance1 = gridRef.current.getInstance();
-      const gridInstance2 = gridRef2.current.getInstance();
-      const gridInstance3 = gridRefP1.current.getInstance();
-      const gridInstance4 = gridRef4.current.getInstance();
-  
-      // 포커스된 셀을 기반으로 행을 가져오는 방법
-      const focusedCell1 = gridInstance1.getFocusedCell();
-      const focusedCell2 = gridInstance2.getFocusedCell();
-  
-      // 포커스된 셀이 있는 경우 해당 행의 데이터를 가져옴
-      const row1 = focusedCell1 ? gridInstance1.getRow(focusedCell1.rowKey) : null;
-      const row2 = focusedCell2 ? gridInstance2.getRow(focusedCell2.rowKey) : null;
 
-      // 체크된 행의 데이터를 가져옴
-      const rows3 = gridInstance3.getCheckedRows();
-      const currentRowCount = gridInstance4.getRowCount();
-  
-      // gridInstance4에 이미 존재하는 모든 행 데이터 가져오기
-      const existingRows = gridInstance4.getData();
-  
-      const newRows = rows3
-          .map((row3: any, index: number) => {
-              return {
-                  coCd: row1?.coCd || "",
-                  contNo: row1?.contNo || "",
-                  hsType: row1?.hsType || row2?.hsType || "",
-                  hsTypeNm: row1?.hsTypeNm || row2?.hsTypeNm || "",
-                  subCode: row2?.subCode || "",
-                  subCodeNm: row2?.subCodeNm || "",
-                  seqNo: (currentRowCount + index + 1).toString(),
-                  itemCd: row3.itemCd || "",
-                  itemNm: row3.itemNm || "",
-                  qty: row3.qty || "1",
-                  priceCom: row3.priceCom || "",
-                  pricePer: row3.pricePer || "",
-                  branchGroup: row3.branchGroup || "",
-                  branchGroupNm: row3.branchGroupNm || "",
-                  mandatoryYn: row3.mandatoryYn || "",
-                  remark: row3.remark || "",
-                  status: "I" ,
-                  _attributes: { checked: true } 
-              };
-          })
-          .filter((newRow: any) => {
-              // 중복 체크: hsType, subCode, itemCd가 같은 행이 있는지 확인
-              return !existingRows.some(
-                  (existingRow: any) =>
-                      existingRow.hsType === newRow.hsType &&
-                      existingRow.subCode === newRow.subCode &&
-                      existingRow.itemCd === newRow.itemCd
-              );
-          });
-  
-      if (newRows.length > 0) {
-          // 중복이 아닌 새로운 행들을 gridInstance4에 추가
-          gridInstance4.appendRows(newRows);
-      } else {
-          // 중복된 항목이 있을 경우 경고 메시지 표시 및 해당 행으로 포커스 이동
-         
-          alertSwal("품목중복", "중복된 품목이 있습니다.", "warning");
-      }
-
-      onInputChange("isOpen3", false);
-   }
-
-   const handleMakeItem = () => {
-      const gridInstance1 = gridRef.current.getInstance();
-      const gridInstance2 = gridRef2.current.getInstance();
-      const gridInstance3 = gridRef3.current.getInstance();
-      const gridInstance4 = gridRef4.current.getInstance();
-  
-      // 포커스된 셀을 기반으로 행을 가져오는 방법
-      const focusedCell1 = gridInstance1.getFocusedCell();
-      const focusedCell2 = gridInstance2.getFocusedCell();
-  
-      // 포커스된 셀이 있는 경우 해당 행의 데이터를 가져옴
-      const row1 = focusedCell1 ? gridInstance1.getRow(focusedCell1.rowKey) : null;
-      const row2 = focusedCell2 ? gridInstance2.getRow(focusedCell2.rowKey) : null;
-  
-      // row1이나 row2에 값이 없으면 경고 메시지를 표시하고 함수 종료
-      if (!row1) {
-          alertSwal("경고", "경조구분을 선택해주세요.", "warning");
-          return;
-      }
-  
-      // if (!row2) {
-      //     alertSwal("경고", "재직구분을 선택해주세요.", "warning");
-      //     return;
-      // }
-  
-      // 체크된 행의 데이터를 가져옴
-      const rows3 = gridInstance3.getCheckedRows();
-      const currentRowCount = gridInstance4.getRowCount();
-  
-      // gridInstance4에 이미 존재하는 모든 행 데이터 가져오기
-      const existingRows = gridInstance4.getData();
-  
-      const newRows = rows3
-          .map((row3: any, index: number) => {
-              return {
-                  coCd: row1?.coCd || "",
-                  contNo: row1?.contNo || "",
-                  hsType: row1?.hsType || row2?.hsType || "",
-                  hsTypeNm: row1?.hsTypeNm || row2?.hsTypeNm || "",
-                  subCode: row2?.subCode || "",
-                  subCodeNm: row2?.subCodeNm || "",
-                  seqNo: (currentRowCount + index + 1).toString(),
-                  itemCd: row3.itemCd || "",
-                  itemNm: row3.itemNm || "",
-                  qty: row3.qty || "1",
-                  priceCom: row3.priceCom || "",
-                  pricePer: row3.pricePer || "",
-                  branchGroup: row3.branchGroup || "",
-                  branchGroupNm: row3.branchGroupNm || "",
-                  mandatoryYn: row3.mandatoryYn || "",
-                  remark: row3.remark || "",
-                  status: "I" ,
-                  _attributes: { checked: true } 
-              };
-          })
-          .filter((newRow: any) => {
-              // 중복 체크: hsType, subCode, itemCd가 같은 행이 있는지 확인
-              return !existingRows.some(
-                  (existingRow: any) =>
-                      existingRow.hsType === newRow.hsType &&
-                      existingRow.subCode === newRow.subCode &&
-                      existingRow.itemCd === newRow.itemCd
-              );
-          });
-  
-      if (newRows.length > 0) {
-          // 중복이 아닌 새로운 행들을 gridInstance4에 추가
-          gridInstance4.appendRows(newRows);
-          inputValues.gridDatas4 = gridInstance4.getData();
-      } else {
-          // 중복된 항목이 있을 경우 경고 메시지 표시 및 해당 행으로 포커스 이동
-         
-          alertSwal("품목중복", "중복된 품목이 있습니다.", "warning");
-      }
-  };
-
-  //grid 추가버튼
+   //grid 추가버튼
    const addItemGridRow = () => {
       const gridInstance1 = gridRef.current.getInstance();
       let flag = true;
@@ -966,6 +840,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    const columns3 = [
       { header: "품목코드", name: "itemCd", width: 100, align: "center"  },
       { header: "품목명", name: "itemNm"},
+      { header: "수량", name: "itemQty", width: 80, align: "center"},
    ];
 
    const grid3 = () => (
@@ -1021,6 +896,37 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       { header: "비고", name: "remark", width: 300, editor : 'text' }, // 비고
       { header: "상태", name: "status", hidden:true} // 상태
   ];
+
+   const summary = {
+      height: 40,
+      position: 'top', 
+      columnContent: {
+         // bpNm: {
+         //      template: (e:any) => {
+         //          return  `총 ${e.cnt}개`;
+              
+         //      }
+         //  },     
+          qty: {
+            template: (e:any) => {
+                return `합계 : `;
+            }
+         },
+         priceCom: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },   
+         pricePer: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+      }
+   }
+
   
 
    const grid4 = () => (
@@ -1075,7 +981,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                
             
                <div className="flex space-x-2">
-                  <button type="button" onClick={handleMakeItem} className="bg-green-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+                  <button type="button" onClick={() =>  handleAddItems("make")} className="bg-green-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
                      <ChevronDoubleDownIcon className="w-5 h-5 mr-1" />
                      내리기
                   </button>
@@ -1090,7 +996,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
          </div>
 
          <TuiGrid01 gridRef={gridRef4} columns={columns4} headerHeight={30} handleAfterChange={handleAfterChange}
-                      rowHeaders={["rowNum", "checkbox"]}
+                      rowHeaders={["rowNum", "checkbox"]} summary={summary}
          handleFocusChange={() => {}} perPageYn={false} height={window.innerHeight - 640} />
       </div>
    );
@@ -1138,6 +1044,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       { header: "회사코드", name: "coCd", hidden: true },
       { header: "품목코드", name: "itemCd", width: 100, align: "center" },
       { header: "품목명", name: "itemNm", width: 300 },
+      { header: "수량", name: "itemQty", width: 80, align: "center" },
       { header: "품목그룹", name: "itemGrpNm", width: 100 },
       { header: "품목구분", name: "itemDivNm", width: 100 },
       { header: "복리단가", name: "priceCom", width: 100, align: "right",   
@@ -1157,14 +1064,14 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                <div className="p-1">품목정보</div>
             </div>
             <div className="flex space-x-1">
-               <button type="button" onClick={addItems} className="bg-orange-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+               <button type="button" onClick={() => handleAddItems("add")} className="bg-orange-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
                   <PlusIcon className="w-5 h-5" />
                   선택등록
                </button>
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRefP1} columns={columnsP1} headerHeight={30} handleDblClick={handleDblClick3} handleClick={handleClick2}
+         <TuiGrid01 gridRef={gridRefP1} columns={columnsP1} headerHeight={30} handleDblClick={ (e) =>  handleAddItems("dblClick", e)} handleClick={handleClick2}
                       rowHeaders={["rowNum", "checkbox"]}
          handleFocusChange={() => {}} perPageYn={false} />
       </div>

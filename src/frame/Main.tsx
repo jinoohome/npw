@@ -176,23 +176,37 @@ function Main() {
    //-------------util-------------------------
    
    const addComponent = (menuItem: ZZ_MENU_RES) => {
-      const [folder, fileName] = (menuItem.prgmFullPath ?? "").split('/');
-      const componentName = capitalizeFirstLetter(fileName ?? "");
-      const Component = loadable(() => import(`../work/${folder}/${componentName}`), {
-         fallback: <div>Loading...</div>,
-      });
-      
-      setCount(count + 1);
-      const newComponent = {
-         id: `menu${count}`,
-         name: menuItem.menuName,
-         menuId: menuItem.menuId,
-         paMenuId: menuItem.paMenuId,
-         Component,
-      };
-      setComponents((prev) => [...prev, newComponent]);
-      setPrevComps((prev) => [...prev, newComponent]);
-      setActiveComp(newComponent);
+
+      const existingComponent = components.find(
+         (comp) => comp.menuId === menuItem.menuId
+      );
+
+      if (existingComponent) {
+         // If it exists, set it as the active component
+         setActiveComp(existingComponent);
+
+      }else{
+         const [folder, fileName] = (menuItem.prgmFullPath ?? "").split('/');
+         const componentName = capitalizeFirstLetter(fileName ?? "");
+         const Component = loadable(() => import(`../work/${folder}/${componentName}`), {
+            fallback: <div>Loading...</div>,
+         });
+         
+         setCount(count + 1);
+         const newComponent = {
+            id: `menu${count}`,
+            name: menuItem.menuName,
+            menuId: menuItem.menuId,
+            paMenuId: menuItem.paMenuId,
+            Component,
+         };
+         setComponents((prev) => [...prev, newComponent]);
+         setPrevComps((prev) => [...prev, newComponent]);
+         setActiveComp(newComponent);
+
+
+      }
+
    };
 
    const removeComponent = (componentId: string) => {

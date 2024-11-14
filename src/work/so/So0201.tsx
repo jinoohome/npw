@@ -1919,7 +1919,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          <div className="px-3 space-y-2">            
             <div className="grid grid-cols-1 gap-y-2">
                <DatePickerComp 
-                  title="배송희망일시"
+                  title="예식배송희망일시"
                   value = {inputValues.dlvyHopeDt}
                   layout="flex"
                   textAlign="right"

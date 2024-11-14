@@ -202,10 +202,11 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const addMajorGridRow = () => {
       let majorGrid = majorGridRef.current.getInstance();
       let minorGrid = minorGridRef.current.getInstance();
-
+      
       let grid = majorGridRef.current.getInstance();
-
-      grid.appendRow({  status: "I", useYn: "Y"}, { at: 0 });
+      
+    
+      grid.appendRow({  status: "I", useYn: "Y"}, { focus: true, at: 0 });
       grid.getPagination().movePageTo(0);
       grid.focusAt(0, 1, true);
 

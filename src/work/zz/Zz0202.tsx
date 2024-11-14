@@ -396,7 +396,7 @@ console.log(formattedResult);
    const addGridRow1 = () => {
       let grid = gridRef1.current.getInstance();
 
-      grid.appendRow({ sysGrp: "999", coCd: userInfo.coCd, useYn: "Y" }, { at: 0 });
+      grid.appendRow({ sysGrp: "999", coCd: userInfo.coCd, useYn: "Y" }, { focus: true, at: 0 });
       grid.getPagination().movePageTo(0);
       grid.focusAt(0, 1, true);
    };

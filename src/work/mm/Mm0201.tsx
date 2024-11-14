@@ -526,12 +526,12 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
                        dataKey={{ label: "codeName", value: "code" }}
 
                    />
-               <InputComp ref={refs.salePrice} value={inputValues.salePrice} layout="vertical" title="판매단가" target="salePrice" setChangeGridData={setChangeGridData}  type="number"/>
-               <InputComp ref={refs.costPrice} value={inputValues.costPrice} layout="vertical" title="발주단가" target="costPrice" setChangeGridData={setChangeGridData} type="number"/>
+               <InputComp ref={refs.salePrice} value={inputValues.salePrice} layout="vertical" title="판매단가(청구)" target="salePrice" setChangeGridData={setChangeGridData}  type="number"/>
+               <InputComp ref={refs.costPrice} value={inputValues.costPrice} layout="vertical" title="발주단가(협력업체)" target="costPrice" setChangeGridData={setChangeGridData} type="number"/>
             </div>
 
             <div className="grid grid-cols-4  gap-12  justify-around items-center">
-               <SelectSearch title="과세여부" 
+               <SelectSearch title="과세여부(협력업체)" 
                                  value={inputValues.taxYn}
                                  layout="vertical"
                                  onChange={(label, value) => {
