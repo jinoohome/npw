@@ -729,7 +729,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       ...(userInfo.bpCd === "999"
       ? [
       {
-         header: "최초단가",
+         header: "변경전단가",
          name: "soPrice",
          width: 100,
          align: "right",

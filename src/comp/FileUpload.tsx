@@ -5,7 +5,7 @@ import { useDropzone } from 'react-dropzone';
 import JSZip from 'jszip';
 import imageCompression from 'browser-image-compression';
 import "../css/scroll.css";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { ArrowDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { FaFilePdf, FaFileExcel, FaFileImage, FaFileWord, FaFileAlt } from 'react-icons/fa';
 import { PiFilePptFill } from 'react-icons/pi';
 
@@ -49,6 +49,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const [compressedFiles, setCompressedFiles] = useState<File[]>(value);
   const [uploadedFilesState, setUploadedFilesState] = useState<UploadedFile[]>(uploadedFiles);
   const [deletedFiles, setDeletedFiles] = useState<UploadedFile[]>([]);
+
+  const [previewFile, setPreviewFile] = useState<string | null>(null);
+  const [previewType, setPreviewType] = useState<string | null>(null);
 
   useEffect(() => {
     setCompressedFiles(value);
@@ -133,6 +136,24 @@ const FileUpload: React.FC<FileUploadProps> = ({
     }
   };
 
+
+  const handleFilePreview = async (mgNo: string, fileUrl: string, fileName: string, saveFileName: string) => {
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    const baseURL = process.env.REACT_APP_API_URL;
+    const fileFullPath = `${baseURL}/${fileUrl}`;
+    console.log("fileFullPath:", fileFullPath);
+    if (extension === 'jpg' || extension === 'jpeg' || extension === 'png' || extension === 'gif') {
+      // 이미지 파일 미리보기
+      window.open(fileFullPath, '_blank', 'width=800,height=600,scrollbars=yes');
+    } else if (extension === 'pdf') {
+      // PDF 파일 미리보기
+      window.open(fileFullPath, '_blank', 'width=800,height=600,scrollbars=yes');
+    } else {
+      // 지원하지 않는 파일 유형
+      alert('미리보기를 지원하지 않는 파일 형식입니다.');
+    }
+  };
+
     // 전체 다운로드 기능 (Zip)
     const handleDownloadAll = async () => {
       const zip = new JSZip();
@@ -186,6 +207,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
     onFilesChange && onFilesChange(compressedFiles, newUploadedFiles, [...deletedFiles, removedFileWithStatus]); // 부모에게 전달
   };
 
+ 
   return (
     <div>
       <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""} 
@@ -202,7 +224,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         </label>
 
         <div className={`space-y-1 ${layout === "horizontal" ? "col-span-2" : "flex-grow"}`}>
-          <button onClick={open} className="p-2  text-black rounded-md border">
+          <button onClick={open} className="p-2  text-zinc-100 rounded-md  bg-sky-500 shadow-sm">
             파일 업로드
           </button>
 
@@ -213,7 +235,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
                 {isDragActive ? (
                   <p>여기에 놓아주세요.</p>
                 ) : (
-                  <p>파일을 마우스로 끌어 오세요.</p>
+                  <p>[+] 파일을 마우스로 끌어 오세요.</p>
                 )}
               </div>
             )}
@@ -253,18 +275,29 @@ const FileUpload: React.FC<FileUploadProps> = ({
                   <li key={index} className="flex items-center justify-between py-1 border-b">
                     <div className="flex items-center space-x-2">
                       <XMarkIcon onClick={() => handleDeleteUploaded(index)} className="w-5 h-5 text-zinc-500 cursor-pointer"></XMarkIcon>
-                      <button onClick={() => handleDownloadFile(file.mgNo, file.filePath, file.fileName, file.saveFileName)} className="text-sm underline">
+                      {/* <button onClick={() => handleDownloadFile(file.mgNo, file.filePath, file.fileName, file.saveFileName)} className="text-sm underline">
+                        {file.fileName}
+                      </button> */}
+                      <button onClick={() => handleFilePreview(file.mgNo, file.filePath, file.fileName, file.saveFileName)} className="text-sm underline">
                         {file.fileName}
                       </button>
                     </div>
                     <div className="flex items-center space-x-3">
                       <span className='text-sm'>{(file.fileSize / 1024).toFixed(2)} KB</span>
+                      <button 
+                        onClick={() => handleDownloadFile(file.mgNo, file.filePath, file.fileName, file.saveFileName)} 
+                        className="bg-sky-500  rounded-md shadow-lg text-sm underline p-1 cursor-pointer">
+                        <ArrowDownIcon className="w-4 h-4 text-white cursor-pointer"></ArrowDownIcon>
+                      </button> 
                     </div>
+                   
                   </li>
                 ))}
               </ul>
             </div>
           )}
+
+          
         </div>
       </div>
     </div>

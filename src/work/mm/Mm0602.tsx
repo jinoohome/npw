@@ -401,6 +401,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    const filterGridData = () => {
       let filteredData = inputValues.gridDatas4;
    
+      
       // 경조구분 필터링
       if (inputValues.hsType) {
          filteredData = filteredData.filter((item: any) => item.hsType === inputValues.hsType);
@@ -884,6 +885,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       if (newRows.length > 0) {
           // 중복이 아닌 새로운 행들을 gridInstance4에 추가
           gridInstance4.appendRows(newRows);
+          inputValues.gridDatas4 = gridInstance4.getData();
       } else {
           // 중복된 항목이 있을 경우 경고 메시지 표시 및 해당 행으로 포커스 이동
          
