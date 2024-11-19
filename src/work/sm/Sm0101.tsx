@@ -71,6 +71,20 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       } 
    }, [gridDatas1]);
 
+   useEffect(() => {
+      if (GridRef1.current && gridDatas1) {
+         const gridInstance = GridRef1.current.getInstance();
+         
+         gridDatas1.forEach((row, index) => {
+            if (row.cashAmt > 0) {
+               gridInstance.enableColumn('chkCashDt'); // 현금 결제 금액이 있으면 필드 활성화
+            } else {
+               gridInstance.disableColumn('chkCashDt'); // 현금 결제 금액이 없으면 필드 비활성화
+            }
+         });
+      }
+   }, [gridDatas1]);
+
    // useEffect(() => {
    //    if (GridRef1.current) {
    //       const gridInstance = GridRef1.current.getInstance();
