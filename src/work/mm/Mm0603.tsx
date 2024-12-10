@@ -46,7 +46,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
          bpCd: inputValues.bpCd,
          subCode: inputValues.subCode || "999",
          searchDiv: searchDiv,
-         hsCd: inputValues.hsCd,
+         hsType: inputValues.hsType || "999",
       };
 
       const data = JSON.stringify(param);
@@ -74,6 +74,18 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
 
          onInputChange("hsTypeDatas", hsTypeDatas);
          onInputChange("hsType", "");
+      }else if(searchDiv === 'ITEM_TYPE'){
+         let itemTypeDatas=
+            [
+               { value: '', label: '전체' }, // '전체' 항목을 추가
+               ...result.map((item: any) => ({
+                   value: item.itemType,
+                   label: item.itemTypeNm,
+               })),
+           ];
+    console.log(itemTypeDatas);
+         onInputChange('itemTypeDatas',itemTypeDatas);
+         onInputChange("itemType", '');
       }
 
       return result;
@@ -136,13 +148,20 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
    
    useEffect(() => {
       handleFilterChange();
-   }, [inputValues.hsType, inputValues.subCode]);
+   }, [inputValues.hsType, inputValues.subCode, inputValues.itemType]);
    
    useEffect(() => {
-      if(inputValues.contNo){
+      if (inputValues.contNo) {
          ZZ_CONT_INFO(inputValues.contNo,'BP_HS');
+         ZZ_CONT_INFO(inputValues.contNo,'ITEM_TYPE');
       }
    }, [inputValues.subCode]);
+
+   useEffect(() => {
+      if (inputValues.contNo) {
+         ZZ_CONT_INFO(inputValues.contNo,'ITEM_TYPE');
+      }
+   }, [inputValues.hsType]);
 
 
    //-------------------event--------------------------
@@ -170,6 +189,11 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
       if (inputValues.subCode) {
          filteredData = filteredData.filter((item: any) => item.subCode === inputValues.subCode);
       }
+
+      // 지원타입 필터링
+      if (inputValues.itemType) {
+         filteredData = filteredData.filter((item: any) => item.itemType === inputValues.itemType);
+      }
    
       return filteredData;
    };
@@ -178,6 +202,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
       MM0603_S01(e);
       ZZ_CONT_INFO(e, "SUB");
       ZZ_CONT_INFO(e, "BP_HS");
+      ZZ_CONT_INFO(e, "ITEM_TYPE");
    };
 
    const handleContNoOnKeyDown = async (e: any) => {
@@ -225,9 +250,20 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
    const columns = [
       { header: "회사코드", name: "coCd", hidden: true }, // 회사 코드
       { header: "계약번호", name: "contNo", width: 120, align: "center" }, // 계약 번호
+      { header: "고객사명", name: "bpNm", width: 200 }, // 고객사 명
+      { header: "재직구분명", name: "subCodeNm", width: 150 }, // 재직 구분 명
+      { header: "경조구분명", name: "hsTypeNm", width: 150 }, // 경조 구분 명
+      { header: "지원타입명", name: "itemTypeNm", width: 150 }, // 경조 구분 명
+      { header: "품목명", name: "itemNm", width: 200 }, // 품목 명
+      { header: "수량", name: "qty", width: 80, align: "center", formatter: (e: any) => commas(e.value) }, // 수량
+      { header: "복리단가", name: "priceCom", width: 100, align: "right", formatter: (e: any) => commas(e.value) }, // 복리 단가
+      { header: "개별단가", name: "pricePer", width: 100, align: "right", formatter: (e: any) => commas(e.value) }, // 개별 단가
+      { header: "필수여부", name: "mandatoryYn", width: 80, align: "center" }, // 필수 여부
+      { header: "발주그룹코드", name: "branchGroup", hidden: true }, // 발주 그룹 코드
+      { header: "발주그룹명", name: "branchGroupNm", width: 100, align: "center" }, // 발주 그룹 명
+      { header: "비고", name: "dtlRemark", width: 300 }, // 비고 (DTL)
       { header: "계약명", name: "contNm", width: 200 }, // 계약 명
       { header: "고객사코드", name: "bpCd", hidden: true }, // 고객사 코드
-      { header: "고객사명", name: "bpNm", width: 200 }, // 고객사 명
       { header: "계약일자", name: "contDt", width: 120, align: "center" }, // 계약 일자
       { header: "시작일", name: "contFrDt", width: 120, align: "center" }, // 시작 일자
       { header: "종료일", name: "contToDt", width: 120, align: "center" }, // 종료 일자
@@ -243,19 +279,12 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
       { header: "담당부서", name: "chargeDept", width: 150 }, // 담당 부서
       { header: "비고", name: "hdrRemark", width: 300, }, // 비고 (HDR)
       { header: "경조코드", name: "hsType", width: 80, align: "center" }, // 경조 코드
-      { header: "경조구분명", name: "hsTypeNm", width: 150 }, // 경조 구분 명
+      
       { header: "재직코드", name: "subCode", width: 80, align: "center" }, // 재직 코드
-      { header: "재직구분명", name: "subCodeNm", width: 150 }, // 재직 구분 명
+      
       { header: "순번", name: "seqNo", hidden: true }, // 순번
       { header: "품목코드", name: "itemCd", width: 100, align: "center" }, // 품목 코드
-      { header: "품목명", name: "itemNm", width: 200 }, // 품목 명
-      { header: "수량", name: "qty", width: 80, align: "center", formatter: (e: any) => commas(e.value) }, // 수량
-      { header: "복리단가", name: "priceCom", width: 100, align: "right", formatter: (e: any) => commas(e.value) }, // 복리 단가
-      { header: "개별단가", name: "pricePer", width: 100, align: "right", formatter: (e: any) => commas(e.value) }, // 개별 단가
-      { header: "필수여부", name: "mandatoryYn", width: 80, align: "center" }, // 필수 여부
-      { header: "발주그룹코드", name: "branchGroup", hidden: true }, // 발주 그룹 코드
-      { header: "발주그룹명", name: "branchGroupNm", width: 100, align: "center" }, // 발주 그룹 명
-      { header: "비고", name: "dtlRemark", width: 300 }, // 비고 (DTL)
+      
       { header: "상태", name: "status", hidden: true }, // 상태
   ];
 
@@ -369,9 +398,19 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
                   onInputChange("hsType", value);
                }}
                datas={inputValues.hsTypeDatas}
-            />
-
-            
+            />            
+         </div>
+         <div className="grid grid-cols-3 justify-around items-center pt-4 w-[70%]>">
+            <SelectSearch
+                  title="지원타입"
+                  value={inputValues.itemType}
+                  onChange={(label, value) => {
+                     
+                     onInputChange("itemType", value);
+                     handleFilterChange();
+                     }}
+                     datas={inputValues.itemTypeDatas}
+               />
          </div>
       </div>
    );

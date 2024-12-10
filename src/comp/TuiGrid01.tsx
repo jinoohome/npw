@@ -9,6 +9,8 @@ import ChoicesEditor from "../util/ChoicesEditor";
 
 interface Props {
    columns: any[];
+   handleEditingStart?: (ev: any) => void;
+   handleEditingFinish?: (ev: any) => void;
    handleFocusChange?: (rowKey: any) => void;
    handleAfterChange?: (ev: any) => void; 
    handleClick?: (ev: any) => void; 
@@ -175,13 +177,11 @@ const getGridCheckedDatas2 = (gridRef: any) => {
    });
 
 
-   console.log("datas",updatedDatas);
- 
 
    return updatedDatas;
 };
 
-const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick, handleDblClick, beforeChange, afterChange, check, uncheck, afterRender, headerHeight = 40,
+const TuiGrid01 = ({ columns, handleEditingStart, handleEditingFinish, handleFocusChange, handleAfterChange, handleClick, handleDblClick, beforeChange, afterChange, check, uncheck, afterRender, headerHeight = 40,
                      gridRef, treeColumnName, perPageYn = true, perPage = 50, height = window.innerHeight - 450, summary ,rowHeaders=["rowNum"] }: Props) => {
    // 고유한 key 생성을 위해 Math.random() 사용
    TuiGrid.applyTheme("default", {
@@ -222,6 +222,7 @@ const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick,
       heightResizable: true,
       rowHeaders: rowHeaders,
       oneTimeBindingProps: ["data", "columns"],
+
       ...(perPageYn && {
          pageOptions: {
             useClient: true,
@@ -277,6 +278,14 @@ const TuiGrid01 = ({ columns, handleFocusChange, handleAfterChange, handleClick,
    if (afterRender) {
       // uncheck가 제공되었을 경우에만 설정합니다.
       gridProps.refreshLayout();
+   }
+   
+   if (handleEditingStart) {
+      gridProps.onEditingStart = handleEditingStart;
+   }
+
+   if (handleEditingFinish) {
+      gridProps.onEditingFinish = handleEditingFinish;
    }
    
 

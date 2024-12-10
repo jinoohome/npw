@@ -2,6 +2,7 @@ import {
    React, useEffect, useState,commas, useRef,SelectSearch, getGridCheckedDatas2, date, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
 } from "../../comp/Import";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
+import { hi } from "date-fns/locale";
 import "tui-date-picker/dist/tui-date-picker.css";
 
 interface Props {
@@ -19,6 +20,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       gridDatas4: [],
       gridDatas5: [],
       gridDatas6: [],
+      gridDatas7: [],
       gridDatasP1: [],
       isOpen: false,
       isOpen2: false,
@@ -29,6 +31,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       coCd : '100',
       subCodeDatas : [],
       hsTypeDatas : [],
+      itemTypeDatas : [],
       contFrDt: date(),
       contToDt: date(1, 'year'),
       searchContNo: '',
@@ -56,6 +59,9 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
    const gridRef6 = useRef<any>(null);
    const gridContainerRef6 = useRef(null);
+
+   const gridRef7 = useRef<any>(null);
+   const gridContainerRef7 = useRef(null);
 
    const gridRefP1 = useRef<any>(null);
    const gridContainerRefP1 = useRef(null);
@@ -147,7 +153,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
          bpCd: inputValues.bpCd ,
          subCode: inputValues.subCode || '999',
          searchDiv: searchDiv,
-         hsCd: inputValues.hsCd ,
+         hsType: inputValues.hsType || '999' ,
       };
 
      
@@ -182,6 +188,19 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
     
          onInputChange('hsTypeDatas',hsTypeDatas);
          onInputChange("hsType", '');
+
+      }else if(searchDiv === 'ITEM_TYPE'){
+         let itemTypeDatas=
+            [
+               { value: '', label: '전체' }, // '전체' 항목을 추가
+               ...result.map((item: any) => ({
+                   value: item.itemType,
+                   label: item.itemTypeNm,
+               })),
+           ];
+    
+         onInputChange('itemTypeDatas',itemTypeDatas);
+         onInputChange("itemType", '');
       }
     
       
@@ -200,6 +219,20 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
  
        
       onInputChange("gridDatas2", result);
+      return result;
+   };
+
+   const MM0601_S08 = async () => {
+      const param = {
+         bpCd: inputValues.bpCd ,
+      };
+
+      const data = JSON.stringify(param);
+      const result = await fetchPost("MM0601_S08", { data });
+
+ 
+       
+      onInputChange("gridDatas7", result);
       return result;
    };
 
@@ -243,6 +276,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       reSizeGrid({ ref: gridRef4, containerRef: gridContainerRef4, sec: 200 });
       reSizeGrid({ ref: gridRef5, containerRef: gridContainerRef5, sec: 200 });
       reSizeGrid({ ref: gridRef6, containerRef: gridContainerRef6, sec: 200 });
+      reSizeGrid({ ref: gridRef7, containerRef: gridContainerRef7, sec: 200 });
       reSizeGrid({ ref: gridRefP1, containerRef: gridContainerRefP1, sec: 200 });
       
    }, []);
@@ -302,6 +336,19 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
    useEffect(() => {
       
+      if (gridRef7.current && inputValues.gridDatas7) {
+         let grid = gridRef7.current.getInstance();
+         grid.resetData(inputValues.gridDatas7);
+         refreshGrid(gridRef7);
+
+         if (inputValues.gridDatas7.length > 0) {
+            grid.focusAt(0, 0, true);
+         }
+      }
+   }, [inputValues.gridDatas7]);
+
+   useEffect(() => {
+      
       if (gridRefP1.current && inputValues.gridDatasP1) {
          let grid = gridRefP1.current.getInstance();
          grid.resetData(inputValues.gridDatasP1);
@@ -334,13 +381,20 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
    useEffect(() => {
       handleFilterChange();
-   }, [inputValues.hsType, inputValues.subCode]);
+   }, [inputValues.hsType, inputValues.subCode, inputValues.itemType]);
    
    useEffect(() => {
       if (inputValues.contNo) {
          ZZ_CONT_INFO(inputValues.contNo,'BP_HS');
+         ZZ_CONT_INFO(inputValues.contNo,'ITEM_TYPE');
       }
    }, [inputValues.subCode]);
+
+   useEffect(() => {
+      if (inputValues.contNo) {
+         ZZ_CONT_INFO(inputValues.contNo,'ITEM_TYPE');
+      }
+   }, [inputValues.hsType]);
 
    useEffect(() => {
       // inputValues 중 결제여부 또는 마감여부가 변경되면 검색을 실행
@@ -410,6 +464,11 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       // 재직구분 필터링
       if (inputValues.subCode) {
          filteredData = filteredData.filter((item: any) => item.subCode === inputValues.subCode);
+      }
+
+      // 지원타입 필터링
+      if (inputValues.itemType) {
+         filteredData = filteredData.filter((item: any) => item.itemType === inputValues.itemType);
       }
    
       return filteredData;
@@ -506,6 +565,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
             onInputChange("gridDatas3", []);
             onInputChange("gridDatas4", []);
             onInputChange("gridDatas5", []);
+            onInputChange("gridDatas7", []);
 
          }else{
             inputValues.contNo = result.contNoOut;
@@ -577,12 +637,15 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       const gridInstance2 = gridRef2.current.getInstance();
       const gridInstance3 = type === "make" ?  gridRef3.current.getInstance() : gridRefP1.current.getInstance();
       const gridInstance4 = gridRef4.current.getInstance();
+      const gridInstance7 = gridRef7.current.getInstance();
     
       // 포커스된 셀에서 데이터를 가져오기
       const focusedCell1 = gridInstance1.getFocusedCell();
       const focusedCell2 = gridInstance2.getFocusedCell();
+      const focusedCell7 = gridInstance7.getFocusedCell();
       const row1 = focusedCell1 ? gridInstance1.getRow(focusedCell1.rowKey) : null;
       const row2 = focusedCell2 ? gridInstance2.getRow(focusedCell2.rowKey) : null;
+      const row7 = focusedCell7 ? gridInstance7.getRow(focusedCell7.rowKey) : null;
     
       // row1이 없는 경우 경고 메시지를 표시하고 함수 종료 (경조구분 필수)
       if (!row1) {
@@ -602,35 +665,45 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
     
       // 새로운 행들을 생성하고 중복 확인
       const newRows = rows
-        .map((row:any, index:number) => ({
-          coCd: row1?.coCd || "",
-          contNo: row1?.contNo || "",
-          hsType: row1?.hsType || row2?.hsType || "",
-          hsTypeNm: row1?.hsTypeNm || row2?.hsTypeNm || "",
-          subCode: row2?.subCode || "",
-          subCodeNm: row2?.subCodeNm || "",
-          seqNo: (currentRowCount + index + 1).toString(),
-          itemCd: row.itemCd || "",
-          itemNm: row.itemNm || "",
-          qty: row.qty || row.itemQty || "1",
-          priceCom: row.priceCom || "",
-          pricePer: row.pricePer || "",
-          branchGroup: row.branchGroup || "",
-          branchGroupNm: row.branchGroupNm || "",
-          mandatoryYn: row.mandatoryYn || "",
-          remark: row.remark || "",
-          status: "I",
-          _attributes: { checked: true },
-        }))
-        .filter((newRow:any) => {
-          // 중복 체크
-          return !existingRows.some(
-            (existingRow:any) =>
-              existingRow.hsType === newRow.hsType &&
-              existingRow.subCode === newRow.subCode &&
-              existingRow.itemCd === newRow.itemCd
-          );
-        });
+  .map((row: any, index: number) => {
+      const qty = Number(row.qty || row.itemQty || 1); // 문자열을 숫자로 변환
+      const priceCom = Number(row.priceCom || 0); // 문자열을 숫자로 변환
+      const amt = qty * priceCom; // 숫자 연산 수행
+
+      return {
+         coCd: row1?.coCd || "",
+         contNo: row1?.contNo || "",
+         hsType: row1?.hsType || row2?.hsType || "",
+         hsTypeNm: row1?.hsTypeNm || row2?.hsTypeNm || "",
+         subCode: row2?.subCode || "",
+         subCodeNm: row2?.subCodeNm || "",
+         itemType: row7?.itemType || "",
+         itemTypeNm: row7?.itemTypeNm || "",
+         seqNo: (currentRowCount + index + 1).toString(),
+         itemCd: row.itemCd || "",
+         itemNm: row.itemNm || "",
+         qty: qty.toString(), // 변환된 숫자를 다시 문자열로 저장
+         priceCom: priceCom.toString(), // 변환된 숫자를 다시 문자열로 저장
+         pricePer: row.pricePer || "",
+         amt: amt.toFixed(2), // 소수점 고정 (필요에 따라 조정)
+         branchGroup: row.branchGroup || "",
+         branchGroupNm: row.branchGroupNm || "",
+         mandatoryYn: row.mandatoryYn || "",
+         remark: row.remark || "",
+         status: "I",
+         _attributes: { checked: true },
+      };
+   })
+   .filter((newRow: any) => {
+      // 중복 체크
+      return !existingRows.some(
+         (existingRow: any) =>
+         existingRow.hsType === newRow.hsType &&
+         existingRow.subCode === newRow.subCode &&
+         existingRow.itemCd === newRow.itemCd &&
+         existingRow.itemType === newRow.itemType
+      );
+   });
     
       if (newRows.length > 0) {
         // 중복이 아닌 새로운 행들을 추가
@@ -728,35 +801,56 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
    const handleAfterChange = (ev: any) => {
       const changesArray = ev.changes; // ev.changes가 배열이므로 이를 사용
-      
+    
       // 배열을 순회하며 변경 사항 처리
-      changesArray.forEach((change: any) => {   
-         const gridInstance4 = gridRef4.current.getInstance();
-         
-         // 현재 변경된 값이 onhandQty일 때만 처리
-         if (change.columnName === "priceCom" || change.columnName === "pricePer" || change.columnName === "qty") {
-            const rowKey = change.rowKey;
-            const value = change.value; // 변경된 값을 가져옴
-   
-            // 숫자가 아닌 문자를 제거하여 정제
-            const sanitizedValue = typeof value === 'string' ? value.replace(/[^0-9.-]/g, '') : value;
-   
-            // 정제 후 숫자가 아닐 경우 0으로 설정
-            const numericValue = isNaN(Number(sanitizedValue)) ? 0 : Number(sanitizedValue);
-   
-            // 그리드의 데이터 값을 정제된 숫자 값으로 설정
-            gridInstance4.setValue(rowKey, change.columnName, numericValue);
-         }
+      changesArray.forEach((change: any) => {
+        const gridInstance4 = gridRef4.current.getInstance();
+    
+        // 현재 변경된 값이 처리 대상인 경우
+        if (
+          change.columnName === "priceCom" ||
+          change.columnName === "pricePer" ||
+          change.columnName === "qty"
+        ) {
+          const rowKey = change.rowKey;
+          const value = change.value; // 변경된 값을 가져옴
+    
+          // 숫자가 아닌 문자를 제거하여 정제
+          const sanitizedValue =
+            typeof value === "string" ? value.replace(/[^0-9.-]/g, "") : value;
+    
+          // 정제 후 숫자가 아닐 경우 0으로 설정
+          const numericValue = isNaN(Number(sanitizedValue))
+            ? 0
+            : Number(sanitizedValue);
+    
+          // 그리드의 데이터 값을 정제된 숫자 값으로 설정
+          gridInstance4.setValue(rowKey, change.columnName, numericValue);
+    
+          // 필요한 다른 값 가져오기
+          const qty = gridInstance4.getValue(rowKey, "qty") || 0;
+          const priceCom = gridInstance4.getValue(rowKey, "priceCom") || 0;
+    
+          // 숫자로 변환 후 amt 계산
+          const numericQty = isNaN(Number(qty)) ? 0 : Number(qty);
+          const numericPriceCom = isNaN(Number(priceCom)) ? 0 : Number(priceCom);
+          const amt = numericQty * numericPriceCom;
+    
+          // amt 값을 업데이트
+          gridInstance4.setValue(rowKey, "amt", amt.toFixed(2)); // 소수점 2자리까지 설정
+        }
       });
-   };
+    };
 
    const setCoCdChange = async (e: any) => {
       MM0602_S02(e);
       MM0601_S01();
       MM0601_S03();
       MM0601_S04();
+      MM0601_S08();
       ZZ_CONT_INFO(e,'SUB');
       ZZ_CONT_INFO(e,'BP_HS');
+      ZZ_CONT_INFO(e,'ITEM_TYPE');
    };
    
 
@@ -764,6 +858,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       MM0601_S01();
       MM0601_S03();
       MM0601_S04();
+      MM0601_S08();
    };
 
 
@@ -796,7 +891,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
   
    //-------------------grid----------------------------
    const columns = [
-      { header: "경조코드", name: "hsType", width: 100, align: "center" },
+      { header: "코드", name: "hsType", width: 70, align: "center" },
       { header: "경조구분명", name: "hsTypeNm" },
    ];
 
@@ -812,12 +907,12 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
          </div>
 
          <TuiGrid01 gridRef={gridRef} columns={columns} headerHeight={30} handleFocusChange={() => {}} 
-                  perPageYn={false} height={window.innerHeight - 1040} />
+                  perPageYn={false} height={window.innerHeight - 740} />
       </div>
    );
 
    const columns2 = [
-      { header: "재직코드", name: "subCode" , width: 100, align: "center" },
+      { header: "코드", name: "subCode" , width: 70, align: "center" },
       { header: "재직구분명", name: "subCodeNm"},
    ];
 
@@ -833,7 +928,28 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
          </div>
 
          <TuiGrid01 gridRef={gridRef2} columns={columns2} headerHeight={30} 
-            handleFocusChange={() => {}} perPageYn={false} height={window.innerHeight - 1040} />
+            handleFocusChange={() => {}} perPageYn={false} height={window.innerHeight - 740} />
+      </div>
+   );
+
+   const columns7 = [
+      { header: "지원타입", name: "itemType" , width: 100, align: "center",hidden: true },
+      { header: "지원타입명", name: "itemTypeNm"},
+   ];
+
+   const grid7 = () => (
+      <div className="border rounded-md p-2 space-y-2 w-full">
+         <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center space-x-1 text-orange-500 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="py-1">지원타입</div>
+            </div>
+         </div>
+
+         <TuiGrid01 gridRef={gridRef7} columns={columns7} headerHeight={30} 
+            handleFocusChange={() => {}} perPageYn={false} height={window.innerHeight - 740} />
       </div>
    );
 
@@ -862,29 +978,34 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
          <TuiGrid01 gridRef={gridRef3} columns={columns3} headerHeight={30} handleClick={handleClick}
                       rowHeaders={["rowNum", "checkbox"]}
-         handleFocusChange={() => {}} perPageYn={false} height={window.innerHeight - 1040} />
+         handleFocusChange={() => {}} perPageYn={false} height={window.innerHeight - 740} />
       </div>
    );
 
    const columns4 = [
       { header: "회사코드", name: "coCd",  hidden: true }, // 회사 코드
       { header: "계약번호", name: "contNo", hidden: true }, // 계약 번호
-      { header: "재직코드", name: "subCode", width: 80, align: "center" }, // 재직 구분
-      { header: "재직구분", name: "subCodeNm", width: 80, align: "center" }, // 재직 구분
-      { header: "경조코드", name: "hsType", width: 80, align: "center" }, // 경조 구분
-      { header: "경조구분", name: "hsTypeNm", width: 80, align: "center" }, // 경조 구분
+      { header: "재직코드", name: "subCode", width: 80, align: "center", hidden: true }, // 재직 구분
+      { header: "재직구분", name: "subCodeNm", width: 150 }, // 재직 구분
+      { header: "경조코드", name: "hsType", width: 80, align: "center", hidden: true }, // 경조 구분
+      { header: "경조구분", name: "hsTypeNm", width: 150 }, // 경조 구분
+      { header: "지원타입", name: "itemType", width: 80, align: "center", hidden: true }, // 지원타입
+      { header: "지원타입명", name: "itemTypeNm", width: 300 }, // 지원타입명
       { header: "순번", name: "seqNo",  hidden: true }, // 순번
       { header: "품목코드", name: "itemCd", width: 100, align: "center"  }, // 품목 코드
       { header: "품목명", name: "itemNm",  }, // 품목 코드
-      { header: "수량", name: "qty", width: 80, align: "center", editor : 'text' , 
+      { header: "수량", name: "qty", width: 60, align: "center", editor : 'text' , 
       formatter: function(e: any) {if(e.value){return commas(e.value);} }
       }, // 수량
-      { header: "복리단가", name: "priceCom", width: 100, align: "right",  editor : 'text' , 
+      { header: "복리단가", name: "priceCom", width: 80, align: "right",  editor : 'text' , 
       formatter: function(e: any) {if(e.value){return commas(e.value);} }
       }, 
-      { header: "개별단가", name: "pricePer", width: 100, align: "right", editor : 'text' , 
+      { header: "개별단가", name: "pricePer", width: 80, align: "right", editor : 'text' , 
       formatter: function(e: any) {if(e.value){return commas(e.value);} }
       }, // 가격(개인)
+      { header: "금액", name: "amt", width: 80, align: "right", editor : 'text' , 
+         formatter: function(e: any) {if(e.value){return commas(e.value);} }
+         }, // 가격(개인)
       { header: "필수여부", name: "mandatoryYn", width: 80, align: "center", formatter: "listItemText",  editor: { type: 'select', options: { listItems: [
          { text: "Y", value: "Y" }, 
          { text: "N", value: "N" }
@@ -893,7 +1014,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
          { text: "의전본부", value: "ZZ0189" }, 
          { text: "화환업체", value: "ZZ0193" }
        ]   } } }, // 지점 그룹
-      { header: "비고", name: "remark", width: 300, editor : 'text' }, // 비고
+      { header: "비고", name: "remark", width: 250, editor : 'text' }, // 비고
       { header: "상태", name: "status", hidden:true} // 상태
   ];
 
@@ -924,6 +1045,12 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                return `${commas(data)}`; // 합계 표시
                }
          },  
+         amt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         }, 
       }
    }
 
@@ -951,7 +1078,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                
                </div> */}
 
-               <div className="grid grid-cols-2 gap-4 search">
+               <div className="grid grid-cols-3 gap-4 search">
                  
 
                   <SelectSearch
@@ -976,6 +1103,17 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                       datas={inputValues.hsTypeDatas}
                   />
 
+                  <SelectSearch
+                     title="지원타입"
+                     value={inputValues.itemType}
+                     onChange={(label, value) => {
+                        
+                        onInputChange("itemType", value);
+                        handleFilterChange();
+                      }}
+                      datas={inputValues.itemTypeDatas}
+                  />
+
                   
                </div>
                
@@ -997,7 +1135,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
          <TuiGrid01 gridRef={gridRef4} columns={columns4} headerHeight={30} handleAfterChange={handleAfterChange}
                       rowHeaders={["rowNum", "checkbox"]} summary={summary}
-         handleFocusChange={() => {}} perPageYn={false} height={window.innerHeight - 640} />
+         handleFocusChange={() => {}} perPageYn={false} height={window.innerHeight - 200} />
       </div>
    );
 
@@ -1339,7 +1477,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-hidden h-screen`}>
+      <div className={`space-y-5 overflow-y-hidden h-full`}>
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />
@@ -1350,9 +1488,10 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                <div className="w-1/3">{div2()}</div>
             </div>
             <div className="flex w-full space-x-2">
-               <div className="w-2/6">{grid2()}</div>
-               <div className="w-2/6">{grid1()}</div>
-               <div className="w-3/6">{grid3()}</div>
+               <div className="w-1/5">{grid2()}</div>
+               <div className="w-1/5">{grid1()}</div>
+               <div className="w-1/5">{grid7()}</div>
+               <div className="w-2/5">{grid3()}</div>
             </div>
             <div>{grid4()}</div>
          </div>

@@ -1,7 +1,8 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, commas, CommonModal, updateChoices, SelectSearch, alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
-import ChoicesEditor from "../../util/ChoicesEditor";
+// import ChoicesEditor from "../../util/ChoicesEditor";
+import ChoicesEditor from "../../util/ReactSelectEditor";
 const breadcrumbItem = [{ name: "관리자" }, { name: "메뉴" }, { name: "고객사별 기준정보 등록" }];
 interface Props {
    item: any;
@@ -27,8 +28,11 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
     
    };
 
+   const [isEditable, setIsEditable] = useState(true); // TYPE 입력 가능 여부 상태
+
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       coCd: '',
+      zzFU0017 : [],
    });
 
    const gridRef1 = useRef<any>(null);
@@ -37,6 +41,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    const gridRef4 = useRef<any>(null);
    const gridRef5 = useRef<any>(null);
    const gridRef6 = useRef<any>(null);
+   const gridRef7 = useRef<any>(null);
    const gridRefP1 = useRef<any>(null);
    const gridRefP2 = useRef<any>(null);
 
@@ -46,6 +51,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    const gridContainerRef4 = useRef(null); 
    const gridContainerRef5 = useRef(null); 
    const gridContainerRef6 = useRef(null); 
+   const gridContainerRef7 = useRef(null); 
    
    const [gridDatas1, setGridDatas1] = useState<any[]>();
    const [gridDatas2, setGridDatas2] = useState<any[]>();
@@ -53,6 +59,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    const [gridDatas4, setGridDatas4] = useState<any[]>();
    const [gridDatas5, setGridDatas5] = useState<any[]>();
    const [gridDatas6, setGridDatas6] = useState<any[]>();
+   const [gridDatas7, setGridDatas7] = useState<any[]>();
    const [gridDatasP1, setGridDatasP1] = useState<any[]>();
    const [gridDatasP2, setGridDatasP2] = useState<any[]>();
    
@@ -76,6 +83,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
       reSizeGrid({ ref: gridRef4, containerRef: gridContainerRef4, sec: 200 });
       reSizeGrid({ ref: gridRef5, containerRef: gridContainerRef5, sec: 200 });
       reSizeGrid({ ref: gridRef6, containerRef: gridContainerRef6, sec: 200 });
+      reSizeGrid({ ref: gridRef7, containerRef: gridContainerRef7, sec: 200 });
    }, []);
 
    const setChoiceUI = () => {
@@ -85,6 +93,8 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
 
    const setGridData = async () => {
       try {
+         ZZ_CODE('FU0017');
+
          let sosocData = await ZZ_B_PO_BP();
    
          if (sosocData != null) {
@@ -104,6 +114,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
          let gridDatas4 = await MM0601_S04();
          let gridDatas5 = await MM0601_S05();
          let gridDatas6 = await MM0601_S06();
+         let gridDatas7 = await MM0601_S08();
                   
          let subCodeData = await SUB_CODE();
    
@@ -118,6 +129,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
          setGridDatas4(gridDatas4);
          setGridDatas5(gridDatas5);
          setGridDatas6(gridDatas6);
+         setGridDatas7(gridDatas7);
       } catch (error) {
          console.error("setGridData Error:", error);
       }
@@ -130,8 +142,11 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
 
    const handleCallSearchModal = async () => {
       await HS_CODE();
-     
   };
+
+  const handleCallSearchModal2 = async () => {
+   await MM0201_S01();
+};
 
    // 탭 클릭시 Grid 리사이즈
    useEffect(() => {
@@ -141,6 +156,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
       refreshGrid(gridRef4);
       refreshGrid(gridRef5);
       refreshGrid(gridRef6);
+      refreshGrid(gridRef7);
    }, [activeComp]);
 
    useEffect(() => {
@@ -234,6 +250,20 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
 
    useEffect(() => {
       try {
+         if (gridRef7.current && Array.isArray(gridDatas7)) {
+            let grid = gridRef7.current.getInstance();
+            grid.resetData(gridDatas7);
+
+            let focusRowKey = grid.getFocusedCell()?.rowKey || 0;
+            if (gridDatas7.length > 0) {
+               grid.focusAt(focusRowKey, 0, true);
+            }
+         }
+      } catch (error) {}
+   }, [gridDatas7]);
+
+   useEffect(() => {
+      try {
          if (gridRefP1.current && Array.isArray(gridDatasP1)) {
             let grid = gridRefP1.current.getInstance();
             grid.resetData(gridDatasP1);
@@ -263,7 +293,45 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    useEffect(() => {
       updateChoices(choice1, bpCds, "value", "text");
    }, [bpCds]);
+
+   useEffect(() => {
+      handleCallSearchModal2();
+   }, [inputValues.itemGrp, inputValues.itemDiv]);
+
+   useEffect(() => {
+
+      if (inputValues.zzFU0017) {
+         let gridInstance = gridRef7.current.getInstance();
+         let column = gridInstance.getColumn("itemType");
+         let zzFU0017 = inputValues.zzFU0017.filter((item:any) => item.value !== "999");
+         column.editor.options.listItems = zzFU0017;
+         gridInstance.refreshLayout();
+      }
+   }, [inputValues.zzFU0017]);
    //---------------------- api -----------------------------
+   const ZZ_CODE = async (majorCode:any) => {   
+      const param={ 
+          coCd: "999", 
+          majorCode: majorCode, 
+          div: "999" 
+      };
+  
+  
+      const result = await fetchPost("ZZ_CODE", param);
+  
+      
+      const formattedResult = result.map((item: any) => ({
+          value: item.code,
+          text: item.codeName
+      }));
+  
+      if(majorCode === 'FU0017') onInputChange("zzFU0017", formattedResult);
+      
+      
+      console.log(formattedResult);
+      return formattedResult;
+  };
+
    const MM0601_S01 = async () => {
       try {
          const param = {
@@ -372,6 +440,22 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
       }
    };
 
+   const MM0601_S08 = async () => {
+      try {
+         const param = {
+            bpCd: searchRef1.current?.value,
+         };
+
+         const data = JSON.stringify(param);
+         const result = await fetchPost(`MM0601_S08`, { data });
+         setGridDatas5(result);
+         return result;
+      } catch (error) {
+         console.error("MM0601_S08 Error:", error);
+         throw error;
+      }
+   };
+
    var ZZ_B_PO_BP = async () => {
       try {
          const param = {
@@ -428,7 +512,9 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
       try {
          const param = {
             hsNm: searchRefP1_1.current?.value,
+            bpCd: searchRef1.current?.value,
          };
+         console.log(param);
 
          const data = JSON.stringify(param);
          const result = await fetchPost(`ZZ_HS_CODE`, { data });
@@ -512,12 +598,12 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
          <div className="w-full flex justify-between">
             <div className="grid grid-cols-3  gap-y-3  justify-start w-[80%]">
-               <InputComp1 ref={searchRefP2_1} handleCallSearch={handleCallSearchModal} title="품목명"></InputComp1>
+               <InputComp1 ref={searchRefP2_1} handleCallSearch={handleCallSearchModal2} title="품목명"></InputComp1>
                <SelectSearch
                        title="품목그룹"
                        value={inputValues.itemGrp}
                        onChange={(label, value) => {
-                          handleCallSearchModal();
+                          handleCallSearchModal2();
                            onInputChange("itemGrp", value);
                        }}
 
@@ -530,7 +616,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
                        title="품목구분"
                        value={inputValues.itemDiv}
                        onChange={(label, value) => {
-                          handleCallSearchModal();
+                          handleCallSearchModal2();
                            onInputChange("itemDiv", value);
                        }}
 
@@ -541,7 +627,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
                    />
             </div>
             <div className="w-[20%] flex justify-end">
-               <button type="button" onClick={handleCallSearchModal} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+               <button type="button" onClick={handleCallSearchModal2} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
                   <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
                   조회
                </button>
@@ -592,13 +678,17 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
          const grid1 = gridRef1.current.getInstance();
          const hsTypeRows = grid1.getData();
 
-         // 경조 TYPE 그리드에서 HS_TYPE 필드가 비어있는지 확인
+         // 소속 그리드에서 소속코드 필드가 비어있는지 확인
          const grid3 = gridRef3.current.getInstance();
          const subCodeRows = grid3.getData();
          
          // 품목리스트 그리드에서 필수여부와 발주구분 필드가 비어있는지 확인
          const grid4 = gridRef4.current.getInstance();
          const itemRows = grid4.getData();
+
+         // 지원타입 그리드에서 지원타입 필드가 비어있는지 확인
+         const grid7 = gridRef7.current.getInstance();
+         const itemTypeRows = grid7.getData();
 
          // 경조 TYPE의 HS_TYPE 필수 체크
          const missingSubCode = subCodeRows.some((row: { subCode: any; }) => !row.subCode);
@@ -610,6 +700,13 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
          // 경조 TYPE의 HS_TYPE 필수 체크
          const missingHSType = hsTypeRows.some((row: { hsType: any; }) => !row.hsType);
          if (missingHSType) {
+            alertSwal("경조 TYPE의 HS_TYPE은 필수 입력 항목입니다.", "", "warning");
+            return false;
+         }
+
+         // 지원타입의 ITEM_TYPE 필수 체크
+         const missingItemType = itemTypeRows.some((row: { itemType: any; }) => !row.itemType);
+         if (missingItemType) {
             alertSwal("경조 TYPE의 HS_TYPE은 필수 입력 항목입니다.", "", "warning");
             return false;
          }
@@ -650,6 +747,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
       let item = await getGridDatas(gridRef4);
       let tipCode = await getGridDatas(gridRef5);
       let person = await getGridDatas(gridRef6);
+      let itemType = await getGridDatas(gridRef7);
 
       let data = {
          menuId: activeComp.menuId,
@@ -660,6 +758,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
          item: JSON.stringify(item),
          tipCode: JSON.stringify(tipCode),
          person: JSON.stringify(person),
+         itemType: JSON.stringify(itemType),
       };
 
       return data;
@@ -723,6 +822,15 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
          const grid = gridRef1.current.getInstance();
          const hsType = grid.getValue(rowKey, "hsType");
 
+         const newRow = grid.getValue(rowKey, 'newRow');
+   
+         // mgNo 값이 있으면 비활성화, 없으면 활성화
+         if (newRow) {
+            grid.enableCell(rowKey, 'hsType');
+         } else {
+            grid.disableCell(rowKey, 'hsType');
+         }
+
          if (hsType) {
             const gridDatas2 = await MM0601_S02(hsType);
             setGridDatas2(gridDatas2);
@@ -753,6 +861,38 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
                }
                
             });
+         }
+      }
+   };
+
+   //grid 포커스변경시
+   const handleFocusChange3 = async ({ rowKey }: any) => {
+      if (rowKey !== null && gridRef3.current) {
+         const grid = gridRef3.current.getInstance();
+
+         const newRow = grid.getValue(rowKey, 'newRow');
+   
+         // mgNo 값이 있으면 비활성화, 없으면 활성화
+         if (newRow) {
+            grid.enableCell(rowKey, 'subCode');
+         } else {
+            grid.disableCell(rowKey, 'subCode');
+         }
+      }
+   };
+
+   //grid 포커스변경시
+   const handleFocusChange4 = async ({ rowKey }: any) => {
+      if (rowKey !== null && gridRef7.current) {
+         const grid = gridRef7.current.getInstance();
+
+         const newRow = grid.getValue(rowKey, 'newRow');
+   
+         // mgNo 값이 있으면 비활성화, 없으면 활성화
+         if (newRow) {
+            grid.enableCell(rowKey, 'itemType');
+         } else {
+            grid.disableCell(rowKey, 'itemType');
          }
       }
    };
@@ -789,7 +929,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
       const existingItemCds = new Set(grid2.getData().map((row: any) => row.hsCode));
   
       checkedRows.forEach((row: any) => {
-          if (!existingItemCds.has(row.hsCd)) {  // itemCd 중복 확인
+          if (!existingItemCds.has(row.hsCd)) {  // hsCd 중복 확인
               const newRow = {
                   coCd: rowData1.coCd,
                   bpCd: searchRef1.current?.value,
@@ -913,7 +1053,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    const addGridRow1 = () => {
       let grid = gridRef1.current.getInstance();
 
-      grid.appendRow({ bpCd: searchRef1.current?.value, hsTypeNm: "", coCd: "100", useYn: "Y" }, { focus: true, at: 0 });
+      grid.appendRow({ bpCd: searchRef1.current?.value, hsTypeNm: "", coCd: "100", useYn: "Y", newRow: "Y" }, { focus: true, at: 0 });
       grid.getPagination().movePageTo(0);
       grid.focusAt(0, 1, true);
    };
@@ -973,7 +1113,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    const addGridRow3 = () => {
       let grid = gridRef3.current.getInstance();
 
-      grid.appendRow({ bpCd: searchRef1.current?.value, coCd: "100", useYn: "Y" }, { focus: true, at: 0 });
+      grid.appendRow({ bpCd: searchRef1.current?.value, coCd: "100", useYn: "Y", newRow: "Y" }, { focus: true, at: 0 });
       grid.getPagination().movePageTo(0);
       grid.focusAt(0, 1, true);
    };
@@ -1071,6 +1211,31 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
       }
    };
 
+   //grid 추가버튼
+   const addGridRow7 = () => {
+      let grid = gridRef7.current.getInstance();
+
+      grid.appendRow({ bpCd: searchRef1.current?.value, coCd: "100", useYn: "Y", newRow: "Y" }, { focus: true, at: 0 });
+      grid.getPagination().movePageTo(0);
+      grid.focusAt(0, 1, true);
+   };
+
+   //grid 삭제버튼
+   const delGridRow7 = () => {
+      let grid = gridRef7.current.getInstance();      
+
+      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
+      
+      // 행을 삭제
+      grid.removeRow(rowKey, {});
+
+      // 남은 행이 있는 경우에만 포커스를 맞춤
+      if (grid.getRowCount() > 0) {
+         grid.focusAt(rowIndex, 1, true);
+      }
+   };
+
    const handleTabIndex = async (index: number) => {
       await setTabIndex(index);
       await refreshGrid(gridRef1);
@@ -1079,6 +1244,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
       await refreshGrid(gridRef4);
       await refreshGrid(gridRef5);
       await refreshGrid(gridRef6);
+      await refreshGrid(gridRef7);
 };
 
    const setChangeGridData = (columnName: string, value: any) => {
@@ -1248,14 +1414,14 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef3} columns={columns3} height={window.innerHeight-535}  />
+         <TuiGrid01 gridRef={gridRef3} columns={columns3} handleFocusChange={handleFocusChange3} height={window.innerHeight-535}  />
       </div>
    );
 
    const columns4 = [
       { header: "회사코드", name: "coCd", align: "center", hidden: "true" },
       { header: "고객사", name: "bpCd", align: "center", hidden: "true" },
-      { header: "품목코드", name: "itemCd", align: "center", editor: "text", width: 150 },
+      { header: "품목코드", name: "itemCd", align: "center", width: 150 },
       { header: "품목명", name: "itemNm", width: 450  },
       { header: "수량", name: "itemQty", align: "center", editor: "text", width: 100  },      
       { header: "복리단가", name: "priceCom", align: "right", editor: "text", width: 150,
@@ -1427,6 +1593,40 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
       </div>
    );
 
+   const columns7 = [
+      { header: "회사코드", name: "coCd", align: "center", hidden: "true" },
+      { header: "고객사", name: "bpCd", align: "center", hidden: "true" },
+      { header: "지원타입", name: "itemType", width: 500,
+         formatter: "listItemText", editor: { type: ChoicesEditor, options: { listItems: inputValues.zzFU0017  } } 
+         }, 
+      { header: "설명", name: "description", editor: "text" },      
+   ];
+
+   const grid7 = () => (
+      <div className="border rounded-md p-2 space-y-2">
+         <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center space-x-1 text-orange-500 ">
+               <div>
+                  <SwatchIcon className="w-5 h-5 "></SwatchIcon>
+               </div>
+               <div className="">지원타입</div>
+            </div>
+            <div className="flex space-x-1">
+               <button type="button" onClick={addGridRow7} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+                  <PlusIcon className="w-5 h-5" />
+                  추가
+               </button>
+               <button type="button" onClick={delGridRow7} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+                  <MinusIcon className="w-5 h-5" />
+                  삭제
+               </button>
+            </div>
+         </div>
+
+         <TuiGrid01 gridRef={gridRef7} columns={columns7} handleFocusChange={handleFocusChange4} height={window.innerHeight-535}  />
+      </div>
+   );
+
    const gridP1Columns = [
       { header: "회사코드", name: "coCd", hidden: true },
       { header: "경조코드", name: "hsCd", hidden: true },
@@ -1487,7 +1687,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
       </div>
    );
 
-   const tabLabels = ['경조매핑', '재직구분', '품목매핑', '주문팁', '담당자연락처'];
+   const tabLabels = ['경조매핑', '재직구분', '품목매핑', '주문팁', '담당자연락처', '지원타입'];
 
    return (
       <div className={`space-y-5 overflow-y-auto `}>
@@ -1541,6 +1741,12 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
                                     setData = gridInstance.getData();
 
                                     setGridDatas6(setData);
+                                  } else if (index === 5) {
+                                    const gridInstance = gridRef7.current.getInstance();
+                                    gridInstance.blur();
+                                    setData = gridInstance.getData();
+
+                                    setGridDatas7(setData);
                                   }
 
                                  handleTabIndex(index);
@@ -1561,6 +1767,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
                      <div className={`w-1/3 ${tabIndex === 4 ? " " : "hidden"}`} ref={gridContainerRef6}>{grid6()}</div>
                      <div className={`w-2/3 ${tabIndex === 4 ? " " : "hidden"}`}>{inputDiv()} </div>
                   </div>
+                  <div className={`w-2/3 ${tabIndex === 5 ? " " : "hidden"}`} ref={gridContainerRef7}>{grid7()}</div>
                </div>
          </div>
          {ModalDiv()}

@@ -54,6 +54,7 @@ class CustomMUISelectEditor {
       );
 
       const handleChange = (event: any, option: SelectOption | null) => {
+  
         setSelectedOption(option);
         if (option) {
           this.el.setAttribute("data-selected-value", option.value);

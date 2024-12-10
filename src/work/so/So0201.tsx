@@ -2,7 +2,7 @@ import { on } from "events";
 import { React, useEffect, useState, useRef, useCallback, initChoice, 
    updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
    reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, SelectSearch, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp, DateRangePickerComp, date, InputSearchComp, commas,
-    RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, formatCardNumber, formatExpiryDate, getGridCheckedDatas2 } from "../../comp/Import";
+    RadioGroup, TextArea, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, formatCardNumber, formatExpiryDate, getGridCheckedDatas2 } from "../../comp/Import";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ReactSelectEditor";
 
@@ -83,6 +83,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       zzFU0004 : [], // 청구구분
       zzFU0005 : [], // 유무상구분
       zzFU0006 : [], // 무상사유
+      zzFU0007 : [], // 결제방법
    });
 
    const onInputChange = (name: string, value: any) => {
@@ -103,6 +104,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
           ZZ_CODE('FU0004');
           ZZ_CODE('FU0005');
           ZZ_CODE('FU0006');
+          ZZ_CODE('FU0007');
       
       } catch (error) {
       console.error("setGridData Error:", error);
@@ -199,6 +201,17 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          gridInstance2.refreshLayout();
       }
    }, [inputValues.zzFU0006]);
+
+   useEffect(() => {
+
+      if (inputValues.zzFU0007) {
+         let gridInstance = gridRef5.current.getInstance();
+         let column = gridInstance.getColumn("payType");
+         let zzFU0007 = inputValues.zzFU0007.filter((item:any) => item.value !== "999");
+         column.editor.options.listItems = zzFU0007;
+         gridInstance.refreshLayout();
+      }
+   }, [inputValues.zzFU0007]);
 
    //Grid 데이터 설정
    useEffect(() => {
@@ -333,7 +346,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          
       }
 
-   }, [gridDatas2]);
+   }, [inputValues.dealType, gridDatas2]);
 
    useEffect(() => {
       if (gridRef3.current && gridDatas3) {
@@ -405,6 +418,18 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    
          grid7.on('click', async (e:any) => {                     
             if (e.columnName === 'tsBpBtn') {
+               const poBpCd = grid7.getValue(e.rowKey, 'poBpCd'); // 발주지점
+               const invQty = grid7.getValue(e.rowKey, 'invQty'); // 수량
+
+               if(invQty === null || invQty > 0) {
+                  return;
+               }
+
+               if(!poBpCd) {
+                  alertSwal("", "발주지점을 선택해주세요.", "warning");
+                  return;
+               }
+
                const soQty = grid7.getValue(e.rowKey, 'soQty'); // 수량
                const itemCd = grid7.getValue(e.rowKey, 'itemCd'); // 품목 코드
                const branchGroup = grid7.getValue(e.rowKey, 'branchGroup'); // 지점 그룹
@@ -540,6 +565,13 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       }
    }, [gridDatasP6]);
 
+   useEffect(() => {
+
+      console.log(inputValues.payType);
+      
+     
+   }, [inputValues.payType]);
+
    //---------------------- api -----------------------------
    const ZZ_CODE = async (majorCode:any) => {   
          const param={ 
@@ -560,6 +592,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          if(majorCode === 'FU0004') onInputChange("zzFU0004", formattedResult);
          if(majorCode === 'FU0005') onInputChange("zzFU0005", formattedResult);
          if(majorCode === 'FU0006') onInputChange("zzFU0006", formattedResult);         
+         if(majorCode === 'FU0007') onInputChange("zzFU0007", formattedResult);         
    
          return formattedResult;
    };
@@ -633,6 +666,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       try {  
          const data = JSON.stringify(param);
          const result = await fetchPost(`SO0201_S10`, { data });
+
+         console.log(data);
 
          // 'MANDATORY_YN' 값이 'Y'인 것만 체크된 상태로 설정
          let filteredData = result.map((row:any) => ({
@@ -765,6 +800,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange('contNo', result[0].contNo);
       onInputChange('subCode', result[0].subCode);
       onInputChange('hsCd', result[0].hsCd);
+      onInputChange('itemType', result[0].itemType);
       onInputChange('deptNm', result[0].deptNm);
       onInputChange('roleNm', result[0].roleNm);
       onInputChange('dlvyHopeDt', result[0].dlvyHopeDt);
@@ -885,7 +921,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
   const addGridRow2 = () => {
       let grid = gridRef5.current.getInstance();
 
-      grid.appendRow({ useYn: "Y", coCd: "100", isNew: true, payType: "FU0019" }, { at: 0 });
+      grid.appendRow({ useYn: "Y", coCd: "100", isNew: true, sysDiv: "WEB", payYn: "FU0021", soNo: inputValues.soNo }, { at: 0 });
       grid.focusAt(0, 1, true);
    }; 
 
@@ -909,7 +945,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
   const addGridRow3 = () => {
       let grid = gridRef6.current.getInstance();
 
-      grid.appendRow({ useYn: "Y", coCd: "100", isNew: true, payType: "FU0019" }, { at: 0 });
+      grid.appendRow({ useYn: "Y", coCd: "100", isNew: true }, { at: 0 });
       grid.focusAt(0, 1, true);
    }; 
 
@@ -1096,9 +1132,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
    // 거래처팝업 더블클릭
    const handleDblClick2 = async () => {
-      onInputChange('subCode', '');
-      onInputChange('hsCd', '');
-
       const gridInstance = gridRefP2.current.getInstance();
       const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
 
@@ -1106,6 +1139,14 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       const bpNm = gridInstance.getValue(rowKey, "bpNm"); // 해당 rowKey에서 bpNm 값을 가져옴
       const contNo = gridInstance.getValue(rowKey, "contNo"); // 해당 rowKey에서 bpNm 값을 가져옴
       const mouYn = gridInstance.getValue(rowKey, "mouYn"); // 해당 rowKey에서 bpNm 값을 가져옴
+
+      if (!contNo) {
+         alertSwal("거래처", "계약번호가 없습니다. 계약을 확인 해주세요.", "warning");
+         return;
+      }
+
+      onInputChange('subCode', '');
+      onInputChange('hsCd', '');
 
       // InputSearchComp1에 값 설정
       onInputChange('bpNm', bpNm);
@@ -1142,7 +1183,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          onInputChange('dlvyNm', dlvyNm);
          onInputChange('dlvyAddr', addr1);
 
-         await SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: dlvyCd, dealType: inputValues.dealType});
+         await SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, itemType: inputValues.itemType, dlvyCd: dlvyCd, dealType: inputValues.dealType});
 
          setIsOpen3(false);
       };
@@ -1274,6 +1315,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       if (result.length === 1) {
             onInputChange('subCode', '');
             onInputChange('hsCd', '');
+            onInputChange('itemType', '');
 
             const bpCd = result[0].bpCd 
             const bpNm = result[0].bpNm
@@ -1350,7 +1392,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                      onInputChange('dlvyNm', dlvyNm);
                      onInputChange('dlvyAddr', addr1);
                      
-                     SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: dlvyCd, dealType: inputValues.dealType});
+                     SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, itemType: inputValues.itemType, dlvyCd: dlvyCd, dealType: inputValues.dealType});
                   } else if (result.isDismissed) {
                      onInputChange('dlvyNm', inputValues.preDlvyNm);
                      return;
@@ -1361,7 +1403,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                onInputChange('dlvyNm', dlvyNm);
                onInputChange('dlvyAddr', addr1);
 
-               SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: dlvyCd, dealType: inputValues.dealType});
+               SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, itemType: inputValues.itemType, dlvyCd: dlvyCd, dealType: inputValues.dealType});
             }
          } else {
             await setIsOpen3(true);
@@ -1412,40 +1454,65 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       }, 100);
    };
 
-   //grid 포커스변경시
+   // 결제처리 탭
+   const afterChange = async ( ev : any) => {
+    // console.log(ev);
+      // if (rowKey !== null && gridRef5.current) {
+      //   const grid = gridRef5.current.getInstance();
+      //   const rowData = grid.getRow(rowKey);
+    
+      //   if (rowData && rowData.amt) {
+      //     const vatRate = 0.1; // 부가세율 (10%)
+      //     const amt = parseInt(rowData.amt, 10) || 0; // amt를 정수로 변환
+    
+      //     // 공급가액 및 부가세액 계산
+      //     const netAmt = Math.round(amt / (1 + vatRate)); // 공급가액
+      //     const vatAmt = amt - netAmt; // 부가세액
+    
+      //     // 계산된 값 업데이트
+      //     grid.setValue(rowKey, 'netAmt', netAmt); // 공급가액
+      //     grid.setValue(rowKey, 'vatAmt', vatAmt); // 부가세액
+      //   }
+      // }
+    };
+
+    const handleEditingFinish = async (ev: any) => {
+      console.log(ev);
+      // const grid = gridRef5.current.getInstance();
+      // const { rowKey, columnName, value } = ev;
+
+      // if (columnName === 'payAmt') {
+      //    setPayAmt();
+      // }
+   }
+
+
+   // 결제처리 탭 grid 포커스변경시
    const handleFocusChange = async ({ rowKey }: any) => {
       if (rowKey !== null && gridRef5.current) {
          const grid = gridRef5.current.getInstance();
          const rowData = grid.getRow(rowKey);
 
+        
+
+        
          if (rowData) {
-            // 새로운 inputValues 상태를 생성
-            const newInputValues = { ...inputValues };
-
             Object.entries(rowData).forEach(([key, value]) => {
-                  if (key === "payYn") {
-                     setTimeout(function () {
-                        refs.payYn.current?.setChoiceByValue(value);
-                     }, 100);
-                  }
-                // inputValues 상태에 값 설정
-                newInputValues[key] = value;
-            });
+               onInputChange(key, value);
+            }); 
 
-            //상태 업데이트
-            setInputValues(newInputValues);
-
-            // payDiv 값에 따라 다른 InputDiv 설정
             if (rowData.payType === 'FU0019') {
                setCurrentInputDiv(inputDiv3());
-           } else if (rowData.payType === 'FU0020') {
-               setCurrentInputDiv(inputDiv4()); // inputDiv4 함수가 정의되어 있다고 가정
-           } else {
-               setCurrentInputDiv(null); // 아무것도 표시하지 않음
-           }
-        }
+            } else if (rowData.payType === 'FU0020') {
+               setCurrentInputDiv(inputDiv4());
+            } else {
+               setCurrentInputDiv(null);         
+            }
+         }
+
       }
    };
+   
 
    // grid 포커스 변경 시
    const handleFocusChange2 = async ({ rowKey }: any) => {
@@ -1568,7 +1635,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       const formattedValue = formatCardNumber(inputValue);
 
       // 상태 업데이트
-      onInputChange('cardNo', formattedValue);
+      return formattedValue;
   };
 
   // 유효년월포맷
@@ -1579,7 +1646,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       const formattedValue = formatExpiryDate(inputValue);
 
       // 상태 업데이트
-      onInputChange('expDt', formattedValue);
+      onInputChange('cardExpDate', formattedValue);
    };
 
    // 결제대상금액
@@ -1601,6 +1668,12 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       // 합계 금액을 onInputChange로 설정
       onInputChange('payAmt', totalSoAmt);
    }
+
+   const setChangeGridData = (columnName: string, value: any) => {
+      const grid = gridRef5.current.getInstance();
+      const { rowKey } = grid.getFocusedCell();
+      grid.setValue(rowKey, columnName, value, false);
+   };
    //-------------------div--------------------------
    //주문 팝업 div
    const modalSearchDiv = () => (
@@ -1767,7 +1840,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          </div>
 
          <div className="space-y-5">
-            <div className="grid grid-cols-2  gap-3  justify-around items-center pr-2 pb-[23px]">
+            <div className="grid grid-cols-2  gap-3  justify-around items-center pr-2">
                <InputSearchComp1 value={inputValues.soNo} readOnly={true} title="주문번호" target="soNo" handleInputSearch={handleInputSearch} />
                <SelectSearch title="접수구분" 
                               value={inputValues.rcptMeth}
@@ -1818,10 +1891,40 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                         }}   />               
                <SelectSearch title="재직구분" 
                               value={inputValues.subCode}
-                              onChange={async (label, value) => {
-                                    onInputChange('subCode', value);
-                                    onInputChange('hsCd', '');                                    
-                                 }}   
+                              onChange={async (label, value) => {                                       
+                                    const grid = gridRef2.current.getInstance();
+                                    const firstRow = grid.getRow(0); // 첫 번째 행 가져오기 
+
+                                    const updateItemType = async (value:any) => {
+                                       onInputChange('subCode', value);
+                                       onInputChange('subCodeNm', label);
+                                       onInputChange('hsCd', '');      
+                                       onInputChange('itemType', '');
+   
+                                       await SO0201_S10({
+                                       soNo: inputValues.soNo, 
+                                       bpCd: inputValues.soldToParty,
+                                       contNo: inputValues.contNo,
+                                       subCode: inputValues.subCode,
+                                       hsCd: '',
+                                       itemType: '',
+                                       dlvyCd: inputValues.dlvyCd,
+                                       dealType: inputValues.dealType
+                                       });
+                                    };
+                                    
+                                    if (firstRow && firstRow.chkYn === 'Y') {
+                                       alertSwal("상품조회", "계약조건이 변경되어 상품정보가 삭제 후 다시 조회 됩니다. 계속 하시겠습니까?", "warning", true).then(async (result) => {
+                                       if (result.isConfirmed) {
+                                          await updateItemType(value);
+                                       } else if (result.isDismissed) {
+                                          //refs.hsCd.current.setChoiceByValue(inputValues.hsCd);
+                                       }
+                                       });
+                                    } else {
+                                       await updateItemType(value);
+                                    }
+                                 }}  
 
                               //초기값 세팅시
                               stringify={true}
@@ -1839,6 +1942,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
                                  const updateHSCode = async (value:any) => {
                                     onInputChange('hsCd', value);
+                                    onInputChange('itemType', '');  
 
                                     let hsCode = await ZZ_CONT_INFO({ 
                                     contNo: inputValues.contNo, 
@@ -1851,16 +1955,18 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                                     const foundhsType = foundItem ? foundItem.hsType : null;
 
                                     onInputChange('hsType', foundhsType);
-
+         
                                     await SO0201_S10({
-                                    soNo: inputValues.soNo, 
-                                    bpCd: inputValues.soldToParty,
-                                    contNo: inputValues.contNo,
-                                    subCode: inputValues.subCode,
-                                    hsCd: value,
-                                    dlvyCd: inputValues.dlvyCd,
-                                    dealType: inputValues.dealType
-                                    });
+                                       soNo: inputValues.soNo, 
+                                       bpCd: inputValues.soldToParty,
+                                       contNo: inputValues.contNo,
+                                       subCode: inputValues.subCode,
+                                       hsCd: value,
+                                       itemType: '',
+                                       dlvyCd: inputValues.dlvyCd,
+                                       dealType: inputValues.dealType
+                                       });
+                                    
                                  };
 
                                  if (firstRow && firstRow.chkYn === 'Y') {
@@ -1884,6 +1990,55 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                                        searchDiv : 'HS' }}
                               procedure="ZZ_CONT_INFO"  dataKey={{ label: 'hsNm', value: 'hsCode' }} 
                />
+               </div>
+               <div className="grid grid-cols-1 pr-2">
+                     <SelectSearch title="지원타입" 
+                                    value={inputValues.itemType}
+                                    minWidth="80px"
+                                    layout="flex"
+                                    onChange={async (label, value) => {
+                                       const grid = gridRef2.current.getInstance();
+                                       const firstRow = grid.getRow(0); // 첫 번째 행 가져오기 
+
+                                       const updateItemType = async (value:any) => {
+                                          onInputChange('itemType', value);
+      
+                                          await SO0201_S10({
+                                          soNo: inputValues.soNo, 
+                                          bpCd: inputValues.soldToParty,
+                                          contNo: inputValues.contNo,
+                                          subCode: inputValues.subCode,
+                                          hsCd: inputValues.hsCd,
+                                          itemType: value,
+                                          dlvyCd: inputValues.dlvyCd,
+                                          dealType: inputValues.dealType
+                                          });
+                                       };
+                                       
+                                       if (firstRow && firstRow.chkYn === 'Y') {
+                                          alertSwal("상품조회", "계약조건이 변경되어 상품정보가 삭제 후 다시 조회 됩니다. 계속 하시겠습니까?", "warning", true).then(async (result) => {
+                                          if (result.isConfirmed) {
+                                             await updateItemType(value);
+                                          } else if (result.isDismissed) {
+                                             //refs.hsCd.current.setChoiceByValue(inputValues.hsCd);
+                                          }
+                                          });
+                                       } else {
+                                          await updateItemType(value);
+                                       }
+                                    }}   
+
+                                    //초기값 세팅시
+                                    stringify={true}
+                                    param={{ contNo : inputValues.contNo,
+                                             bpCd : inputValues.soldToParty,
+                                             subCode : inputValues.subCode,
+                                             hsCd : inputValues.hsCd,
+                                             searchDiv : 'ITEM_TYPE' }}
+                                    procedure="ZZ_CONT_INFO"  dataKey={{ label: 'itemTypeNm', value: 'itemType' }} 
+                  /> 
+               </div>
+               <div className="grid grid-cols-2 pb-2 pr-2">
                <InputComp value={inputValues.deptNm} title="부서" target="deptNm" 
                           onChange={(e) => {
                            onInputChange('deptNm', e);                           
@@ -1891,13 +2046,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                <InputComp value={inputValues.roleNm} title="직급" target="roleNm" 
                           onChange={(e) => {
                            onInputChange('roleNm', e);                           
-                        }}   />
-               <Checkbox  title = "MOU 여부" value={inputValues.mouYn} layout="flex" 
-                           minWidth="80px"
-                           readOnly={true}
-                           checked={inputValues.mouYn == 'Y'} 
-                          onChange={(e) => {
-                                    onInputChange('mouYn', e)}} />
+                        }}   />               
             </div>
          </div>
       </div>
@@ -1975,9 +2124,15 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                                 }} />    
                <Checkbox  title = "패키지 진행여부" value={inputValues.pkgYn} layout="flex" 
                            minWidth="100px"
-                           checked={inputValues.pkgYn == 'Y'} 
+                           checked={inputValues.pkgYn === 'Y'} 
                           onChange={(e) => {
-                                    onInputChange('pkgYn', e)}} />           
+                                    onInputChange('pkgYn', e)}} />  
+               <Checkbox  title = "MOU 여부" value={inputValues.mouYn} layout="flex" 
+                           minWidth="80px"
+                           readOnly={true}
+                           checked={inputValues.mouYn === 'Y'} 
+                          onChange={(e) => {
+                                    onInputChange('mouYn', e)}} />        
             </div>  
          </div>
       </div>
@@ -1985,13 +2140,13 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
    // 카드결제
    const inputDiv3 = () => (
-      <div className="border rounded-md p-2 space-y-2 input text-sm">
+      <div className="border rounded-md p-2 space-y-4 input text-sm">
          <div className="flex justify-between items-center  border-b">
             <div className="flex items-center space-x-1 text-orange-500 p-2 ">
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
-               <div className="">카드결제</div>
+               <div className="pb-2">카드결제</div>
             </div>
             <div className="flex space-x-2">
                <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
@@ -2010,53 +2165,68 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          </div>
 
          <div className="">
-            <div className="grid grid-cols-3  gap-3 justify-around items-center pt-4 pb-4">
-               <SelectSearchComp title="결제상태" 
-                              ref={refs.payYn}
+            <div className="grid grid-cols-4  gap-3 justify-around items-center pt-4 pb-4">
+               <SelectSearch title="결제상태" 
                               value={inputValues.payYn}
+                              addData={"empty"}
                               onChange={(label, value) => {
                                     onInputChange('payYn', value);
+                                    setChangeGridData("payYn", value);
                                  }}
-                              
-                              //datas={[{value : 'Y', label : '결제완료'},{value : 'N', label : '미결제'}]}
+
                               //초기값 세팅시
                               param={{ coCd: "999", majorCode: "FU0008", div: "-999" }}
                               procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
                />
                <InputComp value={inputValues.amt} title="결제금액" target="amt" type="number"
-                          onChange={(e) => {
-                              onInputChange('amt', e);  
+                          onChange={ (e) => {
+                              // onInputChange('amt', e);  
+                              // setChangeGridData("amt", e);
+
+                              // const amt = parseInt(e, 10) || 0; // 소수점 없는 정수로 변환
+                              // const netAmt = Math.floor(amt / 1.1); // 공급가액 계산 (내림 처리)
+                              // const vatAmt = amt - netAmt; // 부가세액 계산 (총액 - 공급가액)
+
+                              // 공급가액(netAmt)과 부가세액(vatAmt) 설정
+                             // setChangeGridData("netAmt", netAmt);
+                              onInputChange('netAmt', e);
+                              //setChangeGridData("vatAmt", vatAmt);
+                              onInputChange('vatAmt', e);
                           }}/>   
+
+               <InputComp value={inputValues.netAmt} title="공급가액" target="netAmt" type="number" readOnly={true}
+                          /> 
+               <InputComp value={inputValues.vatAmt} title="부가세액" target="vatAmt" type="number" readOnly={true}
+                          /> 
             </div>
-            <div className="grid grid-cols-3  gap-3  justify-around items-center pb-4">
+            <div className="grid grid-cols-4  gap-3  justify-around items-center pb-4">
                <InputComp value={inputValues.cardNo} title="카드번호" target="cardNo" 
                           onChange={(e) => {
-                              onCardNumberChange(e);                            
+                              const cardNo = onCardNumberChange(e);  
+
+                              console.log(cardNo);
+                              onInputChange('cardNo', cardNo);     
+                              setChangeGridData("cardNo", cardNo);                          
                           }}/>    
-               <InputComp value={inputValues.expDt} title="유효기간" target="expDt" 
+               <InputComp value={inputValues.cardExpDate} title="유효기간" target="cardExpDate" 
                           onChange={(e) => {
-                              onExpiryDateChange(e);                        
+                              onExpiryDateChange(e);     
+                              setChangeGridData("cardExpDate", e);                       
                           }}/>  
+               <InputComp value={inputValues.authNo} title="승인번호" target="authNo" readOnly={true}
+                          onChange={(e) => {
+                              onInputChange('authNo', e);                           
+                          }}/> 
+               <InputComp value={inputValues.cancelMbrRefNo} title="취소번호" target="cancelMbrRefNo" readOnly={true}
+                          onChange={(e) => {
+                              onInputChange('cancelMbrRefNo', e);                           
+                          }}/> 
             </div>
-            <div className="pb-4"> 
-               <InputComp value={inputValues.remark} title="기타메모" target="remark" 
+            <div className="pb-2"> 
+               <TextArea value={inputValues.remark} layout="flex" minWidth="70px" title="기타메모" target="remark" 
                           onChange={(e) => {
                               onInputChange('remark', e);                           
                           }}/>   
-            </div>
-            <div className="grid grid-cols-3  gap-3  justify-around items-center pb-2">
-               <InputComp value={inputValues.appNo} title="승인번호" target="appNo" 
-                          onChange={(e) => {
-                              onInputChange('appNo', e);                           
-                          }}/> 
-               <InputComp value={inputValues.mbrRefNo} title="주문번호" target="mbrRefNo" 
-                          onChange={(e) => {
-                              onInputChange('mbrRefNo', e);                           
-                          }}/> 
-               <InputComp value={inputValues.cancelMbrRefNo} title="취소번호" target="cancelMbrRefNo" 
-                          onChange={(e) => {
-                              onInputChange('cancelMbrRefNo', e);                           
-                          }}/>  
             </div>
          </div>
       </div>
@@ -2090,28 +2260,27 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
          <div className="">
             <div className="grid grid-cols-3  gap-3 justify-around items-center pt-4 pb-4">
-               <SelectSearchComp title="결제상태" 
-                              ref={refs.payYn}
-                              value={inputValues.payYn}
+               <SelectSearch title="결제상태" 
+                              value={inputValues.payYn2}
                               onChange={(label, value) => {
-                                    onInputChange('payYn', value);
+                                    onInputChange('payYn2', value);
                                  }}
 
                               //초기값 세팅시
                               param={{ coCd: "999", majorCode: "FU0007", div: "-999" }}
                               procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
                />
-               <InputComp value={inputValues.amt} title="결제금액" target="amt" type="number"
+               <InputComp value={inputValues.amt2} title="결제금액" target="amt2" type="number"
                           onChange={(e) => {
                               onInputChange('amt', e);  
                           }}/>   
             </div>
             <div className="grid grid-cols-3  gap-3  justify-around items-center pb-4">
-               <InputComp value={inputValues.cardNo} title="카드번호" target="cardNo" 
+               <InputComp value={inputValues.cardNo2} title="카드번호" target="cardNo2" 
                           onChange={(e) => {
                               onCardNumberChange(e);                            
                           }}/>    
-               <InputComp value={inputValues.expDt} title="유효기간" target="expDt" 
+               <InputComp value={inputValues.expDt2} title="유효기간" target="expDt2" 
                           onChange={(e) => {
                               onExpiryDateChange(e);                        
                           }}/>  
@@ -2174,6 +2343,36 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "", name: "branchGroup", hidden: true}, 
    ];
 
+   const summary = {
+      height: 40,
+      position: 'top', 
+      columnContent: {
+         soPrice: {
+            template: (e:any) => {
+                return `합계 : `;
+            }
+         },
+         soAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },   
+         netAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+         vatAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         }, 
+      }
+   }
+
    const grid2 = () => (
       <div className="border rounded-md p-2 space-y-2 ">
          <div className="flex justify-between items-center text-sm">
@@ -2189,14 +2388,14 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                               if (firstRow && firstRow.chkYn === 'Y') {
                                  alertSwal("상품조회", "계약조건이 변경되어 상품정보가 삭제 후 다시 조회 됩니다. 계속 하시겠습니까?", "warning", true).then((result) => {
                                     if (result.isConfirmed) {
-                                       SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: inputValues.dlvyCd, dealType: e});
+                                       SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, itemType: inputValues.itemType, dlvyCd: inputValues.dlvyCd, dealType: e});
                                     } else if (result.isDismissed) {
                                        const newDealType = e === 'A' ? 'B' : 'A';
                                        onInputChange('dealType', newDealType);
                                     }
                                 });
                               } else {
-                                 SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, dlvyCd: inputValues.dlvyCd, dealType: e});
+                                 SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, itemType: inputValues.itemType, dlvyCd: inputValues.dlvyCd, dealType: e});
                               }                            
                            }}  
                            onClick={() => {console.log('onClick')}} />
@@ -2215,7 +2414,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             )}
          </div>
 
-         <TuiGrid01 gridRef={gridRef2} columns={columns2} handleAfterChange={handleAfterChange} rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-750}             
+         <TuiGrid01 gridRef={gridRef2} columns={columns2} summary={summary} handleAfterChange={handleAfterChange} rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-650}             
          />
       </div>
    );
@@ -2234,6 +2433,24 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "발주금액", name: "poAmt", align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
    ];
 
+   const summary2 = {
+      height: 40,
+      position: 'top', 
+      columnContent: {
+         poPrice: {
+            template: (e:any) => {
+                return `합계 : `;
+            }
+         },
+         poAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+      }
+   }
+
    const grid3 = () => (
       <div className="border rounded-md p-4 space-y-4">
          <div className="flex justify-between items-center text-sm">
@@ -2245,7 +2462,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             </div>           
          </div>
 
-         <TuiGrid01 gridRef={gridRef3} columns={columns3} handleAfterChange={handleAfterChange2} rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-750}/>
+         <TuiGrid01 gridRef={gridRef3} columns={columns3} summary={summary2} handleAfterChange={handleAfterChange2} rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-650}/>
       </div>
    );
 
@@ -2267,31 +2484,35 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             </div>           
          </div>
 
-         <TuiGrid01 gridRef={gridRef4} columns={columns4} perPageYn = {false} height={window.innerHeight-750}/>
+         <TuiGrid01 gridRef={gridRef4} columns={columns4} perPageYn = {false} height={window.innerHeight-650}/>
       </div>
    );
 
    const columns5 = [
       { header: "주문번호", name: "soNo", hidden: true },
-      { header: "순번", name: "soSeq", hidden: true },
-      { header: "결제방법", name: "payType", width: 150, align: "center"},
+      { header: "순번", name: "paySeq", hidden: true },
+      { header: "결제방법", name: "payType", width: 150, align: "center", formatter: "listItemText",  editor: { type: ChoicesEditor, 
+         options: { listItems: inputValues.zzFU0007 ,    onChange: (value: string) => {
+            if (value === 'FU0019') {
+               setCurrentInputDiv(inputDiv3());
+            } else if (value === 'FU0020') {
+               setCurrentInputDiv(inputDiv4());
+            } else {
+               setCurrentInputDiv(null);            }
+       
+          },
+
+       } }  },
       { header: "결제금액", name: "amt", width: 150, align: "right", formatter: function(e: any) {if(e.value){return commas(e.value)}}},
       { header: "저장유무", name: "saveYn", align: "center" },
-      { header: "", name: "netAmt", hidden: true },
-      { header: "", name: "vatAmt", hidden: true },
+      { header: "공급", name: "netAmt" },
+      { header: "부가", name: "vatAmt" },
       { header: "", name: "payYn", hidden: true },
-      { header: "", name: "mbrNo", hidden: true },
-      { header: "", name: "mbrRefNo", hidden: true },
-      { header: "", name: "refNo", hidden: true },
-      { header: "", name: "tranDate", hidden: true },
-      { header: "", name: "payType2", hidden: true },
-      { header: "", name: "tranTime", hidden: true },
-      { header: "", name: "appNo", hidden: true },
-      { header: "", name: "cancelMbrRefNo", hidden: true },
-      { header: "", name: "cancelRefNo", hidden: true },
-      { header: "", name: "cancelTranDate", hidden: true },
-      { header: "", name: "cancelTranTime", hidden: true },
+      { header: "", name: "authNo", hidden: true },
+      { header: "", name: "cancelMxIssueNo", hidden: true },
       { header: "", name: "remark", hidden: true },
+      { header: "", name: "cardNo" },
+      { header: "", name: "cardExpDate", hidden: true },
    ];
 
    const grid5 = () => (
@@ -2321,7 +2542,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             </div>      
          </div>
 
-         <TuiGrid01 gridRef={gridRef5} columns={columns5} handleFocusChange={handleFocusChange} perPageYn = {false} height={window.innerHeight-785}/>
+         <TuiGrid01 gridRef={gridRef5} columns={columns5} handleFocusChange={handleFocusChange} perPageYn = {false} height={window.innerHeight-650}/>
       </div>
    );
 
@@ -2350,7 +2571,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             </div>        
          </div>
 
-         <TuiGrid01 gridRef={gridRef6} columns={columns6} perPageYn = {false} height={window.innerHeight-750}/>
+         <TuiGrid01 gridRef={gridRef6} columns={columns6} perPageYn = {false} height={window.innerHeight-650}/>
       </div>
    );
 
@@ -2362,10 +2583,16 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "수량", name: "soQty", align:"center", width: 60, formatter: function(e: any) {if(e.value){return commas(e.value)}}},
       { header: "도착지점코드", name: "poBpCd", align : "center", width: 100 },
       { header: "도착지점명", name: "poBpNm", width: 250 },
-      { header: "가용재고", name: "invQty", align:"center", width: 80, formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      // { header: "가용재고", name: "invQty", align:"center", width: 80, formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "가용재고", name: "invQty", width: 80, align:"center"},
       { header: "출발지점코드", name: "tsBpCd", align : "center", width: 100 },
       { header: "출발지점명", name: "tsBpNm", align : "center", width: 300 },
-      { header: "지점선택", name: "tsBpBtn", width: 80, align: "center", formatter: () => {
+      { header: "지점선택", name: "tsBpBtn", width: 80, align: "center", formatter: (e: any) => {
+         // invQty 값이 0 이하일 때만 버튼 표시
+         const row = e.row; // 현재 행의 데이터
+         if (!row || row.invQty === null || row.invQty > 0) {
+            return ""; // 버튼 숨김
+         }
          return `<button class="bg-blue-500 text-white text-xs rounded-md px-2 py-1 shadow custom-button">선택</button>`;
       }},
       { header: "배송비", name: "moveCost", align:"right", editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
@@ -2382,7 +2609,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             </div>           
          </div>
 
-         <TuiGrid01 gridRef={gridRef7} columns={columns7} handleFocusChange={handleFocusChange2} handleAfterChange={handleAfterChange3} rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-750}/>
+         <TuiGrid01 gridRef={gridRef7} columns={columns7} handleFocusChange={handleFocusChange2} handleAfterChange={handleAfterChange3} rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-650}/>
       </div>
    );
 
@@ -2390,13 +2617,13 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "주문번호", name: "soNo", hidden: true },
       { header: "순번", name: "soSeq", hidden: true },
       { header: "품목코드", name: "itemCd", width: 100, align: "center" },
-      { header: "품목명", name: "itemNm", width: 250},
-      { header: "수량", name: "soQty", align:"center", width: 60, formatter: function(e: any) {if(e.value){return commas(e.value)}}},
+      { header: "품목명", name: "itemNm", width: 250},      
       { header: "도착지점코드", name: "poBpCd", align : "center", width: 100 },
       { header: "도착지점명", name: "poBpNm", align : "center", width: 150 },
       { header: "출발지점코드", name: "tsBpCd", align : "center", width: 100 },
       { header: "출발지점명", name: "tsBpNm", align : "center", width: 150 },
       { header: "배송비", name: "moveCost", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "수량", name: "soQty", align:"center", width: 60, formatter: function(e: any) {if(e.value){return commas(e.value)}}},
       { header: "단가", name: "soPrice", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
       { header: "금액", name: "soAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
       { header: "공급가액", name: "netAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
@@ -2404,6 +2631,36 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "유/무상", name: "payDiv", width: 70, align:"center", formatter: "listItemText",  editor: { type: 'select', options: { listItems: inputValues.zzFU0005  } }  },
       { header: "무상사유", name: "reason", formatter: "listItemText",  editor: { type: 'select', options: { listItems: inputValues.zzFU0006  } }  },      
    ];
+
+   const summary3 = {
+      height: 40,
+      position: 'top', 
+      columnContent: {
+         soPrice: {
+            template: (e:any) => {
+                return `합계 : `;
+            }
+         },
+         soAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+         netAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+         vatAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+      }
+   }
 
    const grid8 = () => (
       <div className="border p-2 rounded-md space-y-4">            
@@ -2436,7 +2693,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             </div>      
          </div>
 
-         <TuiGrid01 gridRef={gridRef8} columns={columns8} rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-750}/>
+         <TuiGrid01 gridRef={gridRef8} columns={columns8} summary={summary3} rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-650}/>
       </div>
    );
 
