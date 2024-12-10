@@ -47,6 +47,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
    const [tabIndex, setTabIndex] = useState(0);
    const [currentInputDiv, setCurrentInputDiv] = useState<JSX.Element | null>(null);
+   const [inputDivVisible, setInputDivVisible] = useState(0);
 
    const refs = {
       rcptUserId: useRef<any>(null),
@@ -312,6 +313,18 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       }
    }, [inputValues.dealType, gridDatas2]);
 
+   
+    useEffect(() => {
+
+      if(inputValues.cardNo){
+
+         const cardNo = onCardNumberChange(inputValues.cardNo);  
+         onInputChange('cardNo', cardNo);     
+         setChangeGridData("cardNo", cardNo); 
+
+      }
+   }, [inputValues.cardNo]);
+
    // useEffect(() => {
    //   console.log(inputValues.dealType);
    //   if (inputValues.dealType === 'A' && gridRef2.current) {
@@ -565,12 +578,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       }
    }, [gridDatasP6]);
 
-   useEffect(() => {
-
-      console.log(inputValues.payType);
-      
-     
-   }, [inputValues.payType]);
 
    //---------------------- api -----------------------------
    const ZZ_CODE = async (majorCode:any) => {   
@@ -1486,32 +1493,37 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       // }
    }
 
+   // 상태 변경 감지
+useEffect(() => {
+   // inputValues가 변경될 때 로그 확인 또는 필요한 추가 작업 수행
+   console.log("Updated inputValues:", inputValues);
+}, [inputValues]);
+
 
    // 결제처리 탭 grid 포커스변경시
    const handleFocusChange = async ({ rowKey }: any) => {
       if (rowKey !== null && gridRef5.current) {
-         const grid = gridRef5.current.getInstance();
-         const rowData = grid.getRow(rowKey);
-
-        
-
-        
-         if (rowData) {
-            Object.entries(rowData).forEach(([key, value]) => {
+          const grid = gridRef5.current.getInstance();
+          const rowData = grid.getRow(rowKey);
+  
+          if (rowData) {
+              // InputDiv 설정
+              if (rowData.payType === 'FU0019') {
+                  setInputDivVisible(1);
+              } else if (rowData.payType === 'FU0020') {
+                  setInputDivVisible(2);
+              } else {
+                  setInputDivVisible(0);
+              }
+  
+              Object.entries(rowData).forEach(([key, value]) => {
                onInputChange(key, value);
-            }); 
-
-            if (rowData.payType === 'FU0019') {
-               setCurrentInputDiv(inputDiv3());
-            } else if (rowData.payType === 'FU0020') {
-               setCurrentInputDiv(inputDiv4());
-            } else {
-               setCurrentInputDiv(null);         
-            }
-         }
-
+            });
+           
+          }
       }
-   };
+  };
+  
    
 
    // grid 포커스 변경 시
@@ -2053,6 +2065,18 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    );
 
 
+   const payInputDiv = () => (
+
+      <div>
+         {inputDivVisible == 1 && inputDiv3()}
+         {inputDivVisible == 2 && inputDiv4()}
+
+      </div>
+      
+
+
+   );
+
    // 배송정보
    const inputDiv2 = () => (
       <div className="border rounded-md space-y-2 input text-sm">
@@ -2180,33 +2204,40 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                />
                <InputComp value={inputValues.amt} title="결제금액" target="amt" type="number"
                           onChange={ (e) => {
-                              // onInputChange('amt', e);  
-                              // setChangeGridData("amt", e);
+                              onInputChange('amt', e);  
+                               setChangeGridData("amt", e);
 
-                              // const amt = parseInt(e, 10) || 0; // 소수점 없는 정수로 변환
-                              // const netAmt = Math.floor(amt / 1.1); // 공급가액 계산 (내림 처리)
-                              // const vatAmt = amt - netAmt; // 부가세액 계산 (총액 - 공급가액)
+                               const amt = parseInt(e, 10) || 0; // 소수점 없는 정수로 변환
+                               const netAmt = Math.floor(amt / 1.1); // 공급가액 계산 (내림 처리)
+                               const vatAmt = amt - netAmt; // 부가세액 계산 (총액 - 공급가액)
 
                               // 공급가액(netAmt)과 부가세액(vatAmt) 설정
-                             // setChangeGridData("netAmt", netAmt);
-                              onInputChange('netAmt', e);
-                              //setChangeGridData("vatAmt", vatAmt);
-                              onInputChange('vatAmt', e);
+                              setChangeGridData("netAmt", netAmt);
+                              onInputChange('netAmt', netAmt);
+                              setChangeGridData("vatAmt", vatAmt);
+                              onInputChange('vatAmt', vatAmt);
                           }}/>   
 
                <InputComp value={inputValues.netAmt} title="공급가액" target="netAmt" type="number" readOnly={true}
+                           onChange={(e) => {
+                                 onInputChange('netAmt', e);
+                                 setChangeGridData("netAmt", e);  
+                           }
+                           }
                           /> 
                <InputComp value={inputValues.vatAmt} title="부가세액" target="vatAmt" type="number" readOnly={true}
+                 onChange={(e) => {
+                  onInputChange('vatAmt', e);
+                  setChangeGridData("vatAmt", e);  
+            }
+            }
                           /> 
             </div>
             <div className="grid grid-cols-4  gap-3  justify-around items-center pb-4">
                <InputComp value={inputValues.cardNo} title="카드번호" target="cardNo" 
                           onChange={(e) => {
-                              const cardNo = onCardNumberChange(e);  
+                           onInputChange('cardNo', e);     
 
-                              console.log(cardNo);
-                              onInputChange('cardNo', cardNo);     
-                              setChangeGridData("cardNo", cardNo);                          
                           }}/>    
                <InputComp value={inputValues.cardExpDate} title="유효기간" target="cardExpDate" 
                           onChange={(e) => {
@@ -2226,7 +2257,9 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                <TextArea value={inputValues.remark} layout="flex" minWidth="70px" title="기타메모" target="remark" 
                           onChange={(e) => {
                               onInputChange('remark', e);                           
+                              setChangeGridData("remark", e);
                           }}/>   
+                          
             </div>
          </div>
       </div>
@@ -2494,11 +2527,11 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "결제방법", name: "payType", width: 150, align: "center", formatter: "listItemText",  editor: { type: ChoicesEditor, 
          options: { listItems: inputValues.zzFU0007 ,    onChange: (value: string) => {
             if (value === 'FU0019') {
-               setCurrentInputDiv(inputDiv3());
+               setInputDivVisible(1);
             } else if (value === 'FU0020') {
-               setCurrentInputDiv(inputDiv4());
+               setInputDivVisible(2);
             } else {
-               setCurrentInputDiv(null);            }
+               setInputDivVisible(0);            }
        
           },
 
@@ -2510,7 +2543,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "", name: "payYn", hidden: true },
       { header: "", name: "authNo", hidden: true },
       { header: "", name: "cancelMxIssueNo", hidden: true },
-      { header: "", name: "remark", hidden: true },
+      { header: "", name: "remark", hidden: false },
       { header: "", name: "cardNo" },
       { header: "", name: "cardExpDate", hidden: true },
    ];
@@ -2971,7 +3004,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                   <div className={`w-full ${tabIndex === 2 ? " " : "hidden"}`} ref={gridContainerRef4}>{grid4()}</div>
                   <div className="w-full flex space-x-2">
                      <div className={`w-2/5 ${tabIndex === 3 ? " " : "hidden"}`} ref={gridContainerRef5}>{grid5()}</div>
-                     <div className={`w-3/5 ${tabIndex === 3 ? " " : "hidden"}`}>{currentInputDiv} </div>
+                     <div className={`w-3/5 ${tabIndex === 3 ? " " : "hidden"}`}>{payInputDiv()} </div>
                   </div>
                   <div className={`w-full ${tabIndex === 4 ? " " : "hidden"}`} ref={gridContainerRef6}>{grid6()}</div>
                   <div className={`w-full ${tabIndex === 5 ? " " : "hidden"}`} ref={gridContainerRef7}>{grid7()}</div>
