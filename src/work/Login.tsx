@@ -16,10 +16,17 @@ const Login = () => {
          pw: password,
       };
 
-      let result = await ZZ_USER_LOGIN(data);
+      let result = await ZZ_LOGIN_TOKEN(data);
+
+      //console.log(result);
+      
 
       if (result.result === "SUCCESS") {
          sessionStorage.setItem('loginInfo', JSON.stringify(result));
+         sessionStorage.setItem('accessToken', result.accesstoken);
+         sessionStorage.setItem('refreshToken', result.refreshtoken);
+
+         //console.log('accessToken',sessionStorage.getItem('accessToken'));
          navigate('/Main', { state: { result: result } });
       } else {
          setError("아이디 또는 비밀번호가 일치하지 않습니다.");
@@ -28,9 +35,9 @@ const Login = () => {
 
    //---------------------- api -----------------------------
 
-   const ZZ_USER_LOGIN = async (data: any) => {
+   const ZZ_LOGIN_TOKEN = async (data: any) => {
       try {
-         const result = await fetchPost(`ZZ_USER_LOGIN`, data);
+         const result = await fetchPost(`ZZ_LOGIN_TOKEN`, data);
          return result as any;
       } catch (error) {
          console.error("ZZ_USER_LOGIN Error:", error);

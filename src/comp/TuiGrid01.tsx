@@ -6,6 +6,7 @@ import { OptColumn } from "tui-grid/types/options";
 import TuiGrid from "tui-grid";
 import "../css/tuiGrid.css";
 import ChoicesEditor from "../util/ChoicesEditor";
+import DOMPurify from "dompurify";
 
 interface Props {
    columns: any[];
@@ -85,7 +86,17 @@ const getGridDatas = (gridRef: any) => {
       .concat(rows.deletedRows.map((e: any) => ({ ...e, status: "D" })))
       .concat(rows.updatedRows.map((e: any) => ({ ...e, status: "U" })));
 
-   return datas;
+   // 모든 데이터를 DOMPurify로 sanitize 처리
+   const sanitizedDatas = datas.map((data: any) =>
+      Object.fromEntries(
+         Object.entries(data).map(([key, value]) => [key, DOMPurify.sanitize(String(value))])
+      )
+   );
+
+   return sanitizedDatas;
+
+
+   
 };
 
 
@@ -127,7 +138,16 @@ const getGridCheckedDatas = (gridRef: any) => {
 
  
 
-   return datas;
+
+   
+   // 모든 데이터를 DOMPurify로 sanitize 처리
+   const sanitizedDatas = datas.map((data: any) =>
+      Object.fromEntries(
+         Object.entries(data).map(([key, value]) => [key, DOMPurify.sanitize(String(value))])
+      )
+   );
+
+   return sanitizedDatas;
 };
 
 const getGridCheckedDatas2 = (gridRef: any) => {
@@ -176,9 +196,13 @@ const getGridCheckedDatas2 = (gridRef: any) => {
       return checkedRow ? { ...data, status: "I" } : data;
    });
 
+   const sanitizedDatas = updatedDatas.map((data: any) =>
+   Object.fromEntries(
+      Object.entries(data).map(([key, value]) => [key, DOMPurify.sanitize(String(value))])
+      )
+   );
 
-
-   return updatedDatas;
+   return sanitizedDatas;
 };
 
 const TuiGrid01 = ({ columns, handleEditingStart, handleEditingFinish, handleFocusChange, handleAfterChange, handleClick, handleDblClick, beforeChange, afterChange, check, uncheck, afterRender, headerHeight = 40,

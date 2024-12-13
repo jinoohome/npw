@@ -2,7 +2,7 @@ import React, {forwardRef} from "react";
 import { commas, fetchPost } from "./Import";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { he } from "date-fns/locale";
-
+import DOMPurify from "dompurify";
 
 
 interface TextAreaProps {
@@ -50,6 +50,7 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
 
   const handleChange = (event: any) => {
     let newValue = event.target.value;
+    newValue = DOMPurify.sanitize(newValue);
     if (type === "number") {
        newValue = newValue.replace(/[^0-9]/g, "");
        if (setChangeGridData && target) {

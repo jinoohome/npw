@@ -9,6 +9,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { ko } from 'date-fns/locale'; 
 import '../css/datePicker.css';
 import { read } from "fs";
+import DOMPurify from "dompurify";
 
 
 
@@ -65,7 +66,9 @@ const InputComp = forwardRef<HTMLInputElement, InputCompProps>(
       }, [value, type]);
 
       const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-         let newValue = event.target.value.replace(/,/g, ''); // 포맷팅 제거된 값
+         //let newValue = event.target.value.replace(/,/g, ''); // 포맷팅 제거된 값
+         let newValue = DOMPurify.sanitize(event.target.value.replace(/,/g, '')); // Sanitize user input with DOMPurify
+         // 숫자 타입인 경우 숫자만 남기도록 정규식 처리
 
          if (type === "number") {
             if (setChangeGridData && target) {
@@ -150,13 +153,14 @@ interface Props1 {
 
 const InputComp1 = forwardRef<HTMLInputElement, Props1>(({ title, handleCallSearch, onChange, onkeyDown, readOnly, errorMsg, type }, ref) => {
    const handleChange = (event: any) => {
+
       let value = event.target.value;
       if (type === "number") {
          value = value.replace(/[^0-9]/g, "");
          value = commas(Number(value));
          event.target.value = value;
       } else {
-         event.target.value = value;
+         event.target.value = DOMPurify.sanitize(value); 
       }
       onChange && onChange(event);
    };
@@ -215,6 +219,7 @@ const InputComp2 = forwardRef<HTMLInputElement, Props2>(({ title, target, setCha
          value = commas(Number(value));
          event.target.value = value;
       } else {
+         value = DOMPurify.sanitize(value);
          setChangeGridData && setChangeGridData(target, value);
       }
       onChange && onChange(event);
