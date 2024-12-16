@@ -86,12 +86,28 @@ const getGridDatas = (gridRef: any) => {
       .concat(rows.deletedRows.map((e: any) => ({ ...e, status: "D" })))
       .concat(rows.updatedRows.map((e: any) => ({ ...e, status: "U" })));
 
+
    // 모든 데이터를 DOMPurify로 sanitize 처리
    const sanitizedDatas = datas.map((data: any) =>
       Object.fromEntries(
-         Object.entries(data).map(([key, value]) => [key, DOMPurify.sanitize(String(value))])
+         Object.entries(data).map(([key, value]) => {
+            if (value === null) {
+               // null 값 유지
+               return [key, null];
+            } else if (typeof value === "object" && value !== null) {
+               // 객체는 그대로 유지
+               return [key, value];
+            } else if (typeof value === "string") {
+               // 문자열에만 DOMPurify 적용
+               return [key, DOMPurify.sanitize(value)];
+            } else {
+               // 다른 타입 (숫자 등)은 그대로 유지
+               return [key, value];
+            }
+         })
       )
    );
+
 
    return sanitizedDatas;
 
@@ -143,7 +159,21 @@ const getGridCheckedDatas = (gridRef: any) => {
    // 모든 데이터를 DOMPurify로 sanitize 처리
    const sanitizedDatas = datas.map((data: any) =>
       Object.fromEntries(
-         Object.entries(data).map(([key, value]) => [key, DOMPurify.sanitize(String(value))])
+         Object.entries(data).map(([key, value]) => {
+            if (value === null) {
+               // null 값 유지
+               return [key, null];
+            } else if (typeof value === "object" && value !== null) {
+               // 객체는 그대로 유지
+               return [key, value];
+            } else if (typeof value === "string") {
+               // 문자열에만 DOMPurify 적용
+               return [key, DOMPurify.sanitize(value)];
+            } else {
+               // 다른 타입 (숫자 등)은 그대로 유지
+               return [key, value];
+            }
+         })
       )
    );
 
@@ -196,12 +226,27 @@ const getGridCheckedDatas2 = (gridRef: any) => {
       return checkedRow ? { ...data, status: "I" } : data;
    });
 
-   const sanitizedDatas = updatedDatas.map((data: any) =>
-   Object.fromEntries(
-      Object.entries(data).map(([key, value]) => [key, DOMPurify.sanitize(String(value))])
+
+
+   const sanitizedDatas = datas.map((data: any) =>
+      Object.fromEntries(
+         Object.entries(data).map(([key, value]) => {
+            if (value === null) {
+               // null 값 유지
+               return [key, null];
+            } else if (typeof value === "object" && value !== null) {
+               // 객체는 그대로 유지
+               return [key, value];
+            } else if (typeof value === "string") {
+               // 문자열에만 DOMPurify 적용
+               return [key, DOMPurify.sanitize(value)];
+            } else {
+               // 다른 타입 (숫자 등)은 그대로 유지
+               return [key, value];
+            }
+         })
       )
    );
-
    return sanitizedDatas;
 };
 
