@@ -638,6 +638,12 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       const gridInstance3 = type === "make" ?  gridRef3.current.getInstance() : gridRefP1.current.getInstance();
       const gridInstance4 = gridRef4.current.getInstance();
       const gridInstance7 = gridRef7.current.getInstance();
+      
+      if (gridInstance4.getRowCount() > 0) {
+         gridInstance4.blur();
+      }
+      
+
     
       // 포커스된 셀에서 데이터를 가져오기
       const focusedCell1 = gridInstance1.getFocusedCell();
@@ -672,14 +678,14 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
       return {
          coCd: row1?.coCd || "",
-         contNo: row1?.contNo || "",
+         contNo: row1?.contNo,
          hsType: row1?.hsType || row2?.hsType || "",
          hsTypeNm: row1?.hsTypeNm || row2?.hsTypeNm || "",
          subCode: row2?.subCode || "",
          subCodeNm: row2?.subCodeNm || "",
          itemType: row7?.itemType || "",
          itemTypeNm: row7?.itemTypeNm || "",
-         seqNo: (currentRowCount + index + 1).toString(),
+         seqNo: row.seqNo,
          itemCd: row.itemCd || "",
          itemNm: row.itemNm || "",
          qty: qty.toString(), // 변환된 숫자를 다시 문자열로 저장

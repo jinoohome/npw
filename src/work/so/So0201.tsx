@@ -1,8 +1,7 @@
-import { on } from "events";
-import { React, useEffect, useState, useRef, useCallback, initChoice, 
-   updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
-   reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, SelectSearch, InputSearchComp1, SelectComp1, SelectComp2, SelectSearchComp, DateRangePickerComp, date, InputSearchComp, commas,
-    RadioGroup, TextArea, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, formatCardNumber, formatExpiryDate, getGridCheckedDatas2 } from "../../comp/Import";
+import { useEffect, useState, useRef,
+   alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
+   reSizeGrid, getGridDatas, InputComp, InputComp1, SelectSearch, InputSearchComp1, DateRangePickerComp, date, InputSearchComp, commas,
+    RadioGroup, TextArea, Checkbox, CommonModal, DatePickerComp, formatCardNumber, formatExpiryDate, getGridCheckedDatas2 } from "../../comp/Import";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ReactSelectEditor";
 
@@ -46,17 +45,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
     const searchRef7 = useRef<any>(null);
 
    const [tabIndex, setTabIndex] = useState(0);
-   const [currentInputDiv, setCurrentInputDiv] = useState<JSX.Element | null>(null);
    const [inputDivVisible, setInputDivVisible] = useState(0);
-
-   const refs = {
-      rcptUserId: useRef<any>(null),
-      mouYn: useRef<any>(null),
-      subCode: useRef<any>(null),
-      hsCd: useRef<any>(null),  
-      rcptMeth: useRef<any>(null),  
-      payYn: useRef<any>(null),  
-   };
 
    const [gridDatas1, setGridDatas1] = useState<any[]>();       // 고객사별 참고사항
    const [gridDatas2, setGridDatas2] = useState<any[]>();      // 상품정보
@@ -112,7 +101,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       }
    };
 
-   const [focusRow, setFocusRow] = useState<any>(0);
+   const [focusRow] = useState<any>(0);
    const [isOpen, setIsOpen] = useState(false);       // 주문정보 팝업
    const [isOpen2, setIsOpen2] = useState(false);     // 고객사 팝업
    const [isOpen3, setIsOpen3] = useState(false);     // 배송지 팝업
@@ -324,6 +313,18 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
       }
    }, [inputValues.cardNo]);
+
+   useEffect(() => {
+
+      if(inputValues.cardExpDate){
+
+         const cardExpDate = onExpiryDateChange(inputValues.cardExpDate);  
+
+         onInputChange('cardExpDate', cardExpDate);     
+         setChangeGridData("cardExpDate", cardExpDate); 
+
+      }
+   }, [inputValues.cardExpDate]);
 
    // useEffect(() => {
    //   console.log(inputValues.dealType);
@@ -674,8 +675,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          const data = JSON.stringify(param);
          const result = await fetchPost(`SO0201_S10`, { data });
 
-         console.log(data);
-
          // 'MANDATORY_YN' 값이 'Y'인 것만 체크된 상태로 설정
          let filteredData = result.map((row:any) => ({
             ...row,
@@ -741,6 +740,50 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          return result;
       } catch (error) {
          console.error("SO0201_U06 Error:", error);
+         throw error;
+      }
+   };
+
+   // 결제요청
+   const ZZ_PAY_APPR = async (data: any) => {
+      try {
+         const result = await fetchPost(`ZZ_PAY_APPR`, data);
+         return result;
+      } catch (error) {
+         console.error("ZZ_PAY_APPR Error:", error);
+         throw error;
+      }
+   };
+
+   // 결제취소
+   const ZZ_PAY_CANCEL = async (data: any) => {
+      try {
+         const result = await fetchPost(`ZZ_PAY_CANCEL`, data);
+         return result;
+      } catch (error) {
+         console.error("ZZ_PAY_CANCEL Error:", error);
+         throw error;
+      }
+   };
+
+   // 영수증발행요청
+   const ZZ_CASH_APPR = async (data: any) => {
+      try {
+         const result = await fetchPost(`ZZ_CASH_APPR`, data);
+         return result;
+      } catch (error) {
+         console.error("ZZ_CASH_APPR Error:", error);
+         throw error;
+      }
+   };
+
+   // 결제취소
+   const ZZ_CASH_CANCEL = async (data: any) => {
+      try {
+         const result = await fetchPost(`ZZ_CASH_CANCEL`, data);
+         return result;
+      } catch (error) {
+         console.error("ZZ_CASH_CANCEL Error:", error);
          throw error;
       }
    };
@@ -870,6 +913,15 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       alertSwal(result.msgText, result.msgCd, result.msgStatus);
    };
 
+   const returnCardPay = async(result:any) => {     
+      console.log(result);
+
+      let payInfo = await SO0201_S03({ soNo: result.soNoOut });
+      setGridDatas5(payInfo);
+
+      alertSwal(result.msgText, result.msgCd, result.msgStatus);
+   };
+
    // 모든 grid Data 내용을 가져옴
    const getGridValues = async () => {
       if (!inputValues.soNo) {
@@ -928,7 +980,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
   const addGridRow2 = () => {
       let grid = gridRef5.current.getInstance();
 
-      grid.appendRow({ useYn: "Y", coCd: "100", isNew: true, sysDiv: "WEB", payYn: "FU0021", soNo: inputValues.soNo }, { at: 0 });
+      grid.appendRow({ useYn: "Y", coCd: "100", isNew: true, sysDiv: "WEB", reqType: "0", payYn: "FU0021", saveYn: "N", soNo: inputValues.soNo }, { at: 0 });
       grid.focusAt(0, 1, true);
    }; 
 
@@ -1030,6 +1082,274 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          }
       });   
    }; 
+
+   const cardPay = () => {
+      const gridInstance = gridRef5.current.getInstance();
+      const gridData = gridInstance.getData();
+      const rowKey = gridInstance.getFocusedCell().rowKey;
+      const rowIndex =  gridInstance.getIndexOfRow(rowKey)
+      const saveYn = gridData[rowIndex].saveYn;
+      const payYn = gridData[rowIndex].payYn;
+      const cardNo = gridData[rowIndex].cardNo;
+      const cardExpDate = gridData[rowIndex].cardExpDate;
+   console.log(rowIndex)
+
+      if (!cardNo) {
+          alertSwal("", "카드번호를 입력해주세요.", "warning");
+          return;
+      }
+
+      if (!cardExpDate) {
+          alertSwal("", "카드유효기간을 입력해주세요.", "warning");
+          return;
+      }
+  
+      if (payYn === 'FU0022') {
+          alertSwal("", "결제완료된 건입니다.", "warning");
+          return;
+      }
+  
+      if (saveYn === 'Y') {
+          alertSwal("카드결제", "카드결제 하시겠습니까?", "warning", true).then(async (result) => {
+              if (result.isConfirmed) {
+                  let soNo = inputValues.soNo;
+
+                  // 현재 시간 생성 (YYYYMMDDHHMMSS)
+                const now = new Date();
+                const currentDate = now.getFullYear().toString() + // 연도
+                    (now.getMonth() + 1).toString().padStart(2, "0") + // 월 (0부터 시작하므로 +1 필요)
+                    now.getDate().toString().padStart(2, "0") + // 일
+                    now.getHours().toString().padStart(2, "0") + // 시
+                    now.getMinutes().toString().padStart(2, "0") + // 분
+                    now.getSeconds().toString().padStart(2, "0"); // 초
+  
+                  // 현재 타임스탬프 생성
+                  const currentTimestamp = new Date().toISOString().replace(/[-:.TZ]/g, ""); // YYYYMMDDHHMMSS
+  
+                  // MxIssueNO 생성
+                  const mxIssueNo = `${soNo}_${currentTimestamp}`;
+  
+                  let paySeq = gridData[rowKey].paySeq;
+
+                  const originalCcExpDate = gridData[rowKey].cardExpDate; // 예제 값, 실제로는 gridData[rowKey].CcExpDate 등으로 가져올 수 있음
+                  const [month, year] = originalCcExpDate.split("/");
+                  const formattedCcExpDate = `20${year}${month}`; // "202705" 형식으로 변환
+  
+                  let data = {
+                      soNo: soNo,
+                      paySeq: paySeq,
+                      MxID: "testcorp",
+                      MxIssueNO: mxIssueNo,             // 생성된 유니크 MxIssueNO
+                      MxIssueDate: currentDate,    // 타임스탬프
+                      PayMethod: "CC",
+                      Amount: gridData[rowKey].amt,
+                      CcNO: gridData[rowKey].cardNo.replace(/-/g, ""),         // 카드번호
+                      CcExpDate: formattedCcExpDate,              // 카드 유효기간 (YYMM 형식, 예: 25년 12월)
+                      Tmode: "WEB",                     // 'WEB': PC, 서버결제, 'MOB': 모바일 결제
+                      Installment: "00",                // '00': 일시불, 그 외: 할부개월 (예: 2개월 -> '02')
+                      CcNameOnCard: inputValues.ownNm,           // 주문자 (옵션)
+                      CcProdDesc: "복리후생",         // 주문상품 (옵션)
+                      PhoneNO: inputValues.ownTelNo,           // 주문자 연락처 (옵션)
+                      Email: "",    // 주문자 이메일 (옵션)
+                      updtUserId: userInfo.usrId,
+                      status: "cardPay",
+                  };
+  
+                  if (data) {
+                      let result = await ZZ_PAY_APPR(data);
+                      if (result) {
+                          await returnCardPay(result);
+                      }
+                  }
+              } else if (result.isDismissed) {
+                  return;
+              }
+          });
+      } else {
+          alertSwal("", "결제정보를 저장해주세요.", "warning");
+      }
+  };
+
+   const cardCancel = () => {
+      const gridInstance = gridRef5.current.getInstance();
+      const gridData = gridInstance.getData();
+      const rowKey = gridInstance.getFocusedCell().rowKey;
+      const cancelTid = gridData[rowKey].cancelTid;
+      const authNo = gridData[rowKey].authNo;
+  
+      if (!authNo) {
+          alertSwal("", "결제되지 않은 건입니다.", "warning");
+          return;
+      }
+
+      if (cancelTid) {
+         alertSwal("", "결제취소된 건입니다.", "warning");
+         return;
+      }
+
+      alertSwal("카드결제취소", "카드결제 취소 하시겠습니까?", "warning", true).then(async (result) => {
+            if (result.isConfirmed) {
+               let soNo = inputValues.soNo;         
+
+               let paySeq = gridData[rowKey].paySeq;
+               let mxIssueNo = gridData[rowKey].mxIssueNo;
+               let mxDate = gridData[rowKey].mxDate;            
+
+               let data = {
+                  soNo: soNo,
+                  paySeq: paySeq,
+                  MxID: "testcorp",
+                  MxIssueNO: mxIssueNo,             
+                  MxIssueDate: mxDate,    
+                  PayMethod: "CC",               
+                  updtUserId: userInfo.usrId,
+                  status: "cardCancel",
+               };
+
+               if (data) {
+                  let result = await ZZ_PAY_CANCEL(data);
+                  if (result) {
+                        await returnCardPay(result);
+                  }
+               }
+            } else if (result.isDismissed) {
+               return;
+            }
+      });
+   }
+
+   const cashPay = () => {
+      const gridInstance = gridRef5.current.getInstance();
+      const gridData = gridInstance.getData();
+      const rowKey = gridInstance.getFocusedCell().rowKey;
+      const saveYn = gridData[rowKey].saveYn;
+      const payYn = gridData[rowKey].payYn;
+      const reqType = gridData[rowKey].reqType;
+      const pids = gridData[rowKey].pids;
+
+      if (!reqType) {
+          alertSwal("", "발행구분을 선택해주세요.", "warning");
+          return;
+      }
+
+      if (!pids) {
+          alertSwal("", "연락처 또는 사업자등록번호를 입력해주세요.", "warning");
+          return;
+      }
+  
+      if (payYn === 'FU0022') {
+          alertSwal("", "발행완료된 건입니다.", "warning");
+          return;
+      }
+  
+      if (saveYn === 'Y') {
+          alertSwal("현금영수증 발행", "현금영수증을 발행 하시겠습니까?", "warning", true).then(async (result) => {
+              if (result.isConfirmed) {
+                  let soNo = inputValues.soNo;
+
+                  // 현재 시간 생성 (YYYYMMDDHHMMSS)
+                const now = new Date();
+                const currentDate = now.getFullYear().toString() + // 연도
+                    (now.getMonth() + 1).toString().padStart(2, "0") + // 월 (0부터 시작하므로 +1 필요)
+                    now.getDate().toString().padStart(2, "0") + // 일
+                    now.getHours().toString().padStart(2, "0") + // 시
+                    now.getMinutes().toString().padStart(2, "0") + // 분
+                    now.getSeconds().toString().padStart(2, "0"); // 초
+  
+                  // 현재 타임스탬프 생성
+                  const currentTimestamp = new Date().toISOString().replace(/[-:.TZ]/g, ""); // YYYYMMDDHHMMSS
+  
+                  // MxIssueNO 생성
+                  const mxIssueNo = `${soNo}_${currentTimestamp}`;
+  
+                  let paySeq = gridData[rowKey].paySeq;
+  
+                  let data = {
+                      soNo: soNo,
+                      paySeq: paySeq,
+                      MxID: "testcorp",
+                      MxIssueNO: mxIssueNo,                    // 생성된 유니크 MxIssueNO
+                      MxIssueDate: currentDate,                // 타임스탬프
+                      Amount: gridData[rowKey].amt,
+                      PayMethod: "CA",
+                      Tmode: "WEB",                            // 'WEB': PC, 서버결제, 'MOB': 모바일 결제
+                      ReqType: gridData[rowKey].reqType,       // 현금영수증 발행 구분 (0:소득공제용, 1:지출증빙용)
+                      BillType: "00",                          // 현금영수증 과세 구분 (00:과세, 복합과세, 10:면세)
+                      PIDS: gridData[rowKey].pids,             // 신분확인번호
+                      CcNameOnCard: inputValues.ownNm,         // 주문자 (옵션)
+                      CcProdDesc: "복리후생",                   // 주문상품 (옵션)
+                      PhoneNO: inputValues.ownTelNo,           // 주문자 연락처 (옵션)
+                      Email: "",                               // 주문자 이메일 (옵션)
+                      updtUserId: userInfo.usrId,
+                      status: "cashPay",
+                  };
+  
+                  if (data) {
+                      let result = await ZZ_CASH_APPR(data);
+                      if (result) {
+                          await returnCardPay(result);
+                      }
+                  }
+              } else if (result.isDismissed) {
+                  return;
+              }
+          });
+      } else {
+          alertSwal("", "영수증 발행 정보를 저장해주세요.", "warning");
+      }
+  };
+
+   const cashCancel = () => {
+      const gridInstance = gridRef5.current.getInstance();
+      const gridData = gridInstance.getData();
+      const rowKey = gridInstance.getFocusedCell().rowKey;
+      const cancelTid = gridData[rowKey].cancelTid;
+      const authNo = gridData[rowKey].authNo;
+
+      if (!authNo) {
+         alertSwal("", "결제되지 않은 건입니다.", "warning");
+         return;
+      }
+
+      if (cancelTid) {
+         alertSwal("", "결제취소된 건입니다.", "warning");
+         return;
+      }
+
+      alertSwal("영수증발급취소", "영수증 발급을 취소 하시겠습니까?", "warning", true).then(async (result) => {
+            if (result.isConfirmed) {
+               let soNo = inputValues.soNo;         
+
+               let paySeq = gridData[rowKey].paySeq;
+               let mxIssueNo = gridData[rowKey].mxIssueNo;
+               let mxDate = gridData[rowKey].mxDate;            
+               let amount = gridData[rowKey].amt;            
+               let pids = gridData[rowKey].pids;            
+
+               let data = {
+                  soNo: soNo,
+                  paySeq: paySeq,
+                  MxID: "testcorp",
+                  MxIssueNO: mxIssueNo,             
+                  MxIssueDate: mxDate,              
+                  Amount: amount,              
+                  PIDS: pids,              
+                  updtUserId: userInfo.usrId,
+                  status: "cashCancel",
+               };
+
+               if (data) {
+                  let result = await ZZ_CASH_CANCEL(data);
+                  if (result) {
+                        await returnCardPay(result);
+                  }
+               }
+            } else if (result.isDismissed) {
+               return;
+            }
+      });
+   }
+  
 
    //주문 팝업조회
    const handleCallSearch2 = async () => {
@@ -1442,7 +1762,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
    // 사전상담 팝업 돋보기 클릭
    const handleInputSearch6 = async (e: any) => {
-      const target = e.target as HTMLInputElement; 
       const param = {    
          startDt: inputValues.startDate2,     
          endDt: inputValues.endDate2,     
@@ -1461,68 +1780,36 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       }, 100);
    };
 
-   // 결제처리 탭
-   const afterChange = async ( ev : any) => {
-    // console.log(ev);
-      // if (rowKey !== null && gridRef5.current) {
-      //   const grid = gridRef5.current.getInstance();
-      //   const rowData = grid.getRow(rowKey);
-    
-      //   if (rowData && rowData.amt) {
-      //     const vatRate = 0.1; // 부가세율 (10%)
-      //     const amt = parseInt(rowData.amt, 10) || 0; // amt를 정수로 변환
-    
-      //     // 공급가액 및 부가세액 계산
-      //     const netAmt = Math.round(amt / (1 + vatRate)); // 공급가액
-      //     const vatAmt = amt - netAmt; // 부가세액
-    
-      //     // 계산된 값 업데이트
-      //     grid.setValue(rowKey, 'netAmt', netAmt); // 공급가액
-      //     grid.setValue(rowKey, 'vatAmt', vatAmt); // 부가세액
-      //   }
-      // }
-    };
-
-    const handleEditingFinish = async (ev: any) => {
-      console.log(ev);
-      // const grid = gridRef5.current.getInstance();
-      // const { rowKey, columnName, value } = ev;
-
-      // if (columnName === 'payAmt') {
-      //    setPayAmt();
-      // }
-   }
-
    // 상태 변경 감지
 useEffect(() => {
    // inputValues가 변경될 때 로그 확인 또는 필요한 추가 작업 수행
-   console.log("Updated inputValues:", inputValues);
+
 }, [inputValues]);
 
 
    // 결제처리 탭 grid 포커스변경시
    const handleFocusChange = async ({ rowKey }: any) => {
       if (rowKey !== null && gridRef5.current) {
-          const grid = gridRef5.current.getInstance();
-          const rowData = grid.getRow(rowKey);
-  
-          if (rowData) {
-              // InputDiv 설정
-              if (rowData.payType === 'FU0019') {
+         setTimeout(() => {
+            const grid = gridRef5.current.getInstance();
+            const rowData = grid.getRow(rowKey);
+   
+            if (rowData) {
+               if (rowData.payType === 'FU0019') {
                   setInputDivVisible(1);
-              } else if (rowData.payType === 'FU0020') {
+               } else if (rowData.payType === 'FU0020') {
                   setInputDivVisible(2);
-              } else {
+               } else {
                   setInputDivVisible(0);
-              }
-  
-              Object.entries(rowData).forEach(([key, value]) => {
-               onInputChange(key, value);
-            });
-           
-          }
+               }
+   
+               Object.entries(rowData).forEach(([key, value]) => {
+                  onInputChange(key, value);
+               });
+            }
+         }, 100); // 0ms 딜레이로 비동기 처리
       }
-  };
+   };
   
    
 
@@ -1658,7 +1945,7 @@ useEffect(() => {
       const formattedValue = formatExpiryDate(inputValue);
 
       // 상태 업데이트
-      onInputChange('cardExpDate', formattedValue);
+      return formattedValue;
    };
 
    // 결제대상금액
@@ -1955,6 +2242,8 @@ useEffect(() => {
                                  const updateHSCode = async (value:any) => {
                                     onInputChange('hsCd', value);
                                     onInputChange('itemType', '');  
+                                    const [hsDiv] = label.split(':'); // ":" 기준으로 분리, 첫 번째 값 추출
+                                    onInputChange('hsDiv', hsDiv); // 추출한 값으로 hsDiv 업데이트
 
                                     let hsCode = await ZZ_CONT_INFO({ 
                                     contNo: inputValues.contNo, 
@@ -2068,8 +2357,8 @@ useEffect(() => {
    const payInputDiv = () => (
 
       <div>
-         {inputDivVisible == 1 && inputDiv3()}
-         {inputDivVisible == 2 && inputDiv4()}
+         {inputDivVisible === 1 && inputDiv3()}
+         {inputDivVisible === 2 && inputDiv4()}
 
       </div>
       
@@ -2099,9 +2388,11 @@ useEffect(() => {
                   minWidth="100px"
                   onChange={(e) => { 
                      onInputChange('dlvyHopeDt', e);  
+                     console.log(inputValues.hsDiv);
                      }} 
                   format="yyyy-MM-dd HH:mm"
                   timePicker={true}
+                  readonly={inputValues.hsDiv !== '경사'}
                />
                <InputSearchComp title="배송지" value={inputValues.dlvyNm} minWidth="100px"  layout="flex" target="dlvyNm" onKeyDown={handleInputSearch4} onIconClick={handleInputSearch5}
                                  onChange={(e) => {
@@ -2173,11 +2464,11 @@ useEffect(() => {
                <div className="pb-2">카드결제</div>
             </div>
             <div className="flex space-x-2">
-               <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+               <button type="button" onClick={cardPay} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
                   <PlusIcon className="w-5 h-5" />
                   결제
                </button>
-               <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+               <button type="button" onClick={cardCancel} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
                   <MinusIcon className="w-5 h-5" />
                   결제취소
                </button>
@@ -2241,16 +2532,16 @@ useEffect(() => {
                           }}/>    
                <InputComp value={inputValues.cardExpDate} title="유효기간" target="cardExpDate" 
                           onChange={(e) => {
-                              onExpiryDateChange(e);     
-                              setChangeGridData("cardExpDate", e);                       
+                              onInputChange('cardExpDate', e); 
+                    
                           }}/>  
                <InputComp value={inputValues.authNo} title="승인번호" target="authNo" readOnly={true}
                           onChange={(e) => {
                               onInputChange('authNo', e);                           
                           }}/> 
-               <InputComp value={inputValues.cancelMbrRefNo} title="취소번호" target="cancelMbrRefNo" readOnly={true}
+               <InputComp value={inputValues.tid} title="취소번호" target="tid" readOnly={true}
                           onChange={(e) => {
-                              onInputChange('cancelMbrRefNo', e);                           
+                              onInputChange('tid', e);                           
                           }}/> 
             </div>
             <div className="pb-2"> 
@@ -2273,14 +2564,14 @@ useEffect(() => {
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
-               <div className="">현금결제</div>
+               <div className="pb-2">현금결제</div>
             </div>
             <div className="flex space-x-2">
-               <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+               <button type="button" onClick={cashPay} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
                   <PlusIcon className="w-5 h-5" />
                   발행
                </button>
-               <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+               <button type="button" onClick={cashCancel} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
                   <MinusIcon className="w-5 h-5" />
                   발행취소
                </button>
@@ -2292,31 +2583,69 @@ useEffect(() => {
          </div>
 
          <div className="">
-            <div className="grid grid-cols-3  gap-3 justify-around items-center pt-4 pb-4">
+            <div className="grid grid-cols-4  gap-3 justify-around items-center pt-4 pb-4">
                <SelectSearch title="결제상태" 
-                              value={inputValues.payYn2}
+                              value={inputValues.payYn}
                               onChange={(label, value) => {
-                                    onInputChange('payYn2', value);
+                                    onInputChange('payYn', value);
+                                    setChangeGridData("payYn", value);
                                  }}
 
                               //초기값 세팅시
-                              param={{ coCd: "999", majorCode: "FU0007", div: "-999" }}
+                              param={{ coCd: "999", majorCode: "FU0008", div: "-999" }}
                               procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
                />
-               <InputComp value={inputValues.amt2} title="결제금액" target="amt2" type="number"
+               <InputComp value={inputValues.amt} title="결제금액" target="amt" type="number"
                           onChange={(e) => {
                               onInputChange('amt', e);  
+                              setChangeGridData("amt", e);
+
+                              const amt = parseInt(e, 10) || 0; // 소수점 없는 정수로 변환
+                              const netAmt = Math.floor(amt / 1.1); // 공급가액 계산 (내림 처리)
+                              const vatAmt = amt - netAmt; // 부가세액 계산 (총액 - 공급가액)
+
+                              // 공급가액(netAmt)과 부가세액(vatAmt) 설정
+                              setChangeGridData("netAmt", netAmt);
+                              onInputChange('netAmt', netAmt);
+                              setChangeGridData("vatAmt", vatAmt);
+                              onInputChange('vatAmt', vatAmt);
+                          }}/>   
+               <InputComp value={inputValues.dpsNm} title="입금자명" target="dpsNm" 
+                          onChange={(e) => {
+                           onInputChange('dpsNm', e); 
+                           setChangeGridData("dpsNm", e);  
+                          }}/>  
+               <RadioGroup value={inputValues.reqType} 
+                           options={[ { label: "소득공제", value: "0" }, { label: "지출증빙", value: "1" } ]} 
+                           layout="vertical"
+                           onChange={(e)=>{
+                              onInputChange('reqType', e);        
+                              setChangeGridData("reqType", e);                              
+                           }}  
+                           onClick={() => {console.log('onClick')}} />
+            </div>
+            <div className="grid grid-cols-4  gap-3  justify-around items-center pb-4">
+               <InputComp value={inputValues.pids} title={inputValues.reqType === "1" ? "사업자등록번호" : "연락처"}  target="pids" 
+                          onChange={(e) => {
+                              onInputChange('pids', e); 
+                              setChangeGridData("pids", e);
+                          }}/>    
+               <InputComp value={inputValues.authNo} title="승인번호" target="authNo" readOnly={true}
+                          onChange={(e) => {
+                              onInputChange('authNo', e);                           
+                          }}/> 
+               <InputComp value={inputValues.cancelTid} title="취소번호" target="cancelTid" readOnly={true}
+                          onChange={(e) => {
+                              onInputChange('cancelTid', e);                           
                           }}/>   
             </div>
-            <div className="grid grid-cols-3  gap-3  justify-around items-center pb-4">
-               <InputComp value={inputValues.cardNo2} title="카드번호" target="cardNo2" 
+            <div className="pb-2"> 
+               <TextArea value={inputValues.remark2} layout="flex" minWidth="70px" title="기타메모" target="remark2" 
                           onChange={(e) => {
-                              onCardNumberChange(e);                            
-                          }}/>    
-               <InputComp value={inputValues.expDt2} title="유효기간" target="expDt2" 
-                          onChange={(e) => {
-                              onExpiryDateChange(e);                        
-                          }}/>  
+                              onInputChange('remark2', e);                           
+                              setChangeGridData("remark2", e);
+                          }}/>   
+                          
             </div>
          </div>
       </div>
@@ -2537,15 +2866,22 @@ useEffect(() => {
 
        } }  },
       { header: "결제금액", name: "amt", width: 150, align: "right", formatter: function(e: any) {if(e.value){return commas(e.value)}}},
+      { header: "공급", name: "netAmt", hidden: true },
+      { header: "부가", name: "vatAmt", hidden: true },
+      { header: "결제상태", name: "payYn", hidden: true, align: "center", formatter: function(e: any) {if(e.value === "FU0021"){return "미결제"} else if(e.value === "FU0022"){return "결제완료"}} },
       { header: "저장유무", name: "saveYn", align: "center" },
-      { header: "공급", name: "netAmt" },
-      { header: "부가", name: "vatAmt" },
-      { header: "", name: "payYn", hidden: true },
       { header: "", name: "authNo", hidden: true },
       { header: "", name: "cancelMxIssueNo", hidden: true },
-      { header: "", name: "remark", hidden: false },
+      { header: "", name: "remark", hidden: true },
       { header: "", name: "cardNo" },
       { header: "", name: "cardExpDate", hidden: true },
+      { header: "", name: "dpsNm", hidden: true },
+      { header: "", name: "reqType", hidden: true },
+      { header: "", name: "pids", hidden: true },
+      { header: "", name: "reqRegNo", hidden: true },
+      { header: "", name: "cashAuthNo", hidden: true },
+      { header: "", name: "remark2", hidden: true },
+      { header: "", name: "cashCancelMxIssueNo", hidden: true },
    ];
 
    const grid5 = () => (

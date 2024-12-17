@@ -9,7 +9,7 @@ const fetchPost = async (url: string, data: any): Promise<any> => {
       const isAuthRequired = url !== "ZZ_LOGIN_TOKEN"; // 인증이 필요 없는 API 분기
       const accessToken = isAuthRequired ? sessionStorage.getItem('accessToken') : null;
 
-      console.log(sessionStorage.getItem('refreshToken') );
+      // console.log(sessionStorage.getItem('refreshToken') );
       if (isAuthRequired && !accessToken) {
          throw new Error("인증 토큰이 없습니다.");
       }
@@ -27,7 +27,7 @@ const fetchPost = async (url: string, data: any): Promise<any> => {
 
       // 401 Unauthorized 처리
       if (response.status === 401 && isAuthRequired) {
-         console.warn("Access token expired, attempting to refresh...");
+         // console.warn("Access token expired, attempting to refresh...");
          await refreshAccessToken(); // 새 토큰 발급 시도
          return await fetchPost(url, data); // 요청 재시도
       }
@@ -54,7 +54,7 @@ const refreshAccessToken = async () => {
          throw new Error("Refresh Token이 없습니다. 다시 로그인하세요.");
       }
 
-      console.log("refreshToken", refreshToken);
+      // console.log("refreshToken", refreshToken);
 
       const response = await fetch(`${baseURL}/ZZ_TOKEN_CHECK`, {
          method: "POST",
@@ -69,7 +69,7 @@ const refreshAccessToken = async () => {
 
       const data = await response.json();
 
-      console.log("토큰 갱신 데이터:", data);
+      // console.log("토큰 갱신 데이터:", data);
 
       // 토큰 갱신 성공 여부 확인
       if (data.msgCd === "1" && data.accesstoken && data.refreshtoken) {
