@@ -2297,6 +2297,7 @@ useEffect(() => {
                                     value={inputValues.itemType}
                                     minWidth="80px"
                                     layout="flex"
+                                    textAlign="right"
                                     onChange={async (label, value) => {
                                        const grid = gridRef2.current.getInstance();
                                        const firstRow = grid.getRow(0); // 첫 번째 행 가져오기 

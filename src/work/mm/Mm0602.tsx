@@ -161,7 +161,6 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
       const result = await fetchPost("ZZ_CONT_INFO", { data });
 
-      
 
       if(searchDiv === 'SUB'){
        
@@ -189,7 +188,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
          onInputChange('hsTypeDatas',hsTypeDatas);
          onInputChange("hsType", '');
 
-      }else if(searchDiv === 'ITEM_TYPE'){
+      }else if(searchDiv === 'ITEM_TYPE2'){
          let itemTypeDatas=
             [
                { value: '', label: '전체' }, // '전체' 항목을 추가
@@ -198,7 +197,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                    label: item.itemTypeNm,
                })),
            ];
-    
+    console.log(itemTypeDatas);
          onInputChange('itemTypeDatas',itemTypeDatas);
          onInputChange("itemType", '');
       }
@@ -386,13 +385,13 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    useEffect(() => {
       if (inputValues.contNo) {
          ZZ_CONT_INFO(inputValues.contNo,'BP_HS');
-         ZZ_CONT_INFO(inputValues.contNo,'ITEM_TYPE');
+         ZZ_CONT_INFO(inputValues.contNo,'ITEM_TYPE2');
       }
    }, [inputValues.subCode]);
 
    useEffect(() => {
       if (inputValues.contNo) {
-         ZZ_CONT_INFO(inputValues.contNo,'ITEM_TYPE');
+         ZZ_CONT_INFO(inputValues.contNo,'ITEM_TYPE2');
       }
    }, [inputValues.hsType]);
 
@@ -856,7 +855,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       MM0601_S08();
       ZZ_CONT_INFO(e,'SUB');
       ZZ_CONT_INFO(e,'BP_HS');
-      ZZ_CONT_INFO(e,'ITEM_TYPE');
+      ZZ_CONT_INFO(e,'ITEM_TYPE2');
    };
    
 
@@ -1003,13 +1002,13 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       { header: "수량", name: "qty", width: 60, align: "center", editor : 'text' , 
       formatter: function(e: any) {if(e.value){return commas(e.value);} }
       }, // 수량
-      { header: "복리단가", name: "priceCom", width: 80, align: "right",  editor : 'text' , 
-      formatter: function(e: any) {if(e.value){return commas(e.value);} }
-      }, 
-      { header: "개별단가", name: "pricePer", width: 80, align: "right", editor : 'text' , 
+      { header: "판매단가", name: "pricePer", width: 80, align: "right", editor : 'text' , 
       formatter: function(e: any) {if(e.value){return commas(e.value);} }
       }, // 가격(개인)
-      { header: "금액", name: "amt", width: 80, align: "right", editor : 'text' , 
+      { header: "계약단가", name: "priceCom", width: 80, align: "right",  editor : 'text' , 
+      formatter: function(e: any) {if(e.value){return commas(e.value);} }
+      }, 
+      { header: "계약금액", name: "amt", width: 80, align: "right", editor : 'text' , 
          formatter: function(e: any) {if(e.value){return commas(e.value);} }
          }, // 가격(개인)
       { header: "필수여부", name: "mandatoryYn", width: 80, align: "center", formatter: "listItemText",  editor: { type: 'select', options: { listItems: [

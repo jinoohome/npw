@@ -460,7 +460,8 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
       try {
          const param = {
             coCd: "100",
-            bpDiv: "ZZ0188",
+            bpDiv: "999",
+            bpType: "ZZ0002",
             bpNm: "999",
          };
 

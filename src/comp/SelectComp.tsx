@@ -352,6 +352,7 @@ interface SelectSearchProps {
    datas?: any[];
    readonly?: boolean; 
    addData?: any;
+   textAlign?: "left" | "center" | "right";
  }
  
  // react-select에 맞게 forwardRef를 사용하지 않음.
@@ -372,6 +373,7 @@ interface SelectSearchProps {
    datas,
    readonly = false, 
    addData,
+   textAlign="right"
  }: SelectSearchProps) => {
    const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
    const [resultData, setResultData] = useState<any[]>([]);
@@ -473,8 +475,12 @@ interface SelectSearchProps {
          className={` ${
            layout === "horizontal" ? "col-span-1 text-right" : ""
          } ${layout === "flex" ? " w-auto" : ""}`}
-         style={minWidth ? { minWidth: minWidth } : {}}
-       >
+         style={{
+            ...(minWidth ? { minWidth: minWidth } : {}),
+            ...(textAlign ? { textAlign: textAlign } : {})
+         }}>
+        
+       
          {title}
        </label>
        <div
