@@ -1280,7 +1280,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                   onInputChange("contType", value);
                }}
                //초기값 세팅시
-               param={{ coCd: "999", majorCode: "FU0001", div: "" }}
+               param={{ coCd: "999", majorCode: "FU0004", div: "" }}
                procedure="ZZ_CODE"
                dataKey={{ label: "codeName", value: "code" }}
             />

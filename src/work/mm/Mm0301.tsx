@@ -149,6 +149,7 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
    const save = async () => {
       let grid = gridRef.current.getInstance();
       let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+  
       setFocusRow(rowKey);
 
       const data = await getGridValues();
