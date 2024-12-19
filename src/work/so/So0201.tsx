@@ -74,7 +74,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       zzFU0005 : [], // 유무상구분
       zzFU0006 : [], // 무상사유
       zzFU0007 : [], // 결제방법
-   
    });
 
    const onInputChange = (name: string, value: any) => {
@@ -109,8 +108,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    const [isOpen4, setIsOpen4] = useState(false);     // 사전상담 팝업
    const [isOpen5, setIsOpen5] = useState(false);     // 품목 팝업
    const [isOpen6, setIsOpen6] = useState(false);     // 발주지점 팝업
-
-   const [payFocusRow, setPayFocusRow] = useState<any>(-1);
 
    const breadcrumbItem = [{ name: "주문관리" }, { name: "주문" }, { name: "주문 등록" }];
 
@@ -1088,47 +1085,16 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       });   
    }; 
 
-   const cardPay = async () => {
-
+   const cardPay = () => {
       const gridInstance = gridRef5.current.getInstance();
       const gridData = gridInstance.getData();
       const rowKey = gridInstance.getFocusedCell().rowKey;
-
-      const gridInstance3 = gridRef3.current.getInstance();                  
-      gridInstance3.blur();
-      const gridInstance2 = gridRef7.current.getInstance();
-      gridInstance2.blur();
-      
-      const data2 = await getGridValues();
-
-      
-      if (data2) {         
-         let result = await SO0201_U05(data2);
-         if (result) {
-            // 결제처리
-            let payInfo = await SO0201_S03({ soNo: result.soNoOut });
-            setGridDatas5(payInfo);
-         }
-      }
-         
-       
-      setPayFocusRow(rowKey);
-
-      const gridInstance5 = gridRef5.current.getInstance();
-      const gridData5 = gridInstance5.getData();
-      const focusRow5 = gridInstance5.getFocusedCell().rowKey? gridInstance5.getFocusedCell().rowKey : 0;
-
       const rowIndex =  gridInstance.getIndexOfRow(rowKey)
-      const saveYn = gridData5[rowKey].saveYn;
-      const payYn = gridData5[rowKey].payYn;
-      const cardNo = gridData5[rowKey].cardNo;
-      const cardExpDate = gridData5[rowKey].cardExpDate;
+      const saveYn = gridData[rowIndex].saveYn;
+      const payYn = gridData[rowIndex].payYn;
+      const cardNo = gridData[rowIndex].cardNo;
+      const cardExpDate = gridData[rowIndex].cardExpDate;
 
-      console.log('rowKey4:',rowKey);
-      console.log('focusRow5:',focusRow5);
-      console.log('paySeq2', gridInstance5.getValue(focusRow5, "paySeq"));
-
-      console.log(gridData5);
       if (!cardNo) {
           alertSwal("", "카드번호를 입력해주세요.", "warning");
           return;
@@ -1144,7 +1110,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
           return;
       }
   
-      //  if (saveYn === 'Y') {
+      if (saveYn === 'Y') {
           alertSwal("카드결제", "카드결제 하시겠습니까?", "warning", true).then(async (result) => {
               if (result.isConfirmed) {
                   let soNo = inputValues.soNo;
@@ -1163,14 +1129,10 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
   
                   // MxIssueNO 생성
                   const mxIssueNo = `${soNo}_${currentTimestamp}`;
-                  console.log('rowKey:',rowKey);
+  
+                  let paySeq = gridData[rowKey].paySeq;
 
-               
-                  let paySeq = gridData5[rowKey].paySeq;
-
-                  console.log('paySeq:',paySeq);
-
-                  const originalCcExpDate = gridData5[rowKey].cardExpDate; // 예제 값, 실제로는 gridData[rowKey].CcExpDate 등으로 가져올 수 있음
+                  const originalCcExpDate = gridData[rowKey].cardExpDate; // 예제 값, 실제로는 gridData[rowKey].CcExpDate 등으로 가져올 수 있음
                   const [month, year] = originalCcExpDate.split("/");
                   const formattedCcExpDate = `20${year}${month}`; // "202705" 형식으로 변환
   
@@ -1181,8 +1143,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                       MxIssueNO: mxIssueNo,             // 생성된 유니크 MxIssueNO
                       MxIssueDate: currentDate,    // 타임스탬프
                       PayMethod: "CC",
-                      Amount: gridData5[rowKey].amt,
-                      CcNO: gridData5[rowKey].cardNo.replace(/-/g, ""),         // 카드번호
+                      Amount: gridData[rowKey].amt,
+                      CcNO: gridData[rowKey].cardNo.replace(/-/g, ""),         // 카드번호
                       CcExpDate: formattedCcExpDate,              // 카드 유효기간 (YYMM 형식, 예: 25년 12월)
                       Tmode: "WEB",                     // 'WEB': PC, 서버결제, 'MOB': 모바일 결제
                       Installment: "00",                // '00': 일시불, 그 외: 할부개월 (예: 2개월 -> '02')
@@ -1193,8 +1155,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                       updtUserId: userInfo.usrId,
                       status: "cardPay",
                   };
-
-                  console.log(data);
   
                   if (data) {
                       let result = await ZZ_PAY_APPR(data);
@@ -1206,14 +1166,10 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                   return;
               }
           });
-      // } 
-      // else {
-      //     alertSwal("", "결제정보를 저장해주세요.", "warning");
-      // }
+      } else {
+          alertSwal("", "결제정보를 저장해주세요.", "warning");
+      }
   };
-
-
-  
 
    const cardCancel = () => {
       const gridInstance = gridRef5.current.getInstance();
@@ -1836,19 +1792,6 @@ useEffect(() => {
    // inputValues가 변경될 때 로그 확인 또는 필요한 추가 작업 수행
 
 }, [inputValues]);
-
-useEffect(() => {
-   if(payFocusRow > -1){
-      
-      const grid = gridRef5.current.getInstance();
-   
-      if (grid) {
-         grid.focusAt(payFocusRow,0, true);
-      }
-
-   }
-}, [payFocusRow]);
-
 
 
    // 결제처리 탭 grid 포커스변경시
@@ -2605,9 +2548,9 @@ useEffect(() => {
                           onChange={(e) => {
                               onInputChange('authNo', e);                           
                           }}/> 
-               <InputComp value={inputValues.tid} title="취소번호" target="tid" readOnly={true}
+               <InputComp value={inputValues.cancelTid} title="취소번호" target="cancelTid" readOnly={true}
                           onChange={(e) => {
-                              onInputChange('tid', e);                           
+                              onInputChange('cancelTid', e);                           
                           }}/> 
             </div>
             <div className="pb-2"> 
@@ -2918,7 +2861,7 @@ useEffect(() => {
 
    const columns5 = [
       { header: "주문번호", name: "soNo", hidden: true },
-      { header: "순번", name: "paySeq" },
+      { header: "순번", name: "paySeq", hidden: true },
       { header: "결제방법", name: "payType", width: 150, align: "center", formatter: "listItemText",  editor: { type: ChoicesEditor, 
          options: { listItems: inputValues.zzFU0007 ,    onChange: (value: string) => {
             if (value === 'FU0019') {
@@ -2937,7 +2880,7 @@ useEffect(() => {
       { header: "결제상태", name: "payYn", hidden: true, align: "center", formatter: function(e: any) {if(e.value === "FU0021"){return "미결제"} else if(e.value === "FU0022"){return "결제완료"}} },
       { header: "저장유무", name: "saveYn", align: "center" },
       { header: "", name: "authNo", hidden: true },
-      { header: "", name: "cancelMxIssueNo", hidden: true },
+      { header: "", name: "cancelTid", hidden: true },
       { header: "", name: "remark", hidden: true },
       { header: "", name: "cardNo" },
       { header: "", name: "cardExpDate", hidden: true },
@@ -2947,7 +2890,6 @@ useEffect(() => {
       { header: "", name: "reqRegNo", hidden: true },
       { header: "", name: "cashAuthNo", hidden: true },
       { header: "", name: "remark2", hidden: true },
-      { header: "", name: "cashCancelMxIssueNo", hidden: true },
    ];
 
    const grid5 = () => (
