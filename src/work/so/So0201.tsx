@@ -2882,7 +2882,7 @@ useEffect(() => {
       { header: "", name: "authNo", hidden: true },
       { header: "", name: "cancelTid", hidden: true },
       { header: "", name: "remark", hidden: true },
-      { header: "", name: "cardNo" },
+      { header: "", name: "cardNo", hidden: true },
       { header: "", name: "cardExpDate", hidden: true },
       { header: "", name: "dpsNm", hidden: true },
       { header: "", name: "reqType", hidden: true },
