@@ -1520,7 +1520,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
                   timepicker: false
             }
       }},
-      { header: "시작일", name: "validToDt", align: 'center', width: 140,
+      { header: "종료일", name: "validToDt", align: 'center', width: 140,
          editor: {
             type: 'datePicker',
             options: {

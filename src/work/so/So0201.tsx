@@ -2800,25 +2800,25 @@ useEffect(() => {
       { header: "수량", name: "soQty", align:"center", width: 60, editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value)}}},
       { header: "가용재고", name: "invQty", align:"center", width: 80, formatter: function(e: any) {if(e.value){return commas(e.value);}}},
       { header: "판매단가", name: "soPrice", hidden: true, align:"right", width: 90, editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
-      { header: "발주단가", name: "poPrice", align:"right", width: 90, editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
-      { header: "발주금액", name: "poAmt", align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "발주단가", name: "poPrice", align:"right", width: 90, hidden:true, editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "발주금액", name: "poAmt", align:"right", hidden:true, formatter: function(e: any) {if(e.value){return commas(e.value);}}},
    ];
 
    const summary2 = {
       height: 40,
       position: 'top', 
       columnContent: {
-         poPrice: {
-            template: (e:any) => {
-                return `합계 : `;
-            }
-         },
-         poAmt: {
-            template: (e:any) => {                  
-               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
-               return `${commas(data)}`; // 합계 표시
-               }
-         },  
+         // poPrice: {
+         //    template: (e:any) => {
+         //        return `합계 : `;
+         //    }
+         // },
+         // poAmt: {
+         //    template: (e:any) => {                  
+         //       const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+         //       return `${commas(data)}`; // 합계 표시
+         //       }
+         // },  
       }
    }
 
@@ -3310,6 +3310,7 @@ useEffect(() => {
                                     gridInstance.blur();
                                     const data = gridInstance.getData(); // 올바르게 데이터를 가져옴
                                     setGridDatas5(data);
+                                    setPayAmt();
                                   } else if (index === 4 && gridRef6.current) {
 
                                     const gridInstance = gridRef6.current.getInstance();
@@ -3332,6 +3333,7 @@ useEffect(() => {
                                     setGridDatas3(setData);
                                     setGridDatas7(setData);
                                     setGridDatas8(setData);
+                                    setPayAmt();
                                   }
 
                                  handleTabIndex(index);
