@@ -5,7 +5,7 @@ import Login from "./work/Login";
 
 function App() {
    return (
-      <BrowserRouter>
+      <BrowserRouter basename="/">
          <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/Main" element={<Main />} />

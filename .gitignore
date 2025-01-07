@@ -25,3 +25,6 @@ package-lock.json
 package.json
 .gitignore
 src/output.css
+package-lock.json
+package.json
+yarn.lock
