@@ -984,7 +984,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
   const addGridRow2 = () => {
       let grid = gridRef5.current.getInstance();
 
-      grid.appendRow({ useYn: "Y", coCd: "100", isNew: true, sysDiv: "WEB", reqType: "0", payYn: "FU0021", saveYn: "N", soNo: inputValues.soNo }, { at: 0 });
+      grid.appendRow({ useYn: "Y", coCd: "100", isNew: true, sysDiv: "WEB", reqType: "0",payType: "FU0019", installment: "00", payYn: "FU0021", saveYn: "N", soNo: inputValues.soNo }, { at: 0 });
       grid.focusAt(0, 1, true);
    }; 
 
@@ -1141,7 +1141,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                   let data = {
                       soNo: soNo,
                       paySeq: paySeq,
-                      MxID: "testcorp",
+                      MxID: "nhp00001",
                       MxIssueNO: mxIssueNo,             // 생성된 유니크 MxIssueNO
                       MxIssueDate: currentDate,    // 타임스탬프
                       PayMethod: "CC",
@@ -1149,7 +1149,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                       CcNO: gridData[rowKey].cardNo.replace(/-/g, ""),         // 카드번호
                       CcExpDate: formattedCcExpDate,              // 카드 유효기간 (YYMM 형식, 예: 25년 12월)
                       Tmode: "WEB",                     // 'WEB': PC, 서버결제, 'MOB': 모바일 결제
-                      Installment: "00",                // '00': 일시불, 그 외: 할부개월 (예: 2개월 -> '02')
+                      Installment: gridData[rowKey].installment,                // '00': 일시불, 그 외: 할부개월 (예: 2개월 -> '02')
                       CcNameOnCard: inputValues.ownNm,           // 주문자 (옵션)
                       CcProdDesc: "복리후생",         // 주문상품 (옵션)
                       PhoneNO: inputValues.ownTelNo,           // 주문자 연락처 (옵션)
@@ -1201,7 +1201,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                let data = {
                   soNo: soNo,
                   paySeq: paySeq,
-                  MxID: "testcorp",
+                  MxID: "nhp00001",
                   MxIssueNO: mxIssueNo,             
                   MxIssueDate: mxDate,    
                   PayMethod: "CC",               
@@ -1219,6 +1219,24 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                return;
             }
       });
+   }
+
+   const cardReceipt = () => {
+      const gridInstance = gridRef5.current.getInstance();
+      const gridData = gridInstance.getData();
+      const rowKey = gridInstance.getFocusedCell().rowKey;
+      
+      const mxid = "nhp00001"; 
+      const mxissueno = gridData[rowKey].mxIssueNo; 
+      const mxissuedate = gridData[rowKey].mxDate; 
+      const paytype = "CARD";
+      const hdata = gridData[rowKey].hdata;
+
+      // URL 생성
+      const receiptUrl = `https://www.firstpay.co.kr/jsp/payment/showReceipt.jsp?mxid=${mxid}&mxissueno=${mxissueno}&mxissuedate=${mxissuedate}&paytype=${paytype}&hdata=${hdata}`;
+
+      // 새 탭으로 링크 열기
+      window.open(receiptUrl, "_blank");
    }
 
    const cashPay = () => {
@@ -1270,7 +1288,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                   let data = {
                       soNo: soNo,
                       paySeq: paySeq,
-                      MxID: "testcorp",
+                      MxID: "nhp00001",
                       MxIssueNO: mxIssueNo,                    // 생성된 유니크 MxIssueNO
                       MxIssueDate: currentDate,                // 타임스탬프
                       Amount: gridData[rowKey].amt,
@@ -1332,7 +1350,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                let data = {
                   soNo: soNo,
                   paySeq: paySeq,
-                  MxID: "testcorp",
+                  MxID: "nhp00001",
                   MxIssueNO: mxIssueNo,             
                   MxIssueDate: mxDate,              
                   Amount: amount,              
@@ -1352,7 +1370,24 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             }
       });
    }
-  
+
+   const cashReceipt = () => {
+      const gridInstance = gridRef5.current.getInstance();
+      const gridData = gridInstance.getData();
+      const rowKey = gridInstance.getFocusedCell().rowKey;
+      
+      const mxid = "nhp00001"; 
+      const mxissueno = gridData[rowKey].mxIssueNo; 
+      const mxissuedate = gridData[rowKey].mxDate; 
+      const paytype = "CASH";
+      const hdata = gridData[rowKey].hdata;
+
+      // URL 생성
+      const receiptUrl = `https://www.firstpay.co.kr/jsp/payment/showReceipt.jsp?mxid=${mxid}&mxissueno=${mxissueno}&mxissuedate=${mxissuedate}&paytype=${paytype}&hdata=${hdata}`;
+
+      // 새 탭으로 링크 열기
+      window.open(receiptUrl, "_blank");
+   }  
 
    //주문 팝업조회
    const handleCallSearch2 = async () => {
@@ -2493,7 +2528,7 @@ useEffect(() => {
                   <MinusIcon className="w-5 h-5" />
                   결제취소
                </button>
-               <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+               <button type="button" onClick={cardReceipt} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
                   <MinusIcon className="w-5 h-5" />
                   영수증
                </button>
@@ -2564,6 +2599,20 @@ useEffect(() => {
                           onChange={(e) => {
                               onInputChange('cancelTid', e);                           
                           }}/> 
+               <SelectSearch  title="할부개월" 
+                           value={inputValues.installment}
+                           onChange={(label, value) => {
+                                 onInputChange('installment', value);
+                                 setChangeGridData("installment", value);
+                              }}                           
+
+                           //초기값 세팅시
+                           datas={[{value : '00', label : '일시불'},{value : '02', label : '2개월'},{value : '03', label : '3개월'},
+                                   {value : '04', label : '4개월'},{value : '05', label : '5개월'},{value : '06', label : '6개월'},
+                                   {value : '07', label : '7개월'},{value : '08', label : '8개월'},{value : '09', label : '9개월'},
+                                   {value : '10', label : '10개월'},{value : '11', label : '11개월'},{value : '12', label : '12개월'}
+                           ]}
+            />
             </div>
             <div className="pb-2"> 
                <TextArea value={inputValues.remark} layout="flex" minWidth="70px" title="기타메모" target="remark" 
@@ -2596,7 +2645,7 @@ useEffect(() => {
                   <MinusIcon className="w-5 h-5" />
                   발행취소
                </button>
-               <button type="button" onClick={delGridRow} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+               <button type="button" onClick={cashReceipt} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
                   <MinusIcon className="w-5 h-5" />
                   영수증
                </button>

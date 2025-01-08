@@ -728,6 +728,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    const searchModalDiv = async () => {
       
       const result = await MM0602_S01(inputValues.searchContNo, inputValues.searchBpCd);
+      console.log(result);
       onInputChange("gridDatas5", result);
     
    }
