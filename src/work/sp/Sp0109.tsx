@@ -431,6 +431,7 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
      const data = JSON.stringify(param);
      const baseURL = process.env.REACT_APP_API_URL;
        
+     console.log(baseURL);
   
      const response = await fetch(`${baseURL}/ZZ_FILE`, {
        method: 'POST',
