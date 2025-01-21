@@ -430,18 +430,22 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
      const param = { mgNo: mgNo };
      const data = JSON.stringify(param);
      const baseURL = process.env.REACT_APP_API_URL;
-       
-     console.log(baseURL);
+
+      const accessToken = sessionStorage.getItem('accessToken') ;
+
+
+      console.log(baseURL);
   
      const response = await fetch(`${baseURL}/ZZ_FILE`, {
        method: 'POST',
        headers: {
          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}` , // 인증 헤더 추가
        },
        body: data,
      });
 
-    
+  
 
      const blob = await response.blob();
      const url = window.URL.createObjectURL(blob);

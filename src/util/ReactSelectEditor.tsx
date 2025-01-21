@@ -25,7 +25,7 @@ class CustomMUISelectEditor {
   el: HTMLElement;
   value: string;
   listItems: Array<SelectOption>;
-  onChange?: (value: string) => void;
+  onChange?: (value: string, event?:any)  => void;
   root: any;
 
   constructor(props: CustomMUISelectEditorProps) {
@@ -59,7 +59,7 @@ class CustomMUISelectEditor {
         if (option) {
           this.el.setAttribute("data-selected-value", option.value);
           if (this.onChange) {
-            this.onChange(option.value);
+            this.onChange(option.value, event);
           }
         }
       };

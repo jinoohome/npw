@@ -38,6 +38,7 @@ const Top = ({loginInfo, userInfo, topMenus, searchMenus, onTopMenuClick, active
          setChoiceData();
       
       }
+      console.log(userInfo);
    }, [userInfo]);
 
    const setChoiceUI = () => {
@@ -268,7 +269,7 @@ const Top = ({loginInfo, userInfo, topMenus, searchMenus, onTopMenuClick, active
                   {renderTopMenu()}
                </div>
                <div className="w-[35%] min-w-[200px] lg:min-w-[450px] flex justify-end ">
-                  {renderUserSearch()}
+                  { loginInfo.usrDiv === '999' && renderUserSearch()}
                   {renderMenuSearch()} 
                   {renderMyMenu()}
                   

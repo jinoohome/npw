@@ -37,6 +37,9 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    const gridContainerRef7 = useRef(null);
    const gridContainerRef8 = useRef(null);
 
+
+   let grid2FocusRowKey= useRef<any>(null);
+
    //검색창 ref
     const searchRef1 = useRef<any>(null);
     const searchRef2 = useRef<any>(null);
@@ -45,6 +48,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
     const searchRef5 = useRef<any>(null);
     const searchRef6 = useRef<any>(null);
     const searchRef7 = useRef<any>(null);
+    const searchRef8 = useRef<any>(null);
 
    const [tabIndex, setTabIndex] = useState(0);
    const [inputDivVisible, setInputDivVisible] = useState(0);
@@ -63,6 +67,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    const [gridDatasP4, setGridDatasP4] = useState<any[]>();      // 사전상담팝업정보
    const [gridDatasP5, setGridDatasP5] = useState<any[]>();      // 품목팝업정보
    const [gridDatasP6, setGridDatasP6] = useState<any[]>();      // 발주지점팝업정보
+   
 
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       startDate: date(-1, 'month'),    //주문팝업
@@ -76,6 +81,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       zzFU0005 : [], // 유무상구분
       zzFU0006 : [], // 무상사유
       zzFU0007 : [], // 결제방법
+    
    });
 
    const onInputChange = (name: string, value: any) => {
@@ -93,10 +99,10 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
   const setGridData = async () => {
       try {
-          ZZ_CODE('FU0004');
-          ZZ_CODE('FU0005');
-          ZZ_CODE('FU0006');
-          ZZ_CODE('FU0007');
+          ZZ_CODE('FU0004','-999');
+          ZZ_CODE('FU0005','-999');
+          ZZ_CODE('FU0006','');
+          ZZ_CODE('FU0007','-999');
       
       } catch (error) {
       console.error("setGridData Error:", error);
@@ -583,11 +589,11 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
 
    //---------------------- api -----------------------------
-   const ZZ_CODE = async (majorCode:any) => {   
+   const ZZ_CODE = async (majorCode:any, div:string) => {   
          const param={ 
             coCd: "999", 
             majorCode: majorCode, 
-            div: "-999" 
+            div: div
          };
    
    
@@ -598,6 +604,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             value: item.code,
             text: item.codeName
          }));
+
+       
    
          if(majorCode === 'FU0004') onInputChange("zzFU0004", formattedResult);
          if(majorCode === 'FU0005') onInputChange("zzFU0005", formattedResult);
@@ -674,6 +682,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    // 계약품목 조회
    var SO0201_S10 = async (param : any) => {
       try {  
+
+       
          const data = JSON.stringify(param);
          const result = await fetchPost(`SO0201_S10`, { data });
 
@@ -813,6 +823,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       // 상품정보
       let itemInfo = await SO0201_S02({ soNo: result[0].soNo });
 
+
       // 'MANDATORY_YN' 값이 'Y'인 것만 체크된 상태로 설정
       let filteredData = itemInfo.map((row:any) => ({
          ...row,
@@ -918,7 +929,6 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const returnCardPay = async(result:any) => {     
-      console.log(result);
 
       let payInfo = await SO0201_S03({ soNo: result.soNoOut });
       setGridDatas5(payInfo);
@@ -1394,7 +1404,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       const param = {    
          startDt: inputValues.startDate,     
          endDt: inputValues.endDate,     
-         soNo: '999',
+         soNo: searchRef8.current?.value || '999',
          ownNm: searchRef1.current?.value || '999',
       };
       const data = JSON.stringify(param);
@@ -1407,11 +1417,11 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       const param = {
          coCd: '100',
          bpNm: searchRef2.current?.value || '999',
-         bpDiv: 'ZZ0188',
+         bpDiv: '999',
          bpType: '999',
       };
       const data = JSON.stringify(param);
-      const result = await fetchPost("ZZ_B_PO_BP", { data });
+      const result = await fetchPost("SO0201_P03", { data });
       setGridDatasP2(result);
    };
 
@@ -1533,7 +1543,16 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       const result = await fetchPost("SO0201_P05", { data });
 
       setGridDatas1(result);
+      setGridDatas2([]);
+      setGridDatas3([]);
+      setGridDatas7([]);
+      setGridDatas8([]);
       
+
+
+      setTimeout(() => {
+         setPayAmt();
+      },500);
       setIsOpen2(false);
    };
 
@@ -1681,7 +1700,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          bpType: '999',
       };
       const data = JSON.stringify(param);
-      const result = await fetchPost("ZZ_B_PO_BP", { data });
+      const result = await fetchPost("SO0201_P03", { data });
       setGridDatasP2(result);
       if (result.length === 1) {
             onInputChange('subCode', '');
@@ -1806,6 +1825,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
    // 사전상담 팝업 돋보기 클릭
    const handleInputSearch6 = async (e: any) => {
+   
       const param = {    
          startDt: inputValues.startDate2,     
          endDt: inputValues.endDate2,     
@@ -1824,27 +1844,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       }, 100);
    };
 
-   // 상태 변경 감지
-useEffect(() => {
- 
-    SO0201_S10({
-      soNo: inputValues.soNo, 
-      bpCd: inputValues.soldToParty,
-      contNo: inputValues.contNo,
-      subCode: inputValues.subCode,
-      hsCd: inputValues.hsCd,
-      itemType: inputValues.itemType,
-      dlvyCd: inputValues.dlvyCd,
-      dealType: inputValues.dealType
-      });
 
-      setTimeout(() => {
-
-         setPayAmt();
-      }, 500);
-     
-
-}, [inputValues.itemType]);
 
 
    // 결제처리 탭 grid 포커스변경시
@@ -1894,12 +1894,14 @@ useEffect(() => {
 
    //gridRef2 상품정보 수량, 단가 변경
    const handleAfterChange = async (ev: any) => {
+
       const changesArray = ev.changes; // ev.changes가 배열이므로 이를 사용
-      
+  
       // 배열이기 때문에 forEach로 순회
       changesArray.forEach((change: any) => {   
          const gridInstance2 = gridRef2.current.getInstance();
-         
+
+
          // 현재 변경된 값이 soQty 또는 soPrice일 때 처리
          if (change.columnName === "soQty" || change.columnName === "soPrice") {
             const rowKey = change.rowKey;
@@ -1926,6 +1928,37 @@ useEffect(() => {
 
       setPayAmt();
    };
+
+
+// gridRef2 상품정보 수량, 단가 변경
+const changeSoPrice = async (price: number, rowKey: any) => {
+   const gridInstance2 = gridRef2.current.getInstance();
+ 
+   // 수량 가져오기, 기본값은 0
+   const soQty = gridInstance2.getValue(rowKey, 'soQty') || 0;
+ 
+   // soAmt 계산 (수량 * 단가), 기본값은 0
+   const soAmt = price > 0 ? Math.round(soQty * price) : 0; // 반올림하여 소수점 제거
+ 
+   // 공급가액(netAmt): soAmt의 10%를 제외한 금액 (VAT 10% 가정), 기본값은 0
+   const netAmt = soAmt > 0 ? Math.round(soAmt / 1.1) : 0; // 반올림하여 소수점 제거
+ 
+   // 부가세(vatAmt): soAmt에서 netAmt를 뺀 부가세 금액, 기본값은 0
+   const vatAmt = soAmt > 0 ? Math.round(soAmt - netAmt) : 0; // 반올림하여 소수점 제거
+ 
+   // grid 값 업데이트
+   gridInstance2.setValue(rowKey, 'soPrice', price);
+   gridInstance2.setValue(rowKey, 'soAmt', soAmt);
+   gridInstance2.setValue(rowKey, 'netAmt', netAmt);
+   gridInstance2.setValue(rowKey, 'vatAmt', vatAmt);
+ 
+   // 결제 금액 업데이트
+   setPayAmt();
+ };
+ 
+
+
+   
 
    //gridRef3 발주가 적용
    const handleAfterChange2 = async (ev: any) => {   
@@ -2010,10 +2043,10 @@ useEffect(() => {
 
    // 결제대상금액
   const setPayAmt = () => {
+   
       // 전체 행의 체크된 행 중에서 COND_TYPE이 'FU0010' 또는 'FU0012'인 항목의 soAmt 합계 계산
       const gridInstance2 = gridRef2.current.getInstance();
       const allRows = gridInstance2.getData();
-      console.log(allRows);
 
       const totalSoAmt = allRows.reduce((sum: number, row: any) => {
          const isChecked = gridInstance2.getCheckedRows().some((checkedRow: any) => checkedRow.rowKey === row.rowKey); // 체크 여부 확인
@@ -2026,8 +2059,20 @@ useEffect(() => {
          return sum;
       }, 0);
 
+
+      const gridInstance5 = gridRef5.current.getInstance();
+      const paidAmt = gridInstance5.getData();
+
+
+      const totalPaidAmt = paidAmt.reduce((sum: number, row: any) => {
+         return row.payYn === 'FU0022' ? sum + (row.amt || 0) : sum;
+      }, 0);
+
+
+      const totalPayAmt = totalSoAmt - totalPaidAmt;
+
       // 합계 금액을 onInputChange로 설정
-      onInputChange('payAmt', totalSoAmt);
+      onInputChange('payAmt', totalPayAmt);
    }
 
    const setChangeGridData = (columnName: string, value: any) => {
@@ -2038,9 +2083,9 @@ useEffect(() => {
    //-------------------div--------------------------
    //주문 팝업 div
    const modalSearchDiv = () => (
-      <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
+      <div className="bg-gray-100 rounded-lg p-5 px-3 search text-sm search">
          <div className="w-full flex justify-between">
-            <div className="grid grid-cols-2 justify-start ">
+            <div className="grid grid-cols-2 justify-start gap-y-2">
                <DateRangePickerComp 
                      title="기간"
                      startValue= {inputValues.startDate}
@@ -2051,10 +2096,11 @@ useEffect(() => {
                }
                
                } /> 
+               <InputComp1 ref={searchRef8} handleCallSearch={handleCallSearch2} title="주문번호"></InputComp1>   
                <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch2} title="대상자"></InputComp1>              
             </div>
             <div className="w-[20%] flex justify-end">
-               <button type="button" onClick={handleCallSearch2} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+               <button type="button" onClick={handleCallSearch2} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow  h-[30px]">
                   <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
                   조회
                </button>
@@ -2285,8 +2331,14 @@ useEffect(() => {
                                     } else {
                                        await updateItemType(value);
                                     }
+
+                                    setTimeout(() => {
+                                       setPayAmt();
+                                    }, 300);
+   
                                  }}  
 
+                               
                               //초기값 세팅시
                               stringify={true}
                               param={{ contNo : inputValues.contNo,
@@ -2366,6 +2418,17 @@ useEffect(() => {
 
                                        const updateItemType = async (value:any) => {
                                           onInputChange('itemType', value);
+                                     
+                                          await SO0201_S10({
+                                             soNo: inputValues.soNo, 
+                                             bpCd: inputValues.soldToParty,
+                                             contNo: inputValues.contNo,
+                                             subCode: inputValues.subCode,
+                                             hsCd: inputValues.hsCd,
+                                             itemType: value,
+                                             dlvyCd: inputValues.dlvyCd,
+                                             dealType: inputValues.dealType
+                                             });
       
                                         
                                        };
@@ -2381,6 +2444,10 @@ useEffect(() => {
                                        } else {
                                           await updateItemType(value);
                                        }
+
+                                         setTimeout(() => {
+                                          setPayAmt();
+                                       }, 300);
 
                                      
                                     }}   
@@ -2444,7 +2511,6 @@ useEffect(() => {
                   minWidth="100px"
                   onChange={(e) => { 
                      onInputChange('dlvyHopeDt', e);  
-                     console.log(inputValues.hsDiv);
                      }} 
                   format="yyyy-MM-dd HH:mm"
                   timePicker={true}
@@ -2544,7 +2610,7 @@ useEffect(() => {
                                     onInputChange('payYn', value);
                                     setChangeGridData("payYn", value);
                                  }}
-
+                              readonly={true}
                               //초기값 세팅시
                               param={{ coCd: "999", majorCode: "FU0008", div: "-999" }}
                               procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
@@ -2692,7 +2758,7 @@ useEffect(() => {
                               onInputChange('reqType', e);        
                               setChangeGridData("reqType", e);                              
                            }}  
-                           onClick={() => {console.log('onClick')}} />
+                           onClick={() => {}} />
             </div>
             <div className="grid grid-cols-4  gap-3  justify-around items-center pb-4">
                <InputComp value={inputValues.pids} title={inputValues.reqType === "1" ? "사업자등록번호" : "연락처"}  target="pids" 
@@ -2746,9 +2812,32 @@ useEffect(() => {
       { header: "순번", name: "soSeq", hidden: true },
       { header: "구분", name: "dealType", hidden: true },
       { header: "CHK", name: "chkYn", hidden: true},
-      { header: "구분", name: "condType", width: 80, align: "center", formatter: "listItemText",  editor: { type: 'select', options: { listItems: inputValues.zzFU0004  } }  },
+      { header: "구분", name: "condType", width: 90, align: "center", formatter: "listItemText",  
+         editor: { type: ChoicesEditor, options: { listItems: inputValues.zzFU0004 , 
+         onChange: (value: string) => {
+
+            const gridInstance2 = gridRef2.current.getInstance();
+
+            let rowKey = gridInstance2.getFocusedCell().rowKey;
+
+            let priceCom = gridInstance2.getValue(rowKey, 'priceCom');
+            let pricePer = gridInstance2.getValue(rowKey, 'pricePer');
+    
+
+            if(value === 'FU0010'){
+               changeSoPrice(priceCom, rowKey);
+
+            }else if(value === 'FU0011'){
+               changeSoPrice(priceCom,  rowKey);
+            
+            }else if(value === 'FU0012'){
+               changeSoPrice(pricePer,  rowKey);
+            }
+       },
+
+    } }  },
       { header: "품목코드", name: "itemCd", width: 100, align: "center" },
-      { header: "품목명", name: "itemNm", width: 250 },
+      { header: "품목명", name: "itemNm", width: 150 },
       { header: "품목선택", name: "itemBtn", width: 80, align: "center", formatter: () => {
          return `<button class="bg-blue-500 text-white text-xs  rounded-md px-2 py-1  shadow"}>선택</button>`;
       }},
@@ -2760,14 +2849,48 @@ useEffect(() => {
       { header: "지점선택", name: "poBpBtn", width: 80, align: "center", formatter: () => {
          return `<button class="bg-blue-500 text-white text-xs rounded-md px-2 py-1 shadow custom-button">선택</button>`;
       }},
-      { header: "수량", name: "soQty", width: 60, align:"center", editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
+      { header: "수량", name: "soQty", width: 60, align:"center", editor: "text", formatter: (e: any) => commas(e.value ?? "")},
       { header: "가용재고", name: "invQty", width: 80, align:"center"},
-      { header: "단가", name: "soPrice", width: 90, align:"right", editor: "text", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
-      { header: "금액", name: "soAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
-      { header: "공급가액", name: "netAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
-      { header: "부가세액", name: "vatAmt", width: 90, align:"right", formatter: function(e: any) {if(e.value){return commas(e.value);}}},
-      { header: "유/무상", name: "payDiv", width: 70, align:"center", formatter: "listItemText",  editor: { type: 'select', options: { listItems: inputValues.zzFU0005  } }  },
+      { header: "단가", name: "soPrice", width: 90, align:"right", editor: "text", formatter: (e: any) => commas(e.value ?? "")},
+      { header: "금액", name: "soAmt", width: 90, align:"right", formatter: (e: any) => commas(e.value ?? "")},
+      { header: "공급가액", name: "netAmt", width: 90, align:"right", formatter: (e: any) => commas(e.value ?? "")},
+      { header: "부가세액", name: "vatAmt", width: 90, align:"right", formatter: (e: any) => commas(e.value ?? "")},
+      { header: "유/무상", name: "payDiv", width: 70, align:"center", 
+         formatter: "listItemText",  editor: { type: ChoicesEditor, options: { listItems: inputValues.zzFU0005, 
+            onChange: (value: string) => {
+
+               const gridInstance2 = gridRef2.current.getInstance();
+   
+               let rowKey = gridInstance2.getFocusedCell().rowKey;
+   
+               let priceCom = gridInstance2.getValue(rowKey, 'priceCom');
+               let pricePer = gridInstance2.getValue(rowKey, 'pricePer');
+               let condType = gridInstance2.getValue(rowKey, 'condType');
+       
+   
+               if(value === 'FU0014'){  //유상
+                  if(condType === 'FU0010'){
+                     changeSoPrice(priceCom, rowKey);
+      
+                  }else if(condType === 'FU0011'){
+                     changeSoPrice(priceCom,  rowKey);
+                  
+                  }else if(condType === 'FU0012'){
+                     changeSoPrice(pricePer,  rowKey);
+                  }
+
+                  
+               }else if(value === 'FU0015'){ //무상
+                  changeSoPrice(0,  rowKey);
+           
+               }
+            },
+         
+         
+         } }  },
       { header: "무상사유", name: "reason", formatter: "listItemText",  editor: { type: 'select', options: { listItems: inputValues.zzFU0006  } }  },     
+      { header: "법인단가", name: "priceCom", hidden: true},     
+      { header: "개인단가", name: "pricePer", hidden: true},     
       { header: "", name: "cfmFlag", hidden: true}, 
       { header: "", name: "poPrice", hidden: true}, 
       { header: "", name: "poAmt", hidden: true}, 
@@ -2830,7 +2953,7 @@ useEffect(() => {
                                  SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, itemType: inputValues.itemType, dlvyCd: inputValues.dlvyCd, dealType: e});
                               }                            
                            }}  
-                           onClick={() => {console.log('onClick')}} />
+                           onClick={() => {}} />
             </div>
             {inputValues.dealType === 'B' && (
                <div className="flex space-x-1">
@@ -2846,7 +2969,7 @@ useEffect(() => {
             )}
          </div>
 
-         <TuiGrid01 gridRef={gridRef2} columns={columns2} summary={summary} handleAfterChange={handleAfterChange} rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-650}             
+         <TuiGrid01 gridRef={gridRef2} columns={columns2} summary={summary} handleAfterChange={handleAfterChange}  rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-650}             
          />
       </div>
    );
