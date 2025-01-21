@@ -369,7 +369,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "카드결제", name: "cardAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "현금결제", name: "cashAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "입금일", name: "chkCashDt", align: "center", width: 120, editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },
-      { header: "패키지", name: "pkgItemNm", width: 120 },
+      // { header: "패키지", name: "pkgItemNm", width: 120 },
       { header: "주문상태", name: "poStatusNm", width: 120 },
    ];
 
