@@ -75,14 +75,20 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    useEffect(() => {
       if (GridRef1.current && gridDatas1) {
          const gridInstance = GridRef1.current.getInstance();
-         
-         gridDatas1.forEach((row, index) => {
-            if (row.cashAmt > 0) {
-               gridInstance.enableColumn('chkCashDt'); // 현금 결제 금액이 있으면 필드 활성화
-            } else {
-               gridInstance.disableColumn('chkCashDt'); // 현금 결제 금액이 없으면 필드 비활성화
-            }
-         });
+   
+         // 행 단위로 셀의 상태를 업데이트
+         const updatedData = gridDatas1.map((row) => ({
+            ...row,
+            _attributes: {
+               ...(row._attributes || {}),
+               editable: {
+                  chkCashDt: row.cashAmt > 0, // cashAmt가 0보다 클 때만 편집 가능
+               },
+            },
+         }));
+   
+         // 데이터 리셋
+         gridInstance.resetData(updatedData);
       }
    }, [gridDatas1]);
 
@@ -151,7 +157,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
         // 딜레이를 주어 그리드가 데이터를 안정적으로 처리할 시간을 줌
         setTimeout(() => {
           setGridDatas(result);
-        }, 100);  // 100ms 딜레이 추가
+        }, 200);  // 100ms 딜레이 추가
     
         return result;
       } catch (error) {
@@ -369,7 +375,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "카드결제", name: "cardAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "현금결제", name: "cashAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "입금일", name: "chkCashDt", align: "center", width: 120, editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },
-      // { header: "패키지", name: "pkgItemNm", width: 120 },
+      { header: "패키지", name: "pkgItemNm", width: 120 },
       { header: "주문상태", name: "poStatusNm", width: 120 },
    ];
 
