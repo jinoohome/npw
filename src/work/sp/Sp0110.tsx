@@ -569,6 +569,18 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       });    
    };
 
+   const create = async () => {
+      setInputValues([]);
+
+      onInputChange("startDt", date(-1, 'month'));
+      onInputChange("endDt", date());
+      onInputChange("reqDt", date());
+
+      onInputChange("gridDatas1", []);
+      onInputChange("gridDatas2", []);
+      onInputChange("gridDatas4", []);
+   };
+
    const del = async () => {
       if(!inputValues.soNo) {
          alertSwal("수주번호를 선택 해주세요.", "", "warning");
@@ -1043,17 +1055,17 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       { header: "사업장", name: "bpCd", width: 300,   hidden: true }, 
       { header: "작업명", name: "workCd", width: 250,  hidden: true }, 
       { header: "작업명", name: "workNm", width: 250 }, 
-      { header: "협력업체", name: "poBpCd", width: 300,  hidden: true }, 
-      { header: "협력업체", name: "poBpNm", width: 300 }, 
+      { header: "협력업체", name: "poBpCd", width: 200,  hidden: true }, 
+      { header: "협력업체", name: "poBpNm", width: 200 }, 
       { header: "신청일자", name: "orderDt", width: 120, align: "center",  hidden: true }, // ORDER_DT: 수주 일자
-      { header: "요청일자", name: "reqDt", align: "center" }, // REQ_DT: 요청 일자
-      { header: "발주확정일자", name: "cfmDt", align: "center" }, // CFM_DT: 발주확정 일자
+      { header: "요청일자", name: "reqDt", width: 100, align: "center" }, // REQ_DT: 요청 일자
+      { header: "발주확정일자", name: "cfmDt", width: 100, align: "center" }, // CFM_DT: 발주확정 일자
       { header: "진행상태", name: "orderStatusNm", width: 100, align: "center",  hidden: true }, // 
       { header: "확정여부", name: "cfmFlag", align: "center",  hidden: true }, // 
       { header: "요청자", name: "reqUserId", width: 100, align: "center" }, // REQ_USER_ID: 요청자 ID
-      { header: "연락처", name: "reqTelNo", width: 150, align: "center" }, // REQ_TEL_NO: 요청자 연락처
-      { header: "주소코드1", name: "addrCd1" }, // ADDR_CD1: 주소 코드 1
-      { header: "주소코드2", name: "addrCd2" }, // ADDR_CD2: 주소 코드 2      
+      { header: "연락처", name: "reqTelNo", align: "center" }, // REQ_TEL_NO: 요청자 연락처
+      { header: "주소코드1", name: "addrCd1",  hidden: true }, // ADDR_CD1: 주소 코드 1
+      { header: "주소코드2", name: "addrCd2",  hidden: true }, // ADDR_CD2: 주소 코드 2      
    
  
    ];
@@ -1069,6 +1081,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       { header: "품목코드", name: "itemCd", width: 120, align: "center" }, // ITEM_CD: 품목 코드
       { header: "품목명", width: 300, name: "itemNm",}, // ITEM_NM: 품목명
       { header: "규격", name: "spec", width: 200, align: "center" }, // SPEC: 규격
+      { header: "품목구분", name: "itemDivNm" }, // ITEM_DIV: 품목 구분   
       { header: "판매가격", name: "salePrice", width: 120, align: "right",
          formatter: function (e: any) {return commas(e.value); }
       }, // SALE_PRICE: 판매 가격
@@ -1076,11 +1089,11 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
          formatter: function (e: any) { return commas(e.value); }
       }, // COST_PRICE: 원가
       { header: "작업코드", name: "workCd", width: 120, align: "center", hidden: true }, // WORK_CD: 작업 코드
-      { header: "품목그룹", name: "itemGrp", width: 150, align: "center", hidden: true  }, // ITEM_GRP: 품목 그룹
-      { header: "품목구분", name: "itemDiv", width: 150, align: "center" , hidden: true }, // ITEM_DIV: 품목 구분
+      // { header: "품목그룹", name: "itemGrp", width: 150, align: "center", hidden: true  }, // ITEM_GRP: 품목 그룹
+      
       { header: "작업명", name: "workNm", width: 120, align: "center" }, // WORK_CD: 작업 코드
-      { header: "품목그룹", name: "itemGrpNm", width: 150  }, // ITEM_GRP: 품목 그룹
-      { header: "품목구분", name: "itemDivNm" }, // ITEM_DIV: 품목 구분      
+      // { header: "품목그룹", name: "itemGrpNm", width: 150  }, // ITEM_GRP: 품목 그룹
+      // { header: "품목구분", name: "itemDivNm" }, // ITEM_DIV: 품목 구분      
     ];    
 
    const grid3 = () => (
@@ -1148,6 +1161,10 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const buttonDiv = () => (
       <div className="flex justify-end space-x-2">
+         <button type="button" onClick={create} className="bg-orange-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+            <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
+            신규
+         </button>
          <button type="button" onClick={del} className="bg-rose-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
             <TrashIcon className="w-5 h-5 mr-1" />
             삭제
@@ -1164,7 +1181,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
             <button
                type="button"
                onClick={confirm}
-               className="bg-blue-500 text-white rounded-lg px-2 py-1 flex items-center shadow"
+               className="bg-purple-500 text-white rounded-lg px-2 py-1 flex items-center shadow"
             >
                <ServerIcon className="w-5 h-5 mr-1" />
                발주확정
@@ -1174,7 +1191,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
             <button
                type="button"
                onClick={cancel}
-               className="bg-blue-500 text-white rounded-lg px-2 py-1 flex items-center shadow"
+               className="bg-purple-500 text-white rounded-lg px-2 py-1 flex items-center shadow"
             >
                <ServerIcon className="w-5 h-5 mr-1" />
                발주취소

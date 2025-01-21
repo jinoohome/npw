@@ -455,7 +455,11 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const cfmSave = async (cfmYn2:string) => {
- 
+      if (!inputValues.finishDt) {
+         alertSwal("설치완료일을 입력해주세요.", "", "warning");
+         return;
+      }
+      
       inputValues.cfmFlag2 = cfmYn2;
 
       if(cfmYn2 === "Y"){
@@ -730,10 +734,9 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       ? [
       {
          header: "변경전단가",
-         name: "soPrice",
+         name: "orgPoPrice",
          width: 100,
          align: "right",
-         editor: "text",
          //hidden: true,
          formatter: function (e: any) {
             return commas(e.value);
@@ -818,6 +821,36 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       { header: "비고", name: "remark", editor: "text" }, // REMARK: 비고
    ];
 
+   const summary = {
+      height: 40,
+      position: 'top', 
+      columnContent: {
+         poPrice: {
+            template: (e:any) => {
+                return `합계 : `;
+            }
+         },
+         poAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+         poNetAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },  
+         poVatAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },            
+      }
+   }
+
    const grid = () => (
       <div className="border rounded-md p-2 space-y-2 w-full">
          <div className="flex justify-between items-center text-sm">
@@ -841,7 +874,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 gridRef={gridRef} columns={columns} headerHeight={30} handleFocusChange={() => {}} handleAfterChange={handleGridChange} perPageYn={false} height={window.innerHeight - 750} />
+         <TuiGrid01 gridRef={gridRef} columns={columns} summary={summary} headerHeight={30} handleFocusChange={() => {}} handleAfterChange={handleGridChange} perPageYn={false} height={window.innerHeight - 750} />
       </div>
    );
 

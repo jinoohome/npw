@@ -32,6 +32,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       endDate: date(),
       payYnS: '999',
       closeYnS: 'N',
+      status: '999',
    });
 
    const onInputChange = (name: string, value: any) => {
@@ -109,7 +110,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       };
   
       handleSearch();
-  }, [inputValues.payYnS, inputValues.closeYnS]);
+  }, [inputValues.payYnS, inputValues.closeYnS, inputValues.status]);
 
  
    //---------------------- api -----------------------------
@@ -127,6 +128,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
           payYn: inputValues.payYnS || '999',
           yyyyMm: '999',
           closeYn: inputValues.closeYnS || '999',
+          status: inputValues.status || '999',
         };
     
         const data = JSON.stringify(param);
@@ -334,6 +336,17 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                               //초기값 세팅시
                               datas={[{value : '999', label : '전체'},{value : 'Y', label : '마감완료'},{value : 'N', label : '마감전'}]}
             />
+            <SelectSearchComp title="진행상태" 
+                              ref={searchRef6}
+                              value={inputValues.status}
+                              onChange={(label, value) => {
+                                    onInputChange('status', value);
+                                 }}                           
+
+                              //초기값 세팅시
+                              param={{ coCd: "999", majorCode: "FU0009", div: "999" }}
+                              procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
+               />
          </div>
       </div>
    );
@@ -350,13 +363,14 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "재직구분", name: "subCodeNm", width: 100 },
       { header: "대상자", name: "ownNm", width: 80, align: "center" },
       { header: "품목", name: "itemNm", width: 280 },      
-      { header: "매출금액", name: "soAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "미결제금액", name: "noPay", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "매출금액", name: "soAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "미결제금액", name: "noPay", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "계산서발행", name: "receiptAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "카드결제", name: "cardAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "현금결제", name: "cashAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "입금일", name: "chkCashDt", align: "center", width: 120, editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },
       { header: "패키지", name: "pkgItemNm", width: 120 },
+      { header: "주문상태", name: "poStatusNm", width: 120 },
    ];
 
    const summary = {

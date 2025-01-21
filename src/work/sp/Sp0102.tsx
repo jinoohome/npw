@@ -72,6 +72,7 @@ const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
 
    //------------------useEffect--------------------------
    useEffect(() => {
+  
       reSizeGrid({ ref: gridRef, containerRef: gridContainerRef, sec: 200 });
       reSizeGrid({ ref: gridRef2, containerRef: gridContainerRef2, sec: 200 });
       reSizeGrid({ ref: gridRef3, containerRef: gridContainerRef3, sec: 200 });
@@ -80,7 +81,8 @@ const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
 
    // 탭 클릭시 Grid 리사이즈
    useEffect(() => {
-      refreshGrid(gridRef);
+      refreshGrid(gridRef2);
+     
     }, [activeComp]);
 
    useEffect(() => {
@@ -92,6 +94,7 @@ const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
       if (gridRef2.current && inputValues.gridDatas2) {
          let grid = gridRef2.current.getInstance();
 
+      
          grid.resetData(inputValues.gridDatas2);
          if (inputValues.gridDatas2.length > 0) {
             //grid.focusAt(inputValues.focusKey, 0, true);

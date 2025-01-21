@@ -123,7 +123,6 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
          excelYn : inputValues.searchExcelYn || "999",
       };
 
-      console.log(param)
       const data = JSON.stringify(param);
       const result = await fetchPost("SP0104_S01", { data });
 
@@ -270,7 +269,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
 
    // 탭 클릭시 Grid 리사이즈
    useEffect(() => {
-      refreshGrid(gridRef);
+      refreshGrid(gridRef2);
     }, [activeComp]);
 
    useEffect(() => {
@@ -311,6 +310,10 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
          refreshGrid(gridRef3);
       }
    }, [inputValues.gridDatas3]);
+
+   useEffect(() => {
+         search();
+   }, [inputValues.searchExcelYn]);
 
 
 
@@ -699,15 +702,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
     {
        header: "수량", name: "qty", width: 60, align: "right", editor: "text",
        formatter: function (e: any) { return commas(e.value);},
-    }, // QTY: 수량
-    {
-       header: "판매단가", name: "soPrice", width: 100, align: "right", editor: "text", hidden: true,
-       formatter: function (e: any) { return commas(e.value); },
-    }, // SO_PRICE: 발주 가격
-    {
-       header: "금액", name: "soAmt", width: 120, align: "right", hidden: true,
-       formatter: function (e: any) { return commas(e.value); },
-    }, // SO_AMT: 발주 금액
+    }, // QTY: 수량    
     {
        header: "공급가액", name: "soNetAmt", width: 120, align: "right", hidden: true,
        formatter: function (e: any) {  return commas(e.value); },
@@ -767,25 +762,25 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
 
    const columns2 = [
       { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
-      { header: "발주번호", name: "soNo", width: 130, align: "center", rowSpan: true,   }, // SO_NO: 발주 번호
+      { header: "발주번호", name: "soNo", width: 120, align: "center", rowSpan: true,   }, // SO_NO: 발주 번호
       { header: "구분번호", name: "soSeq", width: 120, align: "center", hidden: true }, // SO_NO: 발주 번호
-      { header: "사업장", name: "bpNm", width: 150, rowSpan: false }, 
+      { header: "사업장", name: "bpNm", width: 250, rowSpan: true }, 
       { header: "사업장", name: "bpCd", width: 300,   hidden: true }, 
       { header: "작업명", name: "workCd", width: 250,  hidden: true }, 
-      { header: "작업명", name: "workNm", width: 100 }, 
+      { header: "작업명", name: "workNm", width: 150 }, 
       { header: "협력업체", name: "poBpCd", width: 300,  hidden: true }, 
-      { header: "협력업체", name: "poBpNm", width: 100 }, 
+      { header: "협력업체", name: "poBpNm", width: 150 }, 
      // { header: "신청일자", name: "orderDt", width: 120, align: "center", }, // ORDER_DT: 발주 일자
-      { header: "수주일자", name: "reqDt", width: 120, align: "center" }, // REQ_DT: 요청 일자
-      { header: "발주확정일자", name: "cfmDt", width: 120, align: "center" }, // REQ_DT: 요청 일자
-      { header: "발주상태", name: "orderStatus", width: 100, align: "center", hidden: true }, // 
+      { header: "수주일자", name: "reqDt", width: 80, align: "center" }, // REQ_DT: 요청 일자
+      { header: "발주확정일자", name: "cfmDt", width: 100, align: "center" }, // REQ_DT: 요청 일자
+      { header: "발주상태", name: "orderStatus", width: 90, align: "center", hidden: true }, // 
       { header: "진행상태", name: "workStatus", width: 100, align: "center", hidden: true }, // 
-      { header: "진행상태", name: "workStatusNm", width: 100, align: "center",  }, // 
-      { header: "설치희망일", name: "hopeDt", width: 100, align: "center" }, // 
-      { header: "설치요청일", name: "workReqDt", width: 100, align: "center" }, // 
-      { header: "설치예정일", name: "expectDt", width: 100, align: "center" }, //
-      { header: "설치완료일", name: "finishDt", width: 100, align: "center" }, // 
-      { header: "수량", name: "qty", width: 100, align: "center"}, // 
+      { header: "진행상태", name: "workStatusNm", width: 90, align: "center",  }, // 
+      { header: "설치희망일", name: "hopeDt", width: 90, align: "center" }, // 
+      { header: "설치요청일", name: "workReqDt", width: 90, align: "center" }, // 
+      { header: "설치예정일", name: "expectDt", width: 90, align: "center" }, //
+      { header: "설치완료일", name: "finishDt", width: 90, align: "center" }, // 
+      { header: "수량", name: "qty", width: 70, align: "center"}, // 
    
       {
          header: "단가", name: "poPrice", width: 80, align: "right", editor: "text",
@@ -804,7 +799,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
          formatter: function (e: any) {  return commas(e.value);  },
       }, // PO_VAT_AMT: 발주 부가세
       { header: "구분", name: "workDiv", width: 100, align: "center" }, // 
-      { header: "비고", name: "remark", width: 100, align: "center"}, // 
+      { header: "비고", name: "remark", width: 200, align: "center"}, // 
       { header: "확정여부", name: "cfmFlag", width: 100, align: "center", hidden:true }, // 
    
  
@@ -1111,7 +1106,6 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
                   onChange={(label, value) => {
                      onInputChange("searchExcelYn", value);
                   }}
-                  handleCallSearch={search}
                   datas={[{value : '999', label : '전체'},{value : 'Y', label : '사용'},{value : 'N', label : '미사용'}]}
                   
                />

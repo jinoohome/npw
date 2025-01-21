@@ -76,30 +76,30 @@ const So0102 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    useEffect(() => {
       if (GridRef1.current && gridDatas1) {
          const gridInstance = GridRef1.current.getInstance();
-         
-         // gridDatas1을 순회하며 조건에 따라 컬럼을 활성화 또는 비활성화
+         gridInstance.resetData(gridDatas1);
+   
          gridDatas1.forEach((row, index) => {
-            if (row) {
-               // 카드 입금일은 카드 결제금액이 0보다 클 때만 활성화
-               if (row.cardAmt > 0) {
-                  gridInstance.enableColumn('chkCardDt');
-               } else {
-                  gridInstance.disableColumn('chkCardDt');
-               }
+            const rowKey = index; // 각 행의 고유 키
    
-               // 계산서 입금일은 계산서 발행금액이 0보다 클 때만 활성화
-               if (row.receiptAmt > 0) {
-                  gridInstance.enableColumn('chkReceiptDt');
-               } else {
-                  gridInstance.disableColumn('chkReceiptDt');
-               }
+            // receiptAmt 값이 있는 경우 chkReceiptDt 활성화, 없으면 비활성화
+            if (row.receiptAmt > 0) {
+               gridInstance.enableCell(rowKey, 'chkReceiptDt'); // 활성화
+            } else {
+               gridInstance.disableCell(rowKey, 'chkReceiptDt'); // 비활성화
+            }
    
-               // 입금일은 현금 결제금액이 0보다 클 때만 활성화
-               if (row.cashAmt > 0) {
-                  gridInstance.enableColumn('chkCashDt');
-               } else {
-                  gridInstance.disableColumn('chkCashDt');
-               }
+            // cardAmt 값이 있는 경우 chkCardDt 활성화, 없으면 비활성화
+            if (row.cardAmt > 0) {
+               gridInstance.enableCell(rowKey, 'chkCardDt'); // 활성화
+            } else {
+               gridInstance.disableCell(rowKey, 'chkCardDt'); // 비활성화
+            }
+   
+            // cashAmt 값이 있는 경우 chkCashDt 활성화, 없으면 비활성화
+            if (row.cashAmt > 0) {
+               gridInstance.enableCell(rowKey, 'chkCashDt'); // 활성화
+            } else {
+               gridInstance.disableCell(rowKey, 'chkCashDt'); // 비활성화
             }
          });
       }
