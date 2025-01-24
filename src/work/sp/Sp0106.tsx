@@ -19,7 +19,7 @@ interface Props {
 }
 
 const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
-   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발주관리" }, { name: "완료보고" }];
+   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발주관리" }, { name: "완료보고조회" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
       gridDatas2: [],
@@ -267,7 +267,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
 
    // 탭 클릭시 Grid 리사이즈
    useEffect(() => {
-      refreshGrid(gridRef);
+      refreshGrid(gridRef2);
     }, [activeComp]);
 
    useEffect(() => {
@@ -777,10 +777,10 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
       { header: "발주상태", name: "orderStatus", width: 100, align: "center", hidden: true }, // 
       { header: "진행상태", name: "workStatus", width: 80, align: "center", hidden: true }, // 
       { header: "진행상태", name: "workStatusNm", width: 80, align: "center",  }, // 
-      { header: "설치희망일", name: "hopeDt", width: 90, align: "center" }, // 
-      { header: "설치요청일", name: "workReqDt", width: 90, align: "center" }, // 
-      { header: "설치예정일", name: "expectDt", width: 90, align: "center" }, //
-      { header: "설치완료일", name: "finishDt", width: 90, align: "center" }, // 
+      { header: "작업희망일", name: "hopeDt", width: 90, align: "center" }, // 
+      { header: "작업요청일", name: "workReqDt", width: 90, align: "center" }, // 
+      { header: "작업예정일", name: "expectDt", width: 90, align: "center" }, //
+      { header: "작업완료일", name: "finishDt", width: 90, align: "center" }, // 
       { header: "수량", name: "qty", width: 60, align: "center"}, // 
       { header: "구분", name: "workDiv", width: 80, align: "center" }, // 
       { header: "비고", name: "remark", align: "center"}, // 
@@ -961,14 +961,14 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
 
             <div className="grid grid-cols-3 gap-y-2 justify-start">
                <DatePickerComp
-                  title="설치예정일"
+                  title="작업예정일"
                   value={inputValues.expectDt}
                   onChange={(e) => {
                      onInputChange("expectDt", e);
                   }}
                />
                <DatePickerComp
-                  title="설치요청일"
+                  title="작업요청일"
                   value={inputValues.workReqDt}
                   readonly={true}
                   onChange={(e) => {
@@ -977,7 +977,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
                />
 
                    {/* <DatePickerComp
-                  title="설치희망일"
+                  title="작업희망일"
                   value={inputValues.hopeDt}
                   onChange={(e) => {
                      onInputChange("hopeDt", e);
@@ -987,7 +987,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
                
                {/* 
                <DatePickerComp
-                  title="설치완료일"
+                  title="작업완료일"
                   value={inputValues.finishDt}
                   onChange={(e) => {
                      onInputChange("finishDt", e);

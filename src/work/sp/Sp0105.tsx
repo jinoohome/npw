@@ -34,6 +34,8 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
       focusKey: 0,
       searchWorkStatus :'999',
       workDivSearch :'999',
+      jiBonSearch :'999',
+      siGunSearch :'999',
       searchWorkNm :'999',
       startDt: date(-1, 'month'),
       endDt: date(),
@@ -106,6 +108,8 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
          workNm: inputValues.searchWorkNm || "999",
          workStatus: inputValues.searchWorkStatus ,
          workDivSearch: inputValues.workDivSearch ,
+         jiBonSearch: inputValues.jiBonSearch ,
+         siGunSearch: inputValues.siGunSearch ,
       };
 
       const data = JSON.stringify(param);
@@ -260,7 +264,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
 
    useEffect(() => {
         search();
-    }, [inputValues.searchWorkStatus, inputValues.searchWorkNm, inputValues.workDivSearch]);
+    }, [inputValues.searchWorkStatus, inputValues.searchWorkNm, inputValues.workDivSearch, inputValues.jiBonSearch, inputValues.siGunSearch]);
     
 
    useEffect(() => {
@@ -777,11 +781,13 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
       { header: "요청일자", name: "reqDt", width: 80, align: "center" }, // REQ_DT: 요청 일자
       { header: "수주상태", name: "orderStatus", width: 100, align: "center", hidden: true }, // 
       { header: "진행상태", name: "workStatus", width: 100, align: "center", hidden: true }, // 
-      { header: "진행상태", name: "workStatusNm", align: "center",  }, // 
-      { header: "설치희망일", name: "hopeDt", width: 100, align: "center",  hidden: true }, // 
-      { header: "설치요청일", name: "workReqDt", width: 100, align: "center",  hidden: true }, // 
-      { header: "설치예정일", name: "expectDt", width: 100, align: "center",  hidden: true }, //
-      { header: "설치완료일", name: "finishDt", width: 100, align: "center", hidden: true }, // 
+      { header: "진행상태", name: "workStatusNm", width: 100, align: "center",  }, // 
+      { header: "지본", name: "jiBonNm", width: 100  }, // 
+      { header: "시군지부", name: "siGunNm", width: 100  }, // 
+      { header: "작업희망일", name: "hopeDt", width: 100, align: "center",  hidden: true }, // 
+      { header: "작업요청일", name: "workReqDt", width: 100, align: "center",  hidden: true }, // 
+      { header: "작업예정일", name: "expectDt", width: 100, align: "center",  hidden: true }, //
+      { header: "작업완료일", name: "finishDt", width: 100, align: "center", hidden: true }, // 
       { header: "수량", name: "qty", width: 100, align: "center",  hidden: true }, // 
       { header: "구분", name: "workDiv", width: 100, align: "center",  hidden: true }, // 
       { header: "비고", name: "remark", width: 100, align: "center",  hidden: true }, // 
@@ -966,7 +972,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
 
             <div className="grid grid-cols-3 gap-y-2 justify-start">
                <DatePickerComp
-                  title="설치예정일"
+                  title="작업예정일"
                   value={inputValues.expectDt}
                   onChange={(e) => {
                      onInputChange("expectDt", e);
@@ -974,7 +980,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
                   require={true}
                />
                <DatePickerComp
-                  title="설치요청일"
+                  title="작업요청일"
                   value={inputValues.workReqDt}
                   readonly={true}
                   onChange={(e) => {
@@ -983,7 +989,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
                />
 
                    {/* <DatePickerComp
-                  title="설치희망일"
+                  title="작업희망일"
                   value={inputValues.hopeDt}
                   onChange={(e) => {
                      onInputChange("hopeDt", e);
@@ -993,7 +999,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
                
                {/* 
                <DatePickerComp
-                  title="설치완료일"
+                  title="작업완료일"
                   value={inputValues.finishDt}
                   onChange={(e) => {
                      onInputChange("finishDt", e);
@@ -1007,7 +1013,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
      //검색창 div
      const searchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
-         <div className="grid grid-cols-4  gap-y-3  justify-start w-[80%]">
+         <div className="grid grid-cols-5  gap-y-3  justify-start w-[100%]">
             <DateRangePickerComp 
                   title="발주확정일시"
                   startValue= {inputValues.startDt}
@@ -1048,7 +1054,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
                <InputComp title="협력업체" value={inputValues.searchPoBpNm}  handleCallSearch={search} onChange={(e) => onInputChange("searchPoBpNm", e)} />
             )}
 
-            <SelectSearchComp title="구분" 
+            <SelectSearch title="구분" 
                               value={inputValues.workDivSearch}
                               onChange={(label, value) => {
                                     onInputChange('workDivSearch', value);
@@ -1056,6 +1062,26 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
 
                               //초기값 세팅시
                               param={{ coCd: "999", majorCode: "MA0004", div: "999" }}
+                              procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
+               />
+            <SelectSearch title="지본" 
+                              value={inputValues.jiBonSearch}
+                              onChange={(label, value) => {
+                                    onInputChange('jiBonSearch', value);
+                                 }}                           
+
+                              //초기값 세팅시
+                              param={{ coCd: "999", majorCode: "MA0002", div: "999" }}
+                              procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
+               />
+            <SelectSearch title="시군지부" 
+                              value={inputValues.siGunSearch}
+                              onChange={(label, value) => {
+                                    onInputChange('siGunSearch', value);
+                                 }}                           
+
+                              //초기값 세팅시
+                              param={{ coCd: "999", majorCode: "MA0003", div: "999" }}
                               procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
                />
           

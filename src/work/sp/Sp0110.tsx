@@ -351,7 +351,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
          const updatedResult = result.map((item: any) => ({
             ...item,
             _attributes: {
-                checked: true, // 체크박스를 true로 설정
+                checked: false, // 체크박스를 true로 설정
             },
         }));
 
@@ -1116,7 +1116,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       { header: "희망일", name: "hopeDt", width: 120, align: "center",    
        editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },  
       { header: "요청일", name: "reqDt", width: 120, align: "center" ,
-      editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },  
+      editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } }, hidden: true },  
       { header: "수량", name: "qty", width: 80, align: "center", editor: 'text',
           formatter: function (e: any) { if (e.value) { return commas(e.value); } }
       }, // QTY: 수량

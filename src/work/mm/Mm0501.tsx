@@ -318,6 +318,8 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             div: inputValues.div,
          };
 
+         console.log(param);
+
          const data = JSON.stringify(param);
          const result = await fetchPost(`MM0501_P01`, { data });
          setGridDatas5(result);

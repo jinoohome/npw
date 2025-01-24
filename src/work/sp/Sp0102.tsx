@@ -142,10 +142,10 @@ const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
       { header: "요청일자", name: "reqDt", width: 80, align: "center" }, // REQ_DT: 요청 일자
       { header: "수주상태", name: "orderStatus", width: 100, align: "center", hidden: true }, // 
       { header: "진행상태", name: "workStatusNm", width: 80, align: "center",  }, // 
-      { header: "설치희망일", name: "hopeDt", width: 90, align: "center" }, // 
-      { header: "설치요청일", name: "workReqDt", width: 90, align: "center" }, // 
-      { header: "설치예정일", name: "expectDt", width: 90, align: "center" }, //
-      { header: "설치완료일", name: "finishDt", width: 90, align: "center" }, // 
+      { header: "작업희망일", name: "hopeDt", width: 90, align: "center" }, // 
+      { header: "작업요청일", name: "workReqDt", width: 90, align: "center" }, // 
+      { header: "작업예정일", name: "expectDt", width: 90, align: "center" }, //
+      { header: "작업완료일", name: "finishDt", width: 90, align: "center" }, // 
       { header: "구분", name: "workDiv", width: 80, align: "center" }, // 
       // { header: "수량", name: "qty", width: 60, align: "center"}, // 
       // { header: "매출단가", name: "soPrice", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },

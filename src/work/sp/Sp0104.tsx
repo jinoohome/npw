@@ -776,10 +776,10 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
       { header: "발주상태", name: "orderStatus", width: 90, align: "center", hidden: true }, // 
       { header: "진행상태", name: "workStatus", width: 100, align: "center", hidden: true }, // 
       { header: "진행상태", name: "workStatusNm", width: 90, align: "center",  }, // 
-      { header: "설치희망일", name: "hopeDt", width: 90, align: "center" }, // 
-      { header: "설치요청일", name: "workReqDt", width: 90, align: "center" }, // 
-      { header: "설치예정일", name: "expectDt", width: 90, align: "center" }, //
-      { header: "설치완료일", name: "finishDt", width: 90, align: "center" }, // 
+      { header: "작업희망일", name: "hopeDt", width: 90, align: "center" }, // 
+      { header: "작업요청일", name: "workReqDt", width: 90, align: "center" }, // 
+      { header: "작업예정일", name: "expectDt", width: 90, align: "center" }, //
+      { header: "작업완료일", name: "finishDt", width: 90, align: "center" }, // 
       { header: "수량", name: "qty", width: 70, align: "center"}, // 
    
       {
@@ -787,7 +787,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
          formatter: function (e: any) {  return commas(e.value); },
       }, // PO_PRICE: 발주 가격
       {
-         header: "금액", name: "poAmt", width: 80, align: "right", 
+         header: "금액", name: "poAmt", width: 90, align: "right", 
          formatter: function (e: any) {  return commas(e.value); },
       }, // PO_AMT: 발주 금액
       {
@@ -799,7 +799,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
          formatter: function (e: any) {  return commas(e.value);  },
       }, // PO_VAT_AMT: 발주 부가세
       { header: "구분", name: "workDiv", width: 100, align: "center" }, // 
-      { header: "비고", name: "remark", width: 200, align: "center"}, // 
+      { header: "비고", name: "remark", width: 200}, // 
       { header: "확정여부", name: "cfmFlag", width: 100, align: "center", hidden:true }, // 
    
  
@@ -1010,14 +1010,14 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
 
             <div className="grid grid-cols-3 gap-y-2 justify-start">
                <DatePickerComp
-                  title="설치예정일"
+                  title="작업예정일"
                   value={inputValues.expectDt}
                   onChange={(e) => {
                      onInputChange("expectDt", e);
                   }}
                />
                <DatePickerComp
-                  title="설치요청일"
+                  title="작업요청일"
                   value={inputValues.workReqDt}
                   readonly={true}
                   onChange={(e) => {
@@ -1026,7 +1026,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
                />
 
                    {/* <DatePickerComp
-                  title="설치희망일"
+                  title="작업희망일"
                   value={inputValues.hopeDt}
                   onChange={(e) => {
                      onInputChange("hopeDt", e);
@@ -1036,7 +1036,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
                
                {/* 
                <DatePickerComp
-                  title="설치완료일"
+                  title="작업완료일"
                   value={inputValues.finishDt}
                   onChange={(e) => {
                      onInputChange("finishDt", e);

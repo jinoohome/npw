@@ -361,9 +361,11 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       const param = {
          coCd: '100',
          bpNm: searchRef1.current?.value || '999',
-         bpDiv: 'ZZ0188',
+         bpType: 'ZZ0002',
+         bpDiv: '999',
       };
       const data = JSON.stringify(param);
+  
       const result = await fetchPost("ZZ_B_PO_BP", { data });
       setGridDatas4(result);
    };
@@ -443,10 +445,12 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       const param = {
          coCd: '100',
          bpNm: target.value || '999',
-         bpDiv: 'ZZ0188',
+         bpType: 'ZZ0002',
+         bpDiv: '999',
       };
       const data = JSON.stringify(param);
       const result = await fetchPost("ZZ_B_PO_BP", { data });
+
       setGridDatas4(result);
       if (result.length === 1) {
             onInputChange('subCode', '');
@@ -479,10 +483,12 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
       const param = {
          coCd: '100',
          bpNm: '999',
-         bpDiv: 'ZZ0188',
+         bpType: 'ZZ0002',
+         bpDiv: '999',
       };
       const data = JSON.stringify(param);
       const result = await fetchPost("ZZ_B_PO_BP", { data });
+
       setGridDatas4(result);
       
       await setIsOpen(true);

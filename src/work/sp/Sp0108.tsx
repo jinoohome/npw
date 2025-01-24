@@ -181,29 +181,29 @@ const Sp0108 = ({ item, activeComp, userInfo }: Props) => {
                }}
                datas={[
                   { value: "999", label: "전체" },
-                  { value: "H", label: "설치희망일" },
-                  { value: "R", label: "설치요청일" },
-                  { value: "E", label: "설치예정일" },
-                  { value: "F", label: "설치완료일" },
+                  { value: "H", label: "작업희망일" },
+                  { value: "R", label: "작업요청일" },
+                  { value: "E", label: "작업예정일" },
+                  { value: "F", label: "작업완료일" },
                ]}
             />
          </div>
          <div className="flex space-x-4">
             {/* <div className="flex items-center space-x-2">
                <div className="w-4 h-4 bg-red-500"></div>
-               <span>설치희망일</span>
+               <span>작업희망일</span>
             </div>
             <div className="flex items-center space-x-2">
                <div className="w-4 h-4 bg-orange-500"></div>
-               <span>설치요청일</span>
+               <span>작업요청일</span>
             </div> */}
             <div className="flex items-center space-x-2">
                <div className="w-4 h-4 bg-yellow-400"></div>
-               <span>설치예정일</span>
+               <span>작업예정일</span>
             </div>
             <div className="flex items-center space-x-2">
                <div className="w-4 h-4 bg-green-500"></div>
-               <span>설치완료일</span>
+               <span>작업완료일</span>
             </div>
          </div>
       </div>

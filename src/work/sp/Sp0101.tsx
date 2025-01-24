@@ -232,6 +232,12 @@ useEffect(() => {
       
    }, []);
 
+   // 탭 클릭시 Grid 리사이즈
+   useEffect(() => {
+    refreshGrid(gridRef);
+    refreshGrid(gridRef2);
+  }, [activeComp]);
+
    useEffect(() => {
        if (gridRef.current && inputValues.gridDatas1) {
            let grid = gridRef.current.getInstance();

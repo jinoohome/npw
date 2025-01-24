@@ -173,8 +173,8 @@ const Mm0402 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
                         stringify={true}
                         
-                        param={{ poBpCd: inputValues.bpCd || "999", }}
-                        procedure="ZZ_WH_INFO"
+                        param={{ bpCd: inputValues.bpCd || "999", whNm: "999" }}
+                        procedure="MM0501_S02"
                         dataKey={{ label: "whNm", value: "whCd" }}
                />
             <InputComp title="품목"

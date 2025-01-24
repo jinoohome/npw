@@ -71,6 +71,12 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
       search();
    }, []);
 
+   // 탭 클릭시 Grid 리사이즈
+   useEffect(() => {
+      refreshGrid(gridRef2);
+      refreshGrid(gridRef3);
+    }, [activeComp]);
+
    useEffect(() => {
       search();
    }, [inputValues.workCdS]);
