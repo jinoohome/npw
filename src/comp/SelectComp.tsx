@@ -351,6 +351,8 @@ interface SelectSearchProps {
    minWidth?: string;
    datas?: any[];
    readonly?: boolean; 
+   required?: boolean;
+   errorMsg?: string;
    addData?: any;
    textAlign?: "left" | "center" | "right";
  }
@@ -372,7 +374,9 @@ interface SelectSearchProps {
    minWidth,
    datas,
    readonly = false, 
+   required = false,
    addData,
+   errorMsg,
    textAlign="right"
  }: SelectSearchProps) => {
    const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
@@ -466,6 +470,7 @@ interface SelectSearchProps {
    };
 
    return (
+      <div>
      <div
        className={` ${
          layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""
@@ -481,7 +486,7 @@ interface SelectSearchProps {
          }}>
         
        
-         {title}
+        {title} {required && <span className="text-red-500">*</span>} 
        </label>
        <div
          className={`${
@@ -500,6 +505,8 @@ interface SelectSearchProps {
            isDisabled={readonly}
          />
        </div>
+     </div>
+     {errorMsg && <label className="text-sm text-rose-500 flex justify-end">{errorMsg}</label>}
      </div>
    );
 };

@@ -54,7 +54,7 @@ const refreshAccessToken = async () => {
          throw new Error("Refresh Token이 없습니다. 다시 로그인하세요.");
       }
 
-      // console.log("refreshToken", refreshToken);
+       console.log("refreshToken", refreshToken);
 
       const response = await fetch(`${baseURL}/ZZ_TOKEN_CHECK`, {
          method: "POST",
@@ -84,7 +84,7 @@ const refreshAccessToken = async () => {
 
       // 토큰 갱신 실패 시 처리: 세션 초기화 및 로그인 페이지 이동
       sessionStorage.clear();
-      window.location.href = "/login"; // 필요 시 React Router로 navigate("/login") 사용
+      window.location.href = "/Login"; // 필요 시 React Router로 navigate("/login") 사용
    }
 };
 

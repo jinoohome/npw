@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import "../css/gridSelectjs.css";
+import { read } from "fs";
 
 interface SelectOption {
   text: string;
@@ -15,6 +16,7 @@ interface CustomMUISelectEditorProps {
       options: {
         listItems: Array<SelectOption>; // Choices.js와 동일한 구조로 유지
         onChange?: (value: string) => void;
+        readonly?: boolean;
       };
     };
   };
@@ -27,6 +29,7 @@ class CustomMUISelectEditor {
   listItems: Array<SelectOption>;
   onChange?: (value: string, event?:any)  => void;
   root: any;
+  readonly: boolean;
 
   constructor(props: CustomMUISelectEditorProps) {
     this.el = document.createElement("div");
@@ -36,6 +39,7 @@ class CustomMUISelectEditor {
     this.value = value;
     this.onChange = columnInfo.editor.options.onChange;
     this.root = null;
+    this.readonly = columnInfo.editor.options.readonly || false;
   }
 
   getElement(): HTMLElement {
@@ -89,6 +93,7 @@ class CustomMUISelectEditor {
           )}
           autoHighlight
           openOnFocus
+          readOnly={this.readonly}
           renderOption={(props, option) => {
             const { key, ...rest } = props; // props에서 key를 제거
           

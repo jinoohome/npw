@@ -23,6 +23,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    //검색창 ref
     const searchRef1 = useRef<any>(null);
     const searchRef2 = useRef<any>(null);
+    const searchRef3 = useRef<any>(null);
 
    const refs = {
       preRcptNo: useRef<any>(null),
@@ -344,11 +345,14 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
 
    //사전상담 팝업조회
    const handleCallSearch2 = async () => {
+    
+
       const param = {    
          startDt: inputValues.startDate,     
          endDt: inputValues.endDate,     
          reqNm: '999',
          ownNm: searchRef2.current?.value || '999',
+         reqTelNo : searchRef3.current?.value || '999',
          bpNm: '999',
       };
       const data = JSON.stringify(param);
@@ -496,7 +500,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    const modalSearchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
          <div className="w-full flex justify-between">
-            <div className="grid grid-cols-2 justify-start ">
+            <div className="grid grid-cols-2 gap-y-2 justify-start ">
                <DateRangePickerComp 
                      title="접수기간"
                      startValue= {inputValues.startDate}
@@ -507,10 +511,11 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
                }
                
                } /> 
-               <InputComp1 ref={searchRef2} handleCallSearch={handleCallSearch2} title="대상자"></InputComp1>              
+               <InputComp1 ref={searchRef2} handleCallSearch={handleCallSearch2} title="대상자"></InputComp1>    
+               <InputComp1 ref={searchRef3} handleCallSearch={handleCallSearch2} title="신청자연락처"></InputComp1>              
             </div>
             <div className="w-[20%] flex justify-end">
-               <button type="button" onClick={handleCallSearch2} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+               <button type="button" onClick={handleCallSearch2} className="h-[30px] bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
                   <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
                   조회
                </button>

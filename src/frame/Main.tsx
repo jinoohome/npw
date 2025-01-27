@@ -177,11 +177,13 @@ function Main() {
    
    const addComponent = (menuItem: ZZ_MENU_RES) => {
 
+      console.log( menuItem.menuId);
+      const allowMultiple = menuItem.menuId === "3021";
       const existingComponent = components.find(
          (comp) => comp.menuId === menuItem.menuId
       );
 
-      if (existingComponent) {
+      if (existingComponent && !allowMultiple) {
          // If it exists, set it as the active component
          setActiveComp(existingComponent);
 
