@@ -264,11 +264,13 @@ interface InputSearchCompProps {
    onIconClick?: (value: string) => void;
    layout?: 'horizontal' | 'vertical' | 'flex';
    minWidth?: string;
+   required?: boolean;
+   errorMsg?: string;
    textAlign?: 'left' | 'center' | 'right';
  }
  
  const InputSearchComp = forwardRef<HTMLInputElement, InputSearchCompProps>(
-   ({ title, value = '', layout='horizontal', minWidth, target, readOnly = false, placeholder, textAlign ='right', onChange, onKeyDown, onIconClick }, ref) => {
+   ({ title, value = '', layout='horizontal', minWidth, target, readOnly = false, placeholder, textAlign ='right', required = false, errorMsg, onChange, onKeyDown, onIconClick }, ref) => {
      const inputRef = useRef<HTMLInputElement>(null);
  
      // Combine the forwarded ref with the internal ref
@@ -293,6 +295,7 @@ interface InputSearchCompProps {
      };
  
      return (
+      <div>
        <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""}
                       ${layout === "flex" ? "flex items-center space-x-2" : ""}
 
@@ -303,7 +306,9 @@ interface InputSearchCompProps {
                            `} style={{
                               ...(minWidth ? { minWidth: minWidth } : {}),
                               ...(textAlign ? { textAlign: textAlign } : {})
-                           }}>{title}</label>
+                           }}>
+                               {title} {required && <span className="text-red-500">*</span>} 
+                           </label>
         <div className={`relative ${layout === "horizontal" ? "col-span-2" : "flex-grow"}
 
         `}>
@@ -325,6 +330,8 @@ interface InputSearchCompProps {
              onClick={handleIconClick}
            />
          </div>
+       </div>
+         {errorMsg && <label className="text-rose-500 flex justify-end text-sm">{errorMsg}</label>}
        </div>
      );
    }
@@ -460,7 +467,7 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
        return (
            <div
                className={` ${layout === 'horizontal' ? 'grid grid-cols-3 gap-3 items-center' : ''} ${
-                   layout === 'flex' ? 'flex bg-gray-100 items-center space-x-2' : ''
+                   layout === 'flex' ? 'flex bg-translate items-center space-x-2' : ''
                }`}
            >
                <label

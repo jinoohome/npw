@@ -2,10 +2,12 @@ import { useEffect, useState, useRef,
    alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
    reSizeGrid, getGridDatas, InputComp, InputComp1, SelectSearch, InputSearchComp1, DateRangePickerComp, date, InputSearchComp, commas,
     RadioGroup, TextArea, Checkbox, CommonModal, DatePickerComp, formatCardNumber, formatExpiryDate, getGridCheckedDatas2 } from "../../comp/Import";
-import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, CheckIcon, TrashIcon, XMarkIcon, ReceiptRefundIcon, CreditCardIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ReactSelectEditor";
 import { set } from "date-fns";
 import { setTime } from "react-datepicker/dist/date_utils";
+import { CreditCard } from "@mui/icons-material";
+import { error } from "console";
 
 interface Props {
    item: any;
@@ -49,6 +51,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
     const searchRef6 = useRef<any>(null);
     const searchRef7 = useRef<any>(null);
     const searchRef8 = useRef<any>(null);
+    const searchRef9 = useRef<any>(null);
 
    const [tabIndex, setTabIndex] = useState(0);
    const [inputDivVisible, setInputDivVisible] = useState(0);
@@ -68,6 +71,10 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    const [gridDatasP5, setGridDatasP5] = useState<any[]>();      // 품목팝업정보
    const [gridDatasP6, setGridDatasP6] = useState<any[]>();      // 발주지점팝업정보
    
+   const [isInputReadonly, setIsInputReadonly] = useState(false);
+   const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
+
+   
 
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       startDate: date(-1, 'month'),    //주문팝업
@@ -83,6 +90,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       zzFU0007 : [], // 결제방법
     
    });
+
+   
 
    const onInputChange = (name: string, value: any) => {
       // 현재 상태와 비교하여 동일한 값이 들어오지 않을 경우에만 상태 업데이트
@@ -305,12 +314,63 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             gridInstance3.disableColumn('reason');
            
          }
-
-      
+        
       }
    }, [inputValues.dealType, gridDatas2]);
 
+   useEffect(() => {
+
+
+      const gridInstance2 = gridRef2.current.getInstance();
+      const gridInstance3 = gridRef3.current.getInstance();
+      const gridInstance7 = gridRef7.current.getInstance();
+      const gridInstance8 = gridRef8.current.getInstance();
+     
+      const disableColumns = (gridInstance: any, columns: string[]) => {
+        columns.forEach((column: string) => gridInstance.disableColumn(column));
+      };
+    
+    
+      const hideColumns = (gridInstance: any, columns: string[]) => {
+        columns.forEach((column: string) => gridInstance.hideColumn(column));
+      };
+    
+      const disableAllRowChecks = (gridInstance: any, gridData: any[]) => {
+        gridData?.forEach((_, index: number) => {
+         gridInstance.disableRowCheck(index);
+        });
+      };
+    
+      if (gridRef2.current && gridRef3.current && gridRef8.current) {
    
+    
+        if (isInputReadonly) {
+
+         setTimeout(() => {
+          // Disable columns
+          disableColumns(gridInstance2, ['soQty', 'soPrice', 'payDiv', 'reason', 'condType']);
+          disableColumns(gridInstance3, ['soQty', 'poPrice']);
+          disableColumns(gridInstance8, ['payDiv', 'reason']);
+          hideColumns(gridInstance2, ['itemBtn', 'poBpBtn']);
+          hideColumns(gridInstance7, ['tsBpBtn']);
+    
+          // Disable row checks
+          if (gridDatas1 && gridDatas1.length > 0) {
+            disableAllRowChecks(gridInstance2, gridDatas2 || []);
+            disableAllRowChecks(gridInstance3, gridDatas3 || []);
+            disableAllRowChecks(gridInstance8, gridDatas8 || []);
+          }
+         }, 500); 
+        }else{
+
+
+        }
+      }
+    }, [gridDatas2, gridDatas3, gridDatas8, isInputReadonly]);
+    
+    
+
+
     useEffect(() => {
 
       if(inputValues.cardNo){
@@ -519,7 +579,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    useEffect(() => {
       if (gridRefP2.current && gridDatasP2) {
          let gridP2 = gridRefP2.current.getInstance();
-      
+
+        
          gridP2.resetData(gridDatasP2);
          refreshGrid(gridRefP2);
          let focusRowKey = gridP2.getFocusedCell().rowKey || 0;
@@ -692,6 +753,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             ...row,
             _attributes: {
                checked: row.mandatoryYn === 'Y',
+               ...row._attributes,
             },
            
          }));
@@ -803,15 +865,25 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    //-------------------event--------------------------
 
    const search = async (soNo:any) => {
+      setErrorMsgs({});
       const param = {    
          soNo: soNo,
       };
       const data = JSON.stringify(param);
       const result = await fetchPost("SO0201_S01", {data});
 
+      
+
       // 조회된 값이 없으면 함수 종료
       if (!result || result.length === 0) {
          return;
+      }
+
+      if(result[0].confirmDt) {
+         setIsInputReadonly(true);
+      }else{
+
+         setIsInputReadonly(false);
       }
 
       handleTabIndex(0);
@@ -829,6 +901,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          ...row,
          _attributes: {
             checked: row.mandatoryYn === 'Y',
+            ...row._attributes,
          },
         
       }));
@@ -881,6 +954,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange('preRcptNo', result[0].preRcptNo);
       onInputChange('pkgYn', result[0].pkgYn);
       onInputChange('mouYn', result[0].mouYn);
+      onInputChange('memberYn', result[0].memberYn);
       onInputChange('dealType', result[0].dealType);
       onInputChange('payAmt', result[0].payAmt);      
 
@@ -888,8 +962,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const create = async () => {
+      setErrorMsgs({});
       setInputValues([]);
-      
       onInputChange('startDate', date(-1, 'month'));
       onInputChange('endDate', date());
       onInputChange('startDate2', date(-1, 'month'));
@@ -907,12 +981,17 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const save = async () => {
+
+     
+      setErrorMsgs({});
       const gridInstance = gridRef3.current.getInstance();
       gridInstance.blur();
       const gridInstance2 = gridRef7.current.getInstance();
       gridInstance2.blur();
       
       const data = await getGridValues();
+
+      if (!validateData("save", data)) return false;
 
       if (data) {
          let result = await SO0201_U05(data);
@@ -923,6 +1002,78 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       
    };
 
+   const validateData = (action: any, data: any): boolean => {
+      // Define a mapping of field keys to their user-friendly titles
+      const fieldTitles: { [key: string]: string } = {
+        bpNm: '고객사',
+        subCode: '재직구분',
+        hsCd: '신청사유',
+        itemType: '지원타입',
+        dlvyNm: '배송지',
+      };
+    
+      let dataArray: any[] = [];
+    
+      try {
+        // Parse sSoHdr if it's a JSON string
+        const parsedData = typeof data.sSoHdr === 'string' ? JSON.parse(data.sSoHdr) : data.sSoHdr;
+    
+        // Ensure parsedData is treated as an array
+        dataArray = Array.isArray(parsedData) ? parsedData : [];
+    
+        // Handle case where elements of dataArray are JSON strings
+        dataArray = dataArray.map((item) =>
+          typeof item === 'string' ? JSON.parse(item) : item
+        );
+      } catch (error) {
+        console.error('Error parsing sSoHdr:', error);
+        setErrorMsgs({ general: '데이터 파싱 중 오류가 발생했습니다.' });
+        return false;
+      }
+    
+      // List of required fields to check
+      const requiredFields = Object.keys(fieldTitles);
+      let isValid = true;
+    
+      // Reset error messages before validation
+      setErrorMsgs({});
+    
+     
+    
+      // Handle case where dataArray is empty
+      if (dataArray.length === 0) {
+      
+        setErrorMsgs({ general: '데이터가 존재하지 않습니다. 입력값을 확인해주세요.' });
+        return false;
+      }
+    
+      // Iterate over each item in the data array
+      dataArray.forEach((item: any, index: number) => {
+        requiredFields.forEach((field) => {
+          const fieldValue = item[field];
+    
+          // Check if the field value is missing or empty
+          if (
+            fieldValue === undefined ||
+            fieldValue === null ||
+            (typeof fieldValue === 'string' && fieldValue.trim() === '')
+          ) {
+           
+    
+            setErrorMsgs((prev) => ({
+              ...prev,
+              [field]: `${fieldTitles[field]}을(를) 입력해주세요.`,
+            }));
+    
+            isValid = false;
+          }
+        });
+      });
+    
+      return isValid;
+    };
+    
+    
    const returnResult = async(result:any) => {     
       search(result.soNoOut);
       alertSwal(result.msgText, result.msgCd, result.msgStatus);
@@ -1406,6 +1557,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          endDt: inputValues.endDate,     
          soNo: searchRef8.current?.value || '999',
          ownNm: searchRef1.current?.value || '999',
+         ownTelNo: searchRef9.current?.value || '999',
       };
       const data = JSON.stringify(param);
       const result = await fetchPost("SO0201_P01", { data });
@@ -1746,7 +1898,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
       onInputChange('bpNmS', e);
       const data = JSON.stringify(param);
-      const result = await fetchPost("ZZ_B_PO_BP", { data });
+      const result = await fetchPost("SO0201_P03", { data });
 
       setGridDatasP2(result);
       
@@ -2098,6 +2250,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                } /> 
                <InputComp1 ref={searchRef8} handleCallSearch={handleCallSearch2} title="주문번호"></InputComp1>   
                <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch2} title="대상자"></InputComp1>              
+               <InputComp1 ref={searchRef9} handleCallSearch={handleCallSearch2} title="대상자연락처"></InputComp1>              
             </div>
             <div className="w-[20%] flex justify-end">
                <button type="button" onClick={handleCallSearch2} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow  h-[30px]">
@@ -2227,10 +2380,13 @@ const changeSoPrice = async (price: number, rowKey: any) => {
             <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
             신규
          </button>
+         
+        
          <button type="button" onClick={save} className="bg-blue-500 text-white  rounded-lg px-2 py-1 flex items-center shadow">
             <ServerIcon className="w-5 h-5 mr-1" />
             저장
          </button>
+         
       </div>
    );
 
@@ -2255,7 +2411,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                               onChange={(label, value) => {
                                     onInputChange('rcptMeth', value);
                                  }}
-
+                              readonly={isInputReadonly}
                               //초기값 세팅시
                               param={{ coCd: "999", majorCode: "FU0003", div: "-999" }}
                               procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
@@ -2280,24 +2436,35 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                               procedure="ZZ_USER_LIST"  dataKey={{ label: 'usrNm2', value: 'usrId' }} 
                />
                <InputComp value={inputValues.ownNm} title="대상자" target="ownNm" 
+                           readOnly={isInputReadonly}
                           onChange={(e) => {
                            onInputChange('ownNm', e);                           
                         }}   />
                <InputComp value={inputValues.ownTelNo} title="연락처" target="ownTelNo" 
+                           readOnly={isInputReadonly}
                            onChange={(e) => {
                               onInputChange('ownTelNo', e);                      
                            }} 
                            handleCallSearch={handleCallSearch4} />
-               <InputSearchComp title="고객사" value={inputValues.bpNm} target="bpNm" onKeyDown={handleInputSearch2} onIconClick={handleInputSearch3}
-                                 onChange={(e) => {
+               <InputSearchComp title="고객사" value={inputValues.bpNm} target="bpNm" 
+                                onKeyDown={isInputReadonly ? undefined : handleInputSearch2} 
+                                onIconClick={isInputReadonly ? undefined : handleInputSearch3}
+                                readOnly={isInputReadonly}
+                                required={true}
+                                errorMsg={errorMsgs.bpNm}
+                                onChange={(e) => {
                                     onInputChange('bpNm', e);                           
                                 }} />
                <InputComp value={inputValues.contNo} readOnly={true} title="계약번호" target="contNo" 
+         
                           onChange={(e) => {
                            onInputChange('contNo', e);                           
                         }}   />               
                <SelectSearch title="재직구분" 
                               value={inputValues.subCode}
+                              readonly={isInputReadonly}
+                              required={true}
+                              errorMsg={errorMsgs.subCode}   
                               onChange={async (label, value) => {                                       
                                     const grid = gridRef2.current.getInstance();
                                     const firstRow = grid.getRow(0); // 첫 번째 행 가져오기 
@@ -2349,6 +2516,9 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                />         
                <SelectSearch title="신청사유" 
                               value={inputValues.hsCd}
+                              readonly={isInputReadonly}
+                              required={true}
+                              errorMsg={errorMsgs.hsCd}
                               onChange={async (label, value) => {                                    
                                  const grid = gridRef2.current.getInstance();
                                  const firstRow = grid.getRow(0); // 첫 번째 행 가져오기
@@ -2412,6 +2582,9 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                                     minWidth="80px"
                                     layout="flex"
                                     textAlign="right"
+                                    required={true}
+                                    errorMsg={errorMsgs.itemType}
+                                    readonly={isInputReadonly}
                                     onChange={async (label, value) => {
                                        const grid = gridRef2.current.getInstance();
                                        const firstRow = grid.getRow(0); // 첫 번째 행 가져오기 
@@ -2464,10 +2637,12 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                </div>
                <div className="grid grid-cols-2 pb-2 pr-2">
                <InputComp value={inputValues.deptNm} title="부서" target="deptNm" 
+                           readOnly={isInputReadonly}
                           onChange={(e) => {
                            onInputChange('deptNm', e);                           
                         }}   />
                <InputComp value={inputValues.roleNm} title="직급" target="roleNm" 
+                           readOnly={isInputReadonly}
                           onChange={(e) => {
                            onInputChange('roleNm', e);                           
                         }}   />               
@@ -2516,35 +2691,46 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                   timePicker={true}
                   readonly={inputValues.hsDiv !== '경사'}
                />
-               <InputSearchComp title="배송지" value={inputValues.dlvyNm} minWidth="100px"  layout="flex" target="dlvyNm" onKeyDown={handleInputSearch4} onIconClick={handleInputSearch5}
+               <InputSearchComp title="배송지" value={inputValues.dlvyNm} minWidth="100px"  layout="flex" target="dlvyNm" 
+                                 onKeyDown={handleInputSearch4} 
+                                  onIconClick={isInputReadonly ? undefined :  handleInputSearch5}
+                                 readOnly={isInputReadonly}
+                                 required={true}
+                                 errorMsg={errorMsgs.dlvyNm}
                                  onChange={(e) => {
                                     onInputChange('dlvyNm', e);                           
                                 }} />
                <InputComp value={inputValues.dlvyAddr} title="상세주소"  minWidth="100px"  layout="flex" target="dlvyAddr" 
+                           readOnly={isInputReadonly}
                           onChange={(e) => {
                            onInputChange('dlvyAddr', e);                           
                         }}   />
             </div>
             <div className="grid grid-cols-2 gap-3  justify-around items-center">
                <InputComp value={inputValues.roomNo} title="호실" target="roomNo"  minWidth="100px" layout="flex"
+                           readOnly={isInputReadonly}
                           onChange={(e) => {
                            onInputChange('roomNo', e);                           
                         }}   />
                <InputComp value={inputValues.reqNm} title="주문자" target="reqNm"  minWidth="100px" layout="flex"
+                           readOnly={isInputReadonly}
                            onChange={(e) => {
                               onInputChange('reqNm', e);                      
                            }} />
                <InputComp value={inputValues.reqTelNo} title="연락처" target="reqTelNo"   minWidth="100px" layout="flex"
+                           readOnly={isInputReadonly}
                            onChange={(e) => {
                               onInputChange('reqTelNo', e);                      
                            }} />
                <InputComp value={inputValues.dNm} title="고인명" target="dNm"  minWidth="100px" layout="flex"
-                           onChange={(e) => {
+                        readOnly={isInputReadonly}
+                          onChange={(e) => {
                               onInputChange('dNm', e);                      
                            }} />
             </div>
             <div className="">
                <InputComp title="의전배송메모" layout="flex" minWidth="100px" value={inputValues.memo} target="memo"
+                                 readOnly={isInputReadonly}
                                  onChange={(e) => {
                                     onInputChange('memo', e);                           
                                 }} />
@@ -2559,7 +2745,11 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                                  onChange={(e) => {
                                     onInputChange('preRcptNo', e);                           
                                 }} />    
+            </div>  
+            <div className="grid grid-cols-3 gap-y-3 gap-x-5  pb-2">
+               
                <Checkbox  title = "패키지 진행여부" value={inputValues.pkgYn} layout="flex" 
+                           readOnly={isInputReadonly}
                            minWidth="100px"
                            checked={inputValues.pkgYn === 'Y'} 
                           onChange={(e) => {
@@ -2570,6 +2760,12 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                            checked={inputValues.mouYn === 'Y'} 
                           onChange={(e) => {
                                     onInputChange('mouYn', e)}} />        
+               <Checkbox  title = "회원여부" value={inputValues.memberYn} layout="flex" 
+                           minWidth="80px"
+                           readOnly={isInputReadonly}
+                           checked={inputValues.memberYn === 'Y'} 
+                          onChange={(e) => {
+                                    onInputChange('memberYn', e)}} />        
             </div>  
          </div>
       </div>
@@ -2586,16 +2782,16 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                <div className="pb-2">카드결제</div>
             </div>
             <div className="flex space-x-2">
-               <button type="button" onClick={cardPay} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
-                  <PlusIcon className="w-5 h-5" />
+               <button type="button" onClick={cardPay} className="bg-blue-500 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+                  <CreditCardIcon className="w-5 h-5" />
                   결제
                </button>
                <button type="button" onClick={cardCancel} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
-                  <MinusIcon className="w-5 h-5" />
-                  결제취소
+                  <XMarkIcon className="w-5 h-5" />
+                  취소
                </button>
-               <button type="button" onClick={cardReceipt} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
-                  <MinusIcon className="w-5 h-5" />
+               <button type="button" onClick={cardReceipt} className="bg-yellow-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+                  <ReceiptRefundIcon className="w-5 h-5" />
                   영수증
                </button>
             </div>
@@ -2703,6 +2899,8 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                <div className="pb-2">현금결제</div>
             </div>
             <div className="flex space-x-2">
+               {!isInputReadonly &&
+               <>
                <button type="button" onClick={cashPay} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
                   <PlusIcon className="w-5 h-5" />
                   발행
@@ -2715,6 +2913,9 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                   <MinusIcon className="w-5 h-5" />
                   영수증
                </button>
+               
+               </>
+               }
             </div>
          </div>
 
@@ -2813,7 +3014,8 @@ const changeSoPrice = async (price: number, rowKey: any) => {
       { header: "구분", name: "dealType", hidden: true },
       { header: "CHK", name: "chkYn", hidden: true},
       { header: "구분", name: "condType", width: 90, align: "center", formatter: "listItemText",  
-         editor: { type: ChoicesEditor, options: { listItems: inputValues.zzFU0004 , 
+         editor:   
+         { type:  ChoicesEditor, options: { listItems: inputValues.zzFU0004 , 
          onChange: (value: string) => {
 
             const gridInstance2 = gridRef2.current.getInstance();
@@ -2834,6 +3036,8 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                changeSoPrice(pricePer,  rowKey);
             }
        },
+     
+       
 
     } }  },
       { header: "품목코드", name: "itemCd", width: 100, align: "center" },
@@ -2898,6 +3102,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
       { header: "", name: "branchGroup", hidden: true}, 
    ];
 
+
    const summary = {
       height: 40,
       position: 'top', 
@@ -2935,6 +3140,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                <RadioGroup value={inputValues.dealType} 
                            options={[ { label: "표준", value: "A" }, { label: "예외", value: "B" } ]} 
                            layout="horizontal"
+                           readonly={isInputReadonly}
                            onChange={(e)=>{
                               onInputChange('dealType', e);  
                               const grid = gridRef2.current.getInstance();
@@ -2955,7 +3161,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                            }}  
                            onClick={() => {}} />
             </div>
-            {inputValues.dealType === 'B' && (
+            {inputValues.dealType === 'B' &&  !isInputReadonly  &&(
                <div className="flex space-x-1">
                   <button type="button" onClick={addGridRow} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
                      <PlusIcon className="w-5 h-5" />
@@ -2969,10 +3175,20 @@ const changeSoPrice = async (price: number, rowKey: any) => {
             )}
          </div>
 
-         <TuiGrid01 gridRef={gridRef2} columns={columns2} summary={summary} handleAfterChange={handleAfterChange}  rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-650}             
+         <TuiGrid01 gridRef={gridRef2} columns={ columns2 } summary={summary} handleAfterChange={handleAfterChange}  rowHeaders={['checkbox','rowNum']} perPageYn = {false} height={window.innerHeight-650}             
          />
       </div>
    );
+
+   // useEffect(() => {
+   //    const gridInstance = gridRef2.current?.getInstance();
+   //    if (gridInstance) {
+   //      gridInstance.setColumns(isInputReadonly ? columns2_1 : columns2);
+   //    }
+   //    const rows = gridInstance.getData();
+
+
+   //  }, [isInputReadonly]);
 
    const columns3 = [
       { header: "주문번호", name: "soNo", hidden: true },
@@ -2988,6 +3204,8 @@ const changeSoPrice = async (price: number, rowKey: any) => {
       { header: "발주금액", name: "poAmt", align:"right", hidden: userInfo.usrDiv == 999? false : true, formatter: function(e: any) {if(e.value){return commas(e.value);}}},
    
    ];
+
+
 
    const summary2 = {
       height: 40,
@@ -3093,6 +3311,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                               }}/>            
             </div>
             <div className="flex pt-2 space-x-2">
+           
                <button type="button" onClick={addGridRow2} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
                   <PlusIcon className="w-5 h-5" />
                   추가
@@ -3101,6 +3320,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                   <MinusIcon className="w-5 h-5" />
                   삭제
                </button>
+             
             </div>      
          </div>
 
@@ -3129,7 +3349,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                <button type="button" onClick={addGridRow3} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
                   <PlusIcon className="w-5 h-5" />
                   추가
-               </button>               
+               </button>           
             </div>        
          </div>
 
@@ -3240,18 +3460,24 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                </div>
             </div>                 
             <div className="flex p-2 space-x-2">
-               <button type="button" onClick={fnCancel} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
-                  <PlusIcon className="w-5 h-5" />
+               {isInputReadonly &&
+               <>
+               <button type="button" onClick={fnCancel} className="bg-orange-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+                  <XMarkIcon className="w-5 h-5" />
                   주문취소
                </button>
-               <button type="button" onClick={fnDel} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
-                  <MinusIcon className="w-5 h-5" />
+               <button type="button" onClick={fnDel} className="bg-rose-400 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+                  <TrashIcon className="w-5 h-5" />
                   주문삭제
                </button>
-               <button type="button" onClick={fnConfirm} className="bg-rose-500 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
-                  <MinusIcon className="w-5 h-5" />
+               </>
+               }
+               {!isInputReadonly && 
+               <button type="button" onClick={fnConfirm} className="bg-green-400 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
+                  <CheckIcon className="w-5 h-5" />
                   주문확정
                </button>
+               }
             </div>      
          </div>
 

@@ -8,6 +8,20 @@ const checkboxStyles = `
       background-position: center;
       background-repeat: no-repeat;
    }
+
+   input[type='checkbox']:disabled {
+      background-color: #f3f4f6; /* Gray background for readOnly */
+      border-color: #d1d5db; /* Light gray border for readOnly */
+   }
+
+   input[type='checkbox']:disabled:checked {
+      background-image: url('data:image/svg+xml,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22#9ca3af%22 stroke-width=%224%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3e%3cpolyline points=%2220 6 9 17 4 12%22 /%3e%3c/svg%3e');
+      background-size: 100% 100%;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: #e5e7eb; /* Light gray background for checked readOnly */
+      border-color: #9ca3af; /* Darker gray border for checked readOnly */
+   }
 `;
 
 interface CheckboxGroupProps {
