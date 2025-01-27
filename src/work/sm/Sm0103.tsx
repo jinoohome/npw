@@ -23,6 +23,7 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const searchRef2 = useRef<any>(null);
    const searchRef3 = useRef<any>(null);
    const searchRef4 = useRef<any>(null);
+   const searchRef5 = useRef<any>(null);
 
    const [gridDatas1, setGridDatas] = useState<any[]>();
 
@@ -98,7 +99,8 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
           dlvyNm: searchRef2.current?.value || '999',
           bpNm: searchRef3.current?.value || '999',
           poBpNm: inputValues.poBpS || '999',
-          empNm: searchRef4.current?.value || '999',
+          empNm: inputValues.empNmS || '999',
+          ownNm: inputValues.ownNmS || '999',
           yyyyMm: '999',
           closeYn: inputValues.closeYnPoBpS || '999',
         };
@@ -292,6 +294,10 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                            procedure="ZZ_B_PO_BP"
                            dataKey={{ label: "bpNm", value: "bpCd" }}
                />
+            <InputComp title="대상자" ref={searchRef5} value={inputValues.ownNmS} handleCallSearch={handleCallSearch} 
+                          onChange={(e)=>{
+                          onInputChange('ownNmS', e);
+                     }} />
          </div>
       </div>
    );
@@ -303,18 +309,19 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "마감주문번호", name: "closeSoNo", hidden: true },
       { header: "마감", name: "closeYnPoBp", align: "center", width: 40},
       { header: "주문번호", name: "soNo", align: "center", width: 100, rowSpan: true },
-      { header: "관할구역", name: "poBpNm", width: 120},
-      { header: "주문일", name: "orderDt", align: "center", width: 80},
-      { header: "배송지", name: "dlvyNm", width: 200},
       { header: "고객사", name: "bpNm", width: 200 },
-      { header: "직원명", name: "empNm", width: 80 },
+      { header: "대상자", name: "ownNm", width: 60, align: "center" },
+      { header: "배송지", name: "dlvyNm", width: 200},
+      { header: "관할구역", name: "poBpNm", width: 120},
+      { header: "주문일", name: "orderDt", align: "center", width: 80, hidden: true},
+      { header: "직원명", name: "empNm", width: 60},
       { header: "품목", name: "itemNm", width: 200 },
       { header: "수량", name: "soQty", width: 40, align: "center" },
       { header: "정산금액", name: "totalAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "비율", name: "bpRate", align: "center", width: 60},
-      { header: "청구금액", name: "poAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "공급금액", name: "poNetAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "부가세", name: "poVatAmt", align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "공급금액", name: "poNetAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "부가세", name: "poVatAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "청구금액", name: "poAmt", align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
    ];
 
    const summary = {

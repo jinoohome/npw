@@ -61,19 +61,36 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    }, [activeComp, leftMode]);
 
    // Grid 데이터 설정
+   // useEffect(() => {
+   //    if (GridRef1.current && gridDatas1) {
+   //       let grid1 = GridRef1.current.getInstance();
+   //       grid1.resetData(gridDatas1);
+
+   //       let focusRowKey = grid1.getFocusedCell()?.rowKey || 0;
+
+   //       if (gridDatas1.length > 0) {
+   //          grid1.focusAt(focusRowKey, 0, true);
+   //       }
+         
+         
+   //    } 
+   // }, [gridDatas1]);
+
    useEffect(() => {
       if (GridRef1.current && gridDatas1) {
-         let grid1 = GridRef1.current.getInstance();
-         grid1.resetData(gridDatas1);
-
-         let focusRowKey = grid1.getFocusedCell()?.rowKey || 0;
-
-         if (gridDatas1.length > 0) {
-            grid1.focusAt(focusRowKey, 0, true);
-         }
-         
-         
-      } 
+         const gridInstance = GridRef1.current.getInstance();
+   
+         // 행 단위로 셀의 상태를 업데이트
+         const updatedData = gridDatas1.map((row) => ({
+            ...row,
+            _attributes: {
+               ...(row._attributes || {})
+            },
+         }));
+   
+         // 데이터 리셋
+         gridInstance.resetData(updatedData);
+      }
    }, [gridDatas1]);
 
    useEffect(() => {
@@ -193,9 +210,11 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       if (focusedCell) {
         const { rowKey } = focusedCell;
         const selectedSoNo = grid.getValue(rowKey, 'soNo'); // 선택된 행의 soNo 값 가져오기
+        const selectedPoBpCd = grid.getValue(rowKey, 'poBpCd'); // 선택된 행의 poBpCd 값 가져오기
+        const selectedOrderDt = grid.getValue(rowKey, 'orderDt'); // 선택된 행의 orderDt 값 가져오기
         
         // 새로운 행을 추가하면서 선택된 soNo 값을 사용
-        grid.appendRow({ soNo: selectedSoNo, closeSoSeq: null, coCd: "100", isNew: true }, { at: rowKey+1 });
+        grid.appendRow({ soNo: selectedSoNo, poBpCd: selectedPoBpCd, orderDt: selectedOrderDt, closeSoSeq: null, coCd: "100", isNew: true }, { at: rowKey+1 });
 
          grid.focusAt(rowKey+1, 1, true);
       }
@@ -254,6 +273,7 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
       if (data) {
          let result = await SM0104_U01(data);
+         console.log('data:', data);
          if (result) {
             await returnResult(result);
          }
@@ -342,22 +362,22 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "마감주문번호", name: "closeSoNo", hidden: true },
       { header: "마감", name: "closeYn", align: "center", width: 40},
       { header: "마감년월", name: "yyyyMm", align: "center", width: 80},
-      { header: "주문번호", name: "soNo", align: "center", width: 100},
+      { header: "주문번호", name: "soNo", align: "center", width: 100, rowSpan: true},
       { header: "고객사", name: "bpNm", width: 200 },
+      { header: "대상자", name: "ownNm", width: 80, align: "center" },
       { header: "배송지", name: "dlvyNm", width: 200},
       { header: "관할구역", name: "poBpNm", width: 120},
       { header: "주문일", name: "orderDt", align: "center", width: 80, hidden: true},
       { header: "직원명", name: "empNm", width: 80, hidden: true },
-      { header: "대상자", name: "ownNm", width: 80, align: "center" },
       { header: "품목", name: "itemNm", width: 160 },
       { header: "수량", name: "soQty", width: 40, align: "center", hidden: true },
-      { header: "매출금액", name: "soAmt", align: "right", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "비율", name: "bpRate", align: "center", width: 50},
       { header: "공급금액", name: "netAmt", align: "right", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "부가세", name: "vatAmt", align: "right", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "비율", name: "bpRate", align: "center", width: 50},
-      { header: "청구금액", name: "purchaseAmt", align: "right", editor: "text", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "매출금액", name: "soAmt", align: "right", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "공급금액", name: "purchaseNetAmt", align: "right", editor: "text", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "부가세", name: "purchaseVatAmt", align: "right", editor: "text", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "청구금액", name: "purchaseAmt", align: "right", editor: "text", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "MOU여부", name: "mouYn", width: 80, align: "center" },
    ];
 
