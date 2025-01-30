@@ -56,6 +56,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    const [tabIndex, setTabIndex] = useState(0);
    const [inputDivVisible, setInputDivVisible] = useState(0);
 
+   const [gridDatas, setGridDatas] = useState<any[]>([]); //공통 그리드 데이터(useEffect에서 사용)
+
    const [gridDatas1, setGridDatas1] = useState<any[]>();       // 고객사별 참고사항
    const [gridDatas2, setGridDatas2] = useState<any[]>();      // 상품정보
    const [gridDatas3, setGridDatas3] = useState<any[]>();      // 발주정보
@@ -747,28 +749,32 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
        
          const data = JSON.stringify(param);
          const result = await fetchPost(`SO0201_S10`, { data });
+         setGridDatas(result);
 
-         // 'MANDATORY_YN' 값이 'Y'인 것만 체크된 상태로 설정
-         let filteredData = result.map((row:any) => ({
-            ...row,
-            _attributes: {
-               checked: row.mandatoryYn === 'Y',
-               ...row._attributes,
-            },
-           
-         }));
-
-         setGridDatas2(filteredData);
-         setGridDatas3(filteredData);
-         setGridDatas7(filteredData);
-         setGridDatas8(filteredData);
-
-         return filteredData;
+        // return filteredData;
       } catch (error) {
          console.error("SO0201_S10 Error:", error);
          throw error;
       }
    }
+
+   useEffect(() => {
+      if (gridDatas.length > 0) {
+         const updatedData = gridDatas.map((row: any) => ({
+            ...row,
+            _attributes: {
+               checked: row.mandatoryYn === "Y",
+               ...(row._attributes || {}), 
+            },
+         }));
+   
+         setGridDatas2(updatedData);
+         setGridDatas3(updatedData);
+         setGridDatas7(updatedData);
+         setGridDatas8(updatedData);
+      }
+   }, [gridDatas]); // gridData가 변경될 때만 실행
+   
 
    // 고객사별 참고사항
    var SO0201_P05 = async (param : any) => {
@@ -814,6 +820,17 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
          return result;
       } catch (error) {
          console.error("SO0201_U06 Error:", error);
+         throw error;
+      }
+   };
+
+    // 주문확정, 취소, 삭제
+    const SO0201_U07 = async (data: any) => {
+      try {
+         const result = await fetchPost(`SO0201_U07`, data);
+         return result;
+      } catch (error) {
+         console.error("SO0201_U07 Error:", error);
          throw error;
       }
    };
@@ -897,19 +914,21 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
 
       // 'MANDATORY_YN' 값이 'Y'인 것만 체크된 상태로 설정
-      let filteredData = itemInfo.map((row:any) => ({
-         ...row,
-         _attributes: {
-            checked: row.mandatoryYn === 'Y',
-            ...row._attributes,
-         },
-        
-      }));
+      setGridDatas(itemInfo);
 
-      setGridDatas2(filteredData);
-      setGridDatas3(filteredData);
-      setGridDatas7(filteredData);
-      setGridDatas8(filteredData);
+      // let filteredData = itemInfo.map((row:any) => ({
+      //    ...row,
+      //    _attributes: {
+      //       checked: row.mandatoryYn === 'Y',
+      //       ...row._attributes,
+      //    },
+        
+      // }));
+
+      // setGridDatas2(filteredData);
+      // setGridDatas3(filteredData);
+      // setGridDatas7(filteredData);
+      // setGridDatas8(filteredData);
 
       // 사전상담
       let preRcpt = await SO0101_S02({ preRcptNo: result[0].preRcptNo });
@@ -996,7 +1015,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       if (data) {
          let result = await SO0201_U05(data);
          if (result) {
-            await returnResult(result);
+            await returnResult(result, 'save');
          }
       }
       
@@ -1074,9 +1093,22 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
     };
     
     
-   const returnResult = async(result:any) => {     
+   const returnResult = async(result:any, div:string) => {     
       search(result.soNoOut);
-      alertSwal(result.msgText, result.msgCd, result.msgStatus);
+      if(result.msgCd === '1') {
+         if(div === 'save') {
+            alertSwal('저장되었습니다.', result.msgCd, result.msgStatus);
+         }else if(div === 'CONFIRM') {
+            alertSwal('확정되었습니다.', result.msgCd, result.msgStatus);
+         }else if(div === 'CANCEL') {
+            alertSwal('저장되었습니다.', result.msgCd, result.msgStatus);
+         }else if(div === 'DEL') {
+            alertSwal('저장되었습니다.', result.msgCd, result.msgStatus);
+         }
+        
+      } else {
+         alertSwal(result.msgText, result.msgCd, result.msgStatus);
+      }
    };
 
    const returnCardPay = async(result:any) => {     
@@ -1175,21 +1207,31 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
    // 주문취소
    const fnCancel = async () => {
-      alertSwal("주문취소", "주문 취소하시겠습니까?", "warning", true).then(async (result) => {
+      alertSwal(
+               "주문취소", 
+               "주문 취소하시겠습니까?", 
+               "warning", 
+               true,
+               "checkbox", // 입력 필드 유형
+               "알림톡을 전송합니다.", // 체크박스에 표시될 설명
+               1, // 체크박스 기본 값 (0: 체크 해제, 1: 체크됨)
+               ).then(async (result) => {
          if (result.isConfirmed) {
+            const alimYn = result.value === 1;
             let soNo = inputValues.soNo;
 
             let data = {
                menuId: activeComp.menuId,
                insrtUserId: userInfo.usrId,
                soNo: soNo,
-               div: "CANCEL"
+               div: "CANCEL",
+               alimYn,
             };
 
             if (data) {
-               let result = await SO0201_U06(data);
+               let result = await SO0201_U07(data);
                if (result) {
-                  await returnResult(result);
+                  await returnResult(result, data.div);
                }
             }
          } else if (result.isDismissed) {
@@ -1208,13 +1250,14 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
                menuId: activeComp.menuId,
                insrtUserId: userInfo.usrId,
                soNo: soNo,
-               div: "DEL"
+               div: "DEL",
+               alimYn: false,
             };
 
             if (data) {
-               let result = await SO0201_U06(data);
+               let result = await SO0201_U07(data);
                if (result) {
-                  await returnResult(result);
+                  await returnResult(result, data.div);
                }
             }
          } else if (result.isDismissed) {
@@ -1223,30 +1266,43 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       });   
    }; 
 
-   // 주문확정
-   const fnConfirm = async () => {
-      alertSwal("주문확정", "주문 확정하시겠습니까?", "warning", true).then(async (result) => {
-         if (result.isConfirmed) {
-            let soNo = inputValues.soNo;
-
-            let data = {
-               menuId: activeComp.menuId,
-               insrtUserId: userInfo.usrId,
-               soNo: soNo,
-               div: "CONFIRM"
-            };
-
-            if (data) {
-               let result = await SO0201_U06(data);
-               if (result) {
-                  await returnResult(result);
-               }
-            }
-         } else if (result.isDismissed) {
-            return;
+// 주문확정
+const fnConfirm = async () => {
+   alertSwal(
+     "주문확정",
+     "주문 확정하시겠습니까?",
+     "warning",
+     true,
+     "checkbox", // 입력 필드 유형
+     "알림톡을 전송합니다.", // 체크박스에 표시될 설명
+     1, // 체크박스 기본 값 (0: 체크 해제, 1: 체크됨)
+   ).then(async (result) => {
+     if (result.isConfirmed) {
+      const alimYn = result.value === 1;
+      const soNo = inputValues.soNo;
+ 
+       
+       const data = {
+         menuId: activeComp.menuId,
+         insrtUserId: userInfo.usrId,
+         soNo: soNo,
+         div: "CONFIRM",
+         alimYn, // 알림톡 전송 여부 포함
+       };
+ 
+       
+       if (data) {
+         const result = await SO0201_U07(data);
+         if (result) {
+           await returnResult(result, data.div);
          }
-      });   
-   }; 
+       }
+     } else if (result.isDismissed) {
+       return;
+     }
+   });
+ };
+ 
 
    const cardPay = () => {
       const gridInstance = gridRef5.current.getInstance();
@@ -2722,7 +2778,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                            onChange={(e) => {
                               onInputChange('reqTelNo', e);                      
                            }} />
-               <InputComp value={inputValues.dNm} title="고인명" target="dNm"  minWidth="100px" layout="flex"
+               <InputComp value={inputValues.dNm}  title={inputValues.hsDiv !== '경사' ? "고인명" : "신랑/신부명"}  target="dNm"  minWidth="100px" layout="flex"
                         readOnly={isInputReadonly}
                           onChange={(e) => {
                               onInputChange('dNm', e);                      
@@ -3461,22 +3517,22 @@ const changeSoPrice = async (price: number, rowKey: any) => {
             </div>                 
             <div className="flex p-2 space-x-2">
                {isInputReadonly &&
-               <>
                <button type="button" onClick={fnCancel} className="bg-orange-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
                   <XMarkIcon className="w-5 h-5" />
                   주문취소
                </button>
+               }
+               {!isInputReadonly && 
+               <>
                <button type="button" onClick={fnDel} className="bg-rose-400 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
                   <TrashIcon className="w-5 h-5" />
                   주문삭제
                </button>
-               </>
-               }
-               {!isInputReadonly && 
                <button type="button" onClick={fnConfirm} className="bg-green-400 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
                   <CheckIcon className="w-5 h-5" />
                   주문확정
                </button>
+               </>
                }
             </div>      
          </div>
