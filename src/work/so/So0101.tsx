@@ -666,7 +666,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
                                        searchDiv : 'SUB' }}
                               procedure="ZZ_CONT_INFO"  dataKey={{ label: 'subCodeNm', value: 'subCode' }} 
                />                            
-               <SelectSearch title="경조사유" 
+               <SelectSearch title="신청사유" 
                               value={inputValues.hsCd}
                               onChange={async (label, value) => {                                    
                                     onInputChange('hsCd', value);

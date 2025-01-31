@@ -66,15 +66,7 @@ const So0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    useEffect(() => {
       if (GridRef1.current && gridDatas1) {
          let grid1 = GridRef1.current.getInstance();
-         grid1.resetData(gridDatas1);
-
-         let focusRowKey = grid1.getFocusedCell()?.rowKey || 0;
-
-         if (gridDatas1.length > 0) {
-            grid1.focusAt(focusRowKey, 0, true);
-         }
-         
-         
+         grid1.resetData(gridDatas1);         
       } 
    }, [gridDatas1]);
 
