@@ -140,8 +140,6 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
           yyyyMm: '999',
           closeYn: inputValues.closeYnPoBpS || '999',
         };
-
-        console.log('param:', param);  
     
         const data = JSON.stringify(param);
         const result = await fetchPost(`SM0104_S01`, { data });
