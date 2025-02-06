@@ -127,6 +127,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
    const [isOpen4, setIsOpen4] = useState(false);     // 사전상담 팝업
    const [isOpen5, setIsOpen5] = useState(false);     // 품목 팝업
    const [isOpen6, setIsOpen6] = useState(false);     // 발주지점 팝업
+   const [isOpen7, setIsOpen7] = useState(false);     // 배송특이사항 팝업
 
    const breadcrumbItem = [{ name: "주문관리" }, { name: "주문" }, { name: "주문 등록" }];
 
@@ -955,6 +956,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange('contNo', result[0].contNo);
       onInputChange('subCode', result[0].subCode);
       onInputChange('hsCd', result[0].hsCd);
+      onInputChange('hsNm', result[0].hsNm);
       onInputChange('itemType', result[0].itemType);
       onInputChange('deptNm', result[0].deptNm);
       onInputChange('roleNm', result[0].roleNm);
@@ -1368,7 +1370,7 @@ const fnConfirm = async () => {
                       Tmode: "WEB",                     // 'WEB': PC, 서버결제, 'MOB': 모바일 결제
                       Installment: gridData[rowKey].installment,                // '00': 일시불, 그 외: 할부개월 (예: 2개월 -> '02')
                       CcNameOnCard: inputValues.ownNm,           // 주문자 (옵션)
-                      CcProdDesc: "복리후생",         // 주문상품 (옵션)
+                      CcProdDesc: inputValues.ownNm+','+ inputValues.hsNm,         // 주문상품 (옵션)
                       PhoneNO: inputValues.ownTelNo,           // 주문자 연락처 (옵션)
                       Email: "",    // 주문자 이메일 (옵션)
                       updtUserId: userInfo.usrId,
@@ -1376,6 +1378,7 @@ const fnConfirm = async () => {
                   };
   
                   if (data) {
+                     
                       let result = await ZZ_PAY_APPR(data);
                       if (result) {
                           await returnCardPay(result);
@@ -1515,7 +1518,7 @@ const fnConfirm = async () => {
                       BillType: "00",                          // 현금영수증 과세 구분 (00:과세, 복합과세, 10:면세)
                       PIDS: gridData[rowKey].pids,             // 신분확인번호
                       CcNameOnCard: inputValues.ownNm,         // 주문자 (옵션)
-                      CcProdDesc: "복리후생",                   // 주문상품 (옵션)
+                      CcProdDesc: inputValues.ownNm+','+ inputValues.hsNm,                       // 주문상품 (옵션)
                       PhoneNO: inputValues.ownTelNo,           // 주문자 연락처 (옵션)
                       Email: "",                               // 주문자 이메일 (옵션)
                       updtUserId: userInfo.usrId,
@@ -1776,10 +1779,17 @@ const fnConfirm = async () => {
          const dlvyCd = gridInstance.getValue(rowKey, "dlvyCd"); // 해당 rowKey에서 soNo 값을 가져옴
          const dlvyNm = gridInstance.getValue(rowKey, "dlvyNm"); // 해당 rowKey에서 soNo 값을 가져옴
          const addr1 = gridInstance.getValue(rowKey, "addr1"); // 해당 rowKey에서 soNo 값을 가져옴
+         const dlvyRemark = gridInstance.getValue(rowKey, "dlvyRemark"); // 해당 rowKey에서 soNo 값을 가져옴
          
          onInputChange('dlvyCd', dlvyCd);
          onInputChange('dlvyNm', dlvyNm);
          onInputChange('dlvyAddr', addr1);
+        
+
+         if (dlvyRemark) {
+            onInputChange('dlvyRemark', dlvyRemark);
+            setIsOpen7(true);
+         }
 
          await SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, itemType: inputValues.itemType, dlvyCd: dlvyCd, dealType: inputValues.dealType});
 
@@ -1981,6 +1991,12 @@ const fnConfirm = async () => {
             const dlvyCd = result[0].dlvyCd 
             const dlvyNm = result[0].dlvyNm
             const addr1 = result[0].addr1
+            const dlvyRemark =result[0].dlvyRemark // 해당 rowKey에서 soNo 값을 가져옴
+         
+            if (dlvyRemark) {
+               onInputChange('dlvyRemark', dlvyRemark);
+               setIsOpen7(true);
+            }
 
             if (firstRow && firstRow.chkYn === 'Y') {
                alertSwal("상품조회", "계약조건이 변경되어 상품정보가 삭제 후 다시 조회 됩니다. 계속 하시겠습니까?", "warning", true).then((result) => {
@@ -2429,6 +2445,24 @@ const changeSoPrice = async (price: number, rowKey: any) => {
       </div>
    );
 
+    //품목 팝업 div
+    const modalDlvyReamrk = () => (
+     
+      <div className="rounded-lg p-5 search space-y-3 ">
+         <div className="w-full flex justify-between">
+            <div className="grid grid-cols-2   justify-start text-md">
+              <span className="">{inputValues.dlvyNm}</span> 
+            </div>
+         </div> 
+
+         <div className="bg-gray-100 rounded-lg p-5 search text-sm ">
+            {inputValues.dlvyRemark } 
+            
+         </div>
+      </div>
+   );
+
+
    //상단 버튼 div
    const buttonDiv = () => (
       <div className="flex justify-end space-x-2">
@@ -2581,9 +2615,14 @@ const changeSoPrice = async (price: number, rowKey: any) => {
 
                                  const updateHSCode = async (value:any) => {
                                     onInputChange('hsCd', value);
+                                   
+
                                     onInputChange('itemType', '');  
                                     const [hsDiv] = label.split(':'); // ":" 기준으로 분리, 첫 번째 값 추출
                                     onInputChange('hsDiv', hsDiv); // 추출한 값으로 hsDiv 업데이트
+                                    onInputChange('hsNm', label); 
+
+                                 
 
                                     let hsCode = await ZZ_CONT_INFO({ 
                                     contNo: inputValues.contNo, 
@@ -3593,6 +3632,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
       { header: "구분", name: "dlvyDiv", align: "center", width: 80},
       { header: "배송지명", name: "dlvyNm", width: 180},
       { header: "주소", name: "addr1" },
+      { header: "특이사항", name: "dlvyRemark", hidden: true },
    ];
 
    const gridP3 = () => (
@@ -3848,6 +3888,9 @@ const changeSoPrice = async (price: number, rowKey: any) => {
          <CommonModal isOpen={isOpen6} size="lg" onClose={() => setIsOpen6(false)} title="">
             {modalSearchDiv6()}
             {gridP6()}
+         </CommonModal>
+         <CommonModal isOpen={isOpen7} size="lg" onClose={() => setIsOpen7(false)} title="">
+            {modalDlvyReamrk()}
          </CommonModal>
       </div>
    );

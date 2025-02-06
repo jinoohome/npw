@@ -84,7 +84,8 @@ const refreshAccessToken = async () => {
 
       // 토큰 갱신 실패 시 처리: 세션 초기화 및 로그인 페이지 이동
       sessionStorage.clear();
-      window.location.href = "/Login"; // 필요 시 React Router로 navigate("/login") 사용
+      
+      window.location.href = "/"; // 필요 시 React Router로 navigate("/login") 사용
    }
 };
 

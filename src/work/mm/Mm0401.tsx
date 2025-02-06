@@ -1,7 +1,8 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, SelectSearch, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
+import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, TextArea, SelectSearch, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import DaumPostcodeComp from "../../comp/DaumPostcodeComp";  // DaumPostcodeComp 컴포넌트 임포트
+
 
 interface Props {
    item: any;
@@ -32,6 +33,7 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
       zipCd: useRef<any>(null),
       addr1: useRef<any>(null),
       addr2: useRef<any>(null),
+      remark: useRef<any>(null),
       useYn: useRef<any>(null),
       insrtUserId: useRef<any>(null),
       insrtDt: useRef<any>(null),
@@ -236,6 +238,7 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
       setFocusRow(rowKey);
     
       const data = await getGridValues();
+      console.log(data);
       if (data) {
          let result = await MM0401_U01(data);
          if (result) {
@@ -273,7 +276,7 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
       let grid = gridRef.current.getInstance();
 
       grid.appendRow({  dlvyCd: "", dlvyNm: "", dlvyDiv: "", siDo: "", siGunGu: "",
-                        useYn: "Y", coCd: "", telNo: "", zipCd: "", addr1: "", addr2: "", isNew: true}, { at: 0 });
+                        useYn: "Y", coCd: "", telNo: "", zipCd: "", addr1: "", addr2: "",remark:""  ,isNew: true}, { at: 0 });
       grid.getPagination().movePageTo(0);
       grid.focusAt(0, 1, true);
    };
@@ -315,6 +318,7 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
    const setChangeGridData = (columnName: string, value: any) => {
       const grid = gridRef.current.getInstance();
       const { rowKey } = grid.getFocusedCell();
+      console.log("setChangeGridData", rowKey, columnName, value);
       grid.setValue(rowKey, columnName, value, false);
 
    };
@@ -426,6 +430,20 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
                   ]}
                />
             </div>
+            <div className="gap-6  justify-around items-center ">
+                  <TextArea title="특이사항" value={inputValues.remarkDtl} 
+                     onChange={
+                        (e) => {
+                           setChangeGridData("remark", e);
+                           onInputChange("remark", e);
+                        }
+                  } 
+                     layout="vertical" textAlign="left"
+                     ref={refs.remark}
+                     
+               ></TextArea>
+            </div>
+           
          </div>
       </div>
    );
@@ -441,6 +459,7 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
       { header: "우편번호", name: "zipCd", hidden: true },
       { header: "주소", name: "addr1", hidden: true },
       { header: "상세주소", name: "addr2", hidden: true },
+      { header: "특이사항", name: "remark", hidden: true },
       { header: "사용여부", name: "useYn", align: 'center', hidden: true },
       { header: "", name: "isNew", hidden: true },   
    ];

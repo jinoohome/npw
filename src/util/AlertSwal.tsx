@@ -18,7 +18,7 @@ const alertSwal = (
     cancelButtonText: "취소",
     confirmButtonColor: "#f97316",
     showCancelButton: showCancelButton,
-    icon: gubun,
+    icon:  gubun || undefined,
     focusConfirm: false,
     input: inputType, // Pass the input type
     inputPlaceholder: inputPlaceholder, // Pass the input placeholder
