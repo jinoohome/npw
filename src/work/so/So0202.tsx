@@ -4,14 +4,16 @@ import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
 
+
 interface Props {
    item: any;
    activeComp: any;
    leftMode: any;
    userInfo : any;
+   onLeftMenuClick: (menuItem: any) => void; // 부모 컴포넌트에서 전달
 }
 
-const So0202 = ({ item, activeComp, leftMode, userInfo }: Props) => {
+const So0202 = ({ item, activeComp, leftMode, userInfo, onLeftMenuClick  }: Props) => {
 
    const GridRef1 = useRef<any>(null);
 
@@ -118,6 +120,29 @@ const So0202 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       await SO0202_S01();
    };
 
+   const handleClick = (event: any) => {
+      const gridInstance = GridRef1.current?.getInstance();
+      if (!gridInstance) return;
+
+      const { rowKey, columnName } = event;
+      if (columnName !== "soNo") return;
+
+      const rowData = gridInstance.getRow(rowKey);
+      if (rowData && rowData.soNo) {
+        // alert(`주문번호: ${rowData.soNo}`);
+
+         const menuData = {
+            menuId: "3021",
+            menuName: "주문등록",
+            prgmId: "OrderRegister",
+         };
+
+         if (onLeftMenuClick) {
+            onLeftMenuClick(menuData);
+         }
+      }
+   };
+
    //-------------------div--------------------------
 
    //상단 버튼 div
@@ -215,7 +240,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             </div>
          </div>
 
-         <TuiGrid01 columns={grid1Columns} gridRef={GridRef1} height={window.innerHeight-540}/>
+         <TuiGrid01 columns={grid1Columns} handleClick={handleClick} gridRef={GridRef1} height={window.innerHeight-540}/>
       </div>
    );
 

@@ -468,6 +468,28 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
                               //초기값 세팅시
                               datas={[{value : '', label : ''},{value : 'Y', label : '사용'},{value : 'N', label : '미사용'}]}
                               />
+               <SelectSearch title="알림톡 발송여부" 
+                              value={inputValues.alarmYn}
+                              layout="vertical"
+                              onChange={(label, value) => {
+                                    setChangeGridData("alarmYn", value);
+                                    onInputChange('alarmYn', value);
+                                 }}                           
+
+                              //초기값 세팅시
+                              datas={[{value : '', label : ''},{value : 'Y', label : '사용'},{value : 'N', label : '미사용'}]}
+                              />
+               <SelectSearch title="담당자여부" 
+                              value={inputValues.alarmDiv}
+                              layout="vertical"
+                              onChange={(label, value) => {
+                                    setChangeGridData("alarmDiv", value);
+                                    onInputChange('alarmDiv', value);
+                                 }}                           
+
+                              //초기값 세팅시
+                              datas={[{value : '', label : ''},{value : 'Y', label : '사용'},{value : 'N', label : '미사용'}]}
+                              />
             </div>
             <div className="grid grid-cols-4  gap-6  justify-around items-center ">              
                <InputComp2 ref={refs.insrtUserId} title="등록자" target="insrtUserId" setChangeGridData={setChangeGridData}  readOnly={true} />

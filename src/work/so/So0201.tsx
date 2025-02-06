@@ -765,7 +765,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             ...row,
             _attributes: {
                checked: row.mandatoryYn === "Y",
-               ...(row._attributes || {}), 
+               //...(row._attributes || {}), 
             },
          }));
    
@@ -915,7 +915,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
 
       // 'MANDATORY_YN' 값이 'Y'인 것만 체크된 상태로 설정
-      setGridDatas(itemInfo);
+     
+       setGridDatas(itemInfo);
 
       // let filteredData = itemInfo.map((row:any) => ({
       //    ...row,
@@ -978,6 +979,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange('memberYn', result[0].memberYn);
       onInputChange('dealType', result[0].dealType);
       onInputChange('payAmt', result[0].payAmt);      
+      onInputChange('poStatus', result[0].poStatus);      
 
       setPayAmt();
    };
@@ -990,6 +992,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange('startDate2', date(-1, 'month'));
       onInputChange('endDate2', date());
       onInputChange('dealType', 'A');     
+      onInputChange('rcptUserId', userInfo.usrId);
+      onInputChange('rcptMeth', 'FU0007');
 
       setGridDatas1([]);
       setGridDatas2([]);
@@ -999,6 +1003,8 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       setGridDatas6([]);
       setGridDatas7([]);
       setGridDatas8([]);
+
+      setIsInputReadonly(false);
    };
 
    const save = async () => {
@@ -1106,6 +1112,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
             alertSwal('저장되었습니다.', result.msgCd, result.msgStatus);
          }else if(div === 'DEL') {
             alertSwal('저장되었습니다.', result.msgCd, result.msgStatus);
+            create();
          }
         
       } else {
@@ -1117,6 +1124,10 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
       let payInfo = await SO0201_S03({ soNo: result.soNoOut });
       setGridDatas5(payInfo);
+
+      setTimeout(() => {
+         setPayAmt();
+      },500);
 
       alertSwal(result.msgText, result.msgCd, result.msgStatus);
    };
@@ -1270,6 +1281,11 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
 // 주문확정
 const fnConfirm = async () => {
+   if (!inputValues.soNo) {
+      alertSwal("", "주문 저장 후 확정 바랍니다.", "warning");
+      return;
+  }
+
    alertSwal(
      "주문확정",
      "주문 확정하시겠습니까?",
@@ -2483,12 +2499,16 @@ const changeSoPrice = async (price: number, rowKey: any) => {
    // 주문정보
    const inputDiv = () => (
       <div className="border rounded-md space-y-2 input text-sm">
-         <div className="flex justify-between items-center  border-b">
+         <div className="flex justify-between items-center  border-b m-2">
             <div className="flex items-center space-x-1 text-orange-500 p-2 ">
                <div>
                   <SwatchIcon className="w-5 h-5 "></SwatchIcon>
                </div>
                <div className="">주문정보</div>
+            </div>
+            {/* poSatus 상태 벌로 색상다르게 보여주고 세련되게 수정 */}
+            <div className="flex items-center space-x-1 p-2">
+               <div className="text-sm text-gray-500">{inputValues.poStatus}</div>
             </div>
          </div>
 
@@ -2901,7 +2921,8 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                                     onInputChange('payYn', value);
                                     setChangeGridData("payYn", value);
                                  }}
-                              readonly={true}
+                              // readonly={true}
+                              readonly={userInfo.usrId !== "alstj"}
                               //초기값 세팅시
                               param={{ coCd: "999", majorCode: "FU0008", div: "-999" }}
                               procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
@@ -3022,6 +3043,8 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                                     onInputChange('payYn', value);
                                     setChangeGridData("payYn", value);
                                  }}
+                              // readonly={true}
+                              readonly={userInfo.usrId !== "alstj"}
 
                               //초기값 세팅시
                               param={{ coCd: "999", majorCode: "FU0008", div: "-999" }}
