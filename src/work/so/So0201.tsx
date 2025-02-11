@@ -337,6 +337,10 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       const hideColumns = (gridInstance: any, columns: string[]) => {
         columns.forEach((column: string) => gridInstance.hideColumn(column));
       };
+
+      const showColumns = (gridInstance: any, columns: string[]) => {
+         columns.forEach((column: string) => gridInstance.showColumn(column));
+      };
     
       const disableAllRowChecks = (gridInstance: any, gridData: any[]) => {
         gridData?.forEach((_, index: number) => {
@@ -365,8 +369,10 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
           }
          }, 500); 
         }else{
-
-
+         setTimeout(() => {
+            showColumns(gridInstance2, ['itemBtn', 'poBpBtn']);
+            showColumns(gridInstance7, ['tsBpBtn']);
+           }, 500); 
         }
       }
     }, [gridDatas2, gridDatas3, gridDatas8, isInputReadonly]);
@@ -761,18 +767,25 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
    useEffect(() => {
       if (gridDatas.length > 0) {
-         const updatedData = gridDatas.map((row: any) => ({
-            ...row,
-            _attributes: {
-               checked: row.mandatoryYn === "Y",
-               //...(row._attributes || {}), 
-            },
-         }));
-   
+            const updatedData = gridDatas.map((row: any) => ({
+               ...row,
+               _attributes: {
+                  checked: row.mandatoryYn === "Y",
+                  //...(row._attributes || {}), 
+               },
+            }));
+
+  
+         
          setGridDatas2(updatedData);
          setGridDatas3(updatedData);
          setGridDatas7(updatedData);
          setGridDatas8(updatedData);
+      }else{
+         setGridDatas2([]);
+         setGridDatas3([]);
+         setGridDatas7([]);
+         setGridDatas8([]);
       }
    }, [gridDatas]); // gridData가 변경될 때만 실행
    
@@ -913,7 +926,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       // 상품정보
       let itemInfo = await SO0201_S02({ soNo: result[0].soNo });
 
-
+      console.log(itemInfo);
       // 'MANDATORY_YN' 값이 'Y'인 것만 체크된 상태로 설정
      
        setGridDatas(itemInfo);
@@ -980,6 +993,7 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       onInputChange('dealType', result[0].dealType);
       onInputChange('payAmt', result[0].payAmt);      
       onInputChange('poStatus', result[0].poStatus);      
+      onInputChange('giQty', result[0].giQty);      
 
       setPayAmt();
    };
@@ -1220,6 +1234,16 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
 
    // 주문취소
    const fnCancel = async () => {
+      if (inputValues.giQty !== 0) {
+         alertSwal("", "이미 출고되었습니다. 담당자에게 문의하세요.", "warning");
+         return;
+      }
+
+      if (inputValues.poStatus === "고객서명" || inputValues.poStatus === "고객결제") {  
+         alertSwal("", "고객확인 단계입니다. 담당자에게 문의하세요.", "warning");
+         return;
+      }
+
       alertSwal(
                "주문취소", 
                "주문 취소하시겠습니까?", 
@@ -3260,6 +3284,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                            layout="horizontal"
                            readonly={isInputReadonly}
                            onChange={(e)=>{
+                          
                               onInputChange('dealType', e);  
                               const grid = gridRef2.current.getInstance();
                               const firstRow = grid.getRow(0); // 첫 번째 행 가져오기
@@ -3274,7 +3299,8 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                                     }
                                 });
                               } else {
-                                 SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, itemType: inputValues.itemType, dlvyCd: inputValues.dlvyCd, dealType: e});
+
+                                  SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, itemType: inputValues.itemType, dlvyCd: inputValues.dlvyCd, dealType: e});
                               }                            
                            }}  
                            onClick={() => {}} />

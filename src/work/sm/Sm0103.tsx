@@ -285,7 +285,7 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                                  onInputChange('poBpS', value);
                               }}
 
-                           readonly={userInfo.usrDiv == 'ZZ0196'}
+                           readonly={userInfo.usrDiv != '999'}
                            addData={"999"}
 
                            //초기값 세팅시

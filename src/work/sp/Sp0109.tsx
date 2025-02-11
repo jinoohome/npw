@@ -157,9 +157,9 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const search = async () => {
-       console.log("search");
+
        const result = await SP0109_S01();
-       console.log(result);
+
        onInputChange("gridDatas3", result);
    };
 
