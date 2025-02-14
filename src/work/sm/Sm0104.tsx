@@ -197,6 +197,33 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       return data;
    };
 
+   const handleAfterChange = async (ev: any) => {
+
+      const changesArray = ev.changes; // ev.changes가 배열이므로 이를 사용
+  
+      // 배열이기 때문에 forEach로 순회
+      changesArray.forEach((change: any) => {   
+         const gridInstance = GridRef1.current.getInstance();
+
+
+         // 현재 변경된 값이 adjAmt일 때 처리
+         if (change.columnName === "adjAmt") {
+            const rowKey = change.rowKey;
+   
+            // 해당 행에서 poNetAmt poVatAmt, poAdjAmt 값을 가져옴
+            const poNetAmt = Number(gridInstance.getValue(rowKey, 'purchaseNetAmt')) || 0;
+            const poVatAmt = Number(gridInstance.getValue(rowKey, 'purchaseVatAmt')) || 0;
+            const poAdjAmt = Number(gridInstance.getValue(rowKey, 'poAdjAmt')) || 0;
+            const adjAmt = Number(gridInstance.getValue(rowKey, 'adjAmt')) || 0;
+   
+            // poAmt 계산 (공급가액 + 부가세액 + 본부조정금액 + 본사조정금액)
+            const poAmt = Math.round(poNetAmt + poVatAmt + adjAmt + poAdjAmt); // 반올림하여 소수점 제거
+   
+            gridInstance.setValue(rowKey, 'purchaseAmt', poAmt);
+         }
+      });
+   };
+
    //-------------------button--------------------------
    //grid 추가버튼
    const addGridRow = () => {
@@ -370,13 +397,17 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "품목", name: "itemNm", width: 160 },
       { header: "수량", name: "soQty", width: 40, align: "center", hidden: true },
       { header: "비율", name: "bpRate", align: "center", width: 50},
-      { header: "공급금액", name: "netAmt", align: "right", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "공급금액", name: "netAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "부가세", name: "vatAmt", align: "right", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "매출금액", name: "soAmt", align: "right", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "공급금액", name: "purchaseNetAmt", align: "right", editor: "text", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "부가세", name: "purchaseVatAmt", align: "right", editor: "text", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "청구금액", name: "purchaseAmt", align: "right", editor: "text", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "매출금액", name: "soAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "공급금액", name: "purchaseNetAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "부가세", name: "purchaseVatAmt", align: "right", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "청구금액", name: "purchaseAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "MOU여부", name: "mouYn", width: 80, align: "center" },
+      { header: "본부조정금액", name: "poAdjAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "본부비고", name: "poRemark", width: 120 },
+      { header: "본사조정금액", name: "adjAmt", editor: "text", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "본사비고", name: "remark", editor:"text", width: 120 },
    ];
 
    const summary = {
@@ -429,7 +460,13 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
                return `${commas(data)}`; // 합계 표시
                }
-         },        
+         },
+         poAdjAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },
       }
    }
 
@@ -484,7 +521,7 @@ const So0104 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                </div>
             </div>
    
-            <TuiGrid01 columns={grid1Columns} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} height={window.innerHeight - 590} summary={summary}/>
+            <TuiGrid01 columns={grid1Columns} handleAfterChange={handleAfterChange} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} height={window.innerHeight - 590} summary={summary}/>
          </div>
       );
    };

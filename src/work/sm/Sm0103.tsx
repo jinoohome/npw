@@ -169,7 +169,46 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       return data;
    };
 
+   const handleAfterChange = async (ev: any) => {
+
+      const changesArray = ev.changes; // ev.changes가 배열이므로 이를 사용
+  
+      // 배열이기 때문에 forEach로 순회
+      changesArray.forEach((change: any) => {   
+         const gridInstance = GridRef1.current.getInstance();
+
+
+         // 현재 변경된 값이 poAdjAmt일 때 처리
+         if (change.columnName === "poAdjAmt") {
+            const rowKey = change.rowKey;
+   
+            // 해당 행에서 poNetAmt poVatAmt, poAdjAmt 값을 가져옴
+            const poNetAmt = Number(gridInstance.getValue(rowKey, 'poNetAmt')) || 0;
+            const poVatAmt = Number(gridInstance.getValue(rowKey, 'poVatAmt')) || 0;
+            const poAdjAmt = Number(gridInstance.getValue(rowKey, 'poAdjAmt')) || 0;
+   
+            // poAmt 계산 (공급가액 + 부가세액 + 조정금액)
+            const poAmt = Math.round(poNetAmt + poVatAmt + poAdjAmt); // 반올림하여 소수점 제거
+   
+            gridInstance.setValue(rowKey, 'poAmt', poAmt);
+         }
+      });
+   };
+
    //-------------------button--------------------------
+   //저장버튼
+   const saveClose = async () => {      
+      const data = await getGridValues('S');
+
+      if (data) {
+         let result = await SM0103_U01(data);
+         console.log('data:', data);
+         if (result) {
+            await returnResult(result);
+         }
+      }         
+   }; 
+
    //마감버튼
    const addClose = async () => {
       // 그리드에서 체크된 row 데이터 확인
@@ -204,6 +243,12 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
       if (!checkedRows || checkedRows.length === 0) {
          alertSwal('마감할 데이터를 선택하시기 바랍니다.', '확인요청', 'error');
+         return;
+      }
+
+      const isAlreadyClosed = checkedRows.some((row: any) => row.closeYn === 'Y');
+      if (isAlreadyClosed) {
+         alertSwal('이미 본사 마감되었습니다. 관리자에게 문의하세요.', '확인요청', 'error');
          return;
       }
 
@@ -285,7 +330,7 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                                  onInputChange('poBpS', value);
                               }}
 
-                           readonly={userInfo.usrDiv != '999'}
+                           readonly={userInfo.usrDiv !== '999' ? true : false}
                            addData={"999"}
 
                            //초기값 세팅시
@@ -321,7 +366,9 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "비율", name: "bpRate", align: "center", width: 60},
       { header: "공급금액", name: "poNetAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "부가세", name: "poVatAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "청구금액", name: "poAmt", align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "조정금액", name: "poAdjAmt", align: "right", editor:"text", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "청구금액", name: "poAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "비고", name: "poRemark", width: 200, editor:"text" },
    ];
 
    const summary = {
@@ -356,7 +403,13 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
                return `${commas(data)}`; // 합계 표시
                }
-         },           
+         },     
+         poAdjAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },         
       }
    }
 
@@ -387,14 +440,20 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    
                   {/* 마감완료일 때 마감 취소 버튼 표시 */}
                   {isCloseYnComplete && (
-                     <button type="button" onClick={delClose} className="bg-red-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
-                        마감취소
-                     </button>
+                     <>
+                        <button type="button" onClick={delClose} className="bg-red-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
+                           마감취소
+                        </button>
+                        <button type="button" onClick={saveClose} className="bg-blue-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
+                              저장 
+                        </button>
+                     </>
                   )}
+                  
                </div>
             </div>
    
-            <TuiGrid01 columns={grid1Columns} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} height={window.innerHeight - 590} summary={summary}/>
+            <TuiGrid01 columns={grid1Columns} handleAfterChange={handleAfterChange} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} height={window.innerHeight - 590} summary={summary}/>
          </div>
       );
    };
