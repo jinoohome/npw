@@ -272,7 +272,8 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
             addrCd1: row[1],
             addrCd2: row[2],
             erpBpCd: row[3],
-            bpNm: row[4],
+            workDiv: row[4],
+            bpNm: row[5],
             _attributes: {
                checked: true,  // 각 행을 체크 상태로 설정
             },
@@ -293,7 +294,8 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
       { header: "지본", name: "addrCd1", width: 120, align: "center" }, // SO_NO: 발주 번호
       { header: "시군지부", name: "addrCd2", width: 150 },
       { header: "코드", name: "erpBpCd", width: 150 },
-      { header: "주유소명", name: "bpNm", width: 250 },
+      { header: "작업구분", name: "workDiv", width: 100 },
+      { header: "주유소명", name: "bpNm", width: 150 },
    ];
 
    const grid2 = () => (
@@ -346,9 +348,10 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
    const columns3 = [
       { header: "등록일", name: "orderDt", width: 120, align: "center" }, 
       { header: "수주번호", name: "soNo", width: 130, align: "center" }, 
-      { header: "지본", name: "addrCd1", width: 120, align: "center" }, 
-      { header: "시군지부", name: "addrCd2", width: 150 },
+      { header: "지본", name: "jiBon", width: 120, align: "center" }, 
+      { header: "시군지부", name: "siGun", width: 150 },
       { header: "코드", name: "erpBpCd", width: 150, align: "center" },
+      { header: "작업구분", name: "workDiv", width: 150, align: "center" },
       { header: "주유소명", name: "bpNm", width: 270 },
       { header: "작업명", name: "workNm", width: 270 },
       { header: "협력업체", name: "poBpNm" },
