@@ -148,6 +148,7 @@ function Main() {
    };
 
    const handleLeftMenuClick = (menuItem: ZZ_MENU_RES) => {
+      console.log(menuItem)
       addComponent(menuItem);
       if (tabRef.current) {
          setTimeout(() => {
@@ -277,7 +278,7 @@ function Main() {
             <motion.div animate={{ width: '100%'}} style={{ minWidth: leftMode === "large" || leftMode === "over" ? '794px' : '360px' }} transition={{ duration: 0.1, ease: "easeInOut" }} className="w-full h-full">
                <Top loginInfo={loginInfo} userInfo={userInfo} topMenus={topMenus}  searchMenus={searchMenus} onTopMenuClick={handleTopMenuClick} activeMenu={activeMenu} topMode={topMode} onLeftMode={handleLefMode} onTopMode={handleTopMode} onUserChange={handleUserChange} onSearchMenuClick={handleLeftMenuClick} ></Top>
                <Tab components={components} onTabMenuClick={handleTabClick} onTabCloseClick={handleTabCloseClick} activeComp={activeComp} onAllTabCloseClick={handleAllTabCloseClick} topMode={topMode}  tabRef={tabRef}></Tab>
-               <Work components={components} activeComp={activeComp} leftMode={leftMode} userInfo={userInfo}></Work>
+               <Work components={components} activeComp={activeComp} leftMode={leftMode} userInfo={userInfo}  onLeftMenuClick={handleLeftMenuClick}></Work>
             </motion.div>
          </div>
          )}

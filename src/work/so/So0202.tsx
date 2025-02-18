@@ -3,17 +3,18 @@ import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
-
+import { ZZ_MENU_RES } from "../../ts/ZZ_MENU";
 
 interface Props {
    item: any;
    activeComp: any;
    leftMode: any;
    userInfo : any;
-   onLeftMenuClick: (menuItem: any) => void; // 부모 컴포넌트에서 전달
+   onLeftMenuClick: (menuItem: ZZ_MENU_RES ) => void;
+   setSoNo: (value: string) => void;
 }
 
-const So0202 = ({ item, activeComp, leftMode, userInfo, onLeftMenuClick  }: Props) => {
+const So0202 = ({ item, activeComp, leftMode, userInfo, onLeftMenuClick, setSoNo }: Props) => {
 
    const GridRef1 = useRef<any>(null);
 
@@ -120,28 +121,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, onLeftMenuClick  }: Prop
       await SO0202_S01();
    };
 
-   const handleClick = (event: any) => {
-      const gridInstance = GridRef1.current?.getInstance();
-      if (!gridInstance) return;
-
-      const { rowKey, columnName } = event;
-      if (columnName !== "soNo") return;
-
-      const rowData = gridInstance.getRow(rowKey);
-      if (rowData && rowData.soNo) {
-        // alert(`주문번호: ${rowData.soNo}`);
-
-         const menuData = {
-            menuId: "3021",
-            menuName: "주문등록",
-            prgmId: "OrderRegister",
-         };
-
-         if (onLeftMenuClick) {
-            onLeftMenuClick(menuData);
-         }
-      }
-   };
+   
 
    //-------------------div--------------------------
 
@@ -240,9 +220,38 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, onLeftMenuClick  }: Prop
             </div>
          </div>
 
-         <TuiGrid01 columns={grid1Columns} handleClick={handleClick} gridRef={GridRef1} height={window.innerHeight-540}/>
+         <TuiGrid01 columns={grid1Columns} gridRef={GridRef1} height={window.innerHeight-540} handleDblClick={handleDblClick}/>
       </div>
    );
+   const handleDblClick = (e:any) => {
+      //주문 상세 화면으로 이동
+      const menu: ZZ_MENU_RES = {
+         menuId: "3021", // 메뉴 ID
+         paMenuId: "3020", // 부모 메뉴 ID (상위 메뉴)
+         menuName: "주문 등록", // 메뉴 이름
+         description: "", // 메뉴 설명
+         prgmId: "SO0201", // 프로그램 ID
+         prgmFullPath: "so/So0201", // 프로그램 전체 경로
+         prgmPath: "", // 프로그램 폴더 경로
+         prgmFileName: "", // 프로그램 파일명
+         menuOrdr: "03000 >> 13020 >> 13021", // 메뉴 순서 (상위 메뉴 내 정렬)
+         remark: "", // 비고 (추가 설명)
+         icon: "", // 아이콘 (사용할 아이콘 이름)
+         useYn: "Y", // 사용 여부 ("Y": 사용, "N": 미사용)
+         lev: 2, // 메뉴 레벨 (2단계 메뉴)
+         zMenuOrdr: "1", // 추가적인 메뉴 정렬 순서
+         status: "S"  ,
+         menuDiv: ""
+      };
+
+      //주문번호를 상위 컴포넌트로 전달
+      const grid = GridRef1.current.getInstance();
+      const rowData = grid.getRow(e.rowKey);
+
+      setSoNo(rowData.soNo);
+      onLeftMenuClick(menu);
+    
+   }
 
    return (
       <div className={`space-y-5 overflow-y-auto `}>

@@ -13,9 +13,10 @@ interface Props {
    item: any;
    activeComp: any;
    userInfo : any;
+   soNo: string;
 }
 
-const SO0201 = ({ item, activeComp, userInfo }: Props) => {
+const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
    const gridRef1 = useRef<any>(null);    // 고객사별 참고사항
    const gridRef2 = useRef<any>(null);    // 상품정보
    const gridRef3 = useRef<any>(null);    // 발주정보
@@ -143,6 +144,13 @@ const SO0201 = ({ item, activeComp, userInfo }: Props) => {
       reSizeGrid({ ref: gridRef7, containerRef: gridContainerRef7, sec: 200 });
       reSizeGrid({ ref: gridRef8, containerRef: gridContainerRef7, sec: 200 });
    }, []);   
+
+
+   useEffect(() => {
+      if(soNo){
+         search(soNo);
+      }
+   }, []);
 
    //--------------------init---------------------------
 

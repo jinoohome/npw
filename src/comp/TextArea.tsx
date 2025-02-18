@@ -29,7 +29,7 @@ interface TextAreaProps {
 
 const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
   title,
-  value,
+  value ='',
   target,
   setChangeGridData,
   readonly = false,
