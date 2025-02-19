@@ -7,11 +7,15 @@ interface WorkProps {
   activeComp: any;
   leftMode: any;
   userInfo: any;
-  onLeftMenuClick: (menuItem: ZZ_MENU_RES) => void;
+  handleAddMenuClick: (menuItem: ZZ_MENU_RES) => void;
+  soNo: string;
+  setSoNo: (soNo: string) => void;
 }
 
-const Work = ({ components, activeComp, leftMode, userInfo, onLeftMenuClick }: WorkProps) => {
-  const [soNo, setSoNo] = useState("");
+const Work = ({ components, activeComp, leftMode, userInfo, handleAddMenuClick, soNo, setSoNo }: WorkProps) => {
+  
+  
+  
 
   return (
     <div className="max-h-[85vh] overflow-y-auto work-scroll">
@@ -22,7 +26,7 @@ const Work = ({ components, activeComp, leftMode, userInfo, onLeftMenuClick }: W
               <item.Component className='w-full h-full overflow-y-hidden  ' 
                           item={item} activeComp={activeComp} 
                           leftMode={leftMode} userInfo={userInfo} 
-                          onLeftMenuClick={onLeftMenuClick}
+                          handleAddMenuClick={handleAddMenuClick}
                           soNo={soNo} setSoNo={setSoNo}
                           />
             </div>

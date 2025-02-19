@@ -49,11 +49,19 @@ const Login = () => {
       <div className="w-full h-screen bg-gray-100 flex flex-col items-center ">
          <div className="flex h-[85%] w-[60%] justify-center items-center">
             <div className="w-full h-[75%] flex justify-center items-center bg-white rounded-lg">
-               <div className="w-1/3 px-10 py-40   ">
-                  <div className="space-y-3 w-full">
-                     <div className="mb-24 flex flex-col items-center justify-center space-y-5">
-                        <div className="text-4xl bold font-[Giants-Bold]">로그인 화면</div>
-                        <div>회사이름</div>
+               <div className="w-1/3 px-10    ">
+                  <div className="space-y-3 w-full ">
+                     <div className="mb-10 flex flex-col items-center justify-center space-y-5">
+                        <div className="flex flex-col justify-center items-center space-y-1 ">
+                           <div>안녕하세요! <span className="text-blue-700 text-lg font-[농협체M]">농협파트너스</span>입니다.</div>
+                           <div className="text-5xl bold font-[농협체M]">로그인 화면</div>
+                        </div>
+                        <div className="flex  items-center space-x-1  bg-green-700/15 p-2 px-4 rounded-lg">
+                           <div>
+                              <img src="/images/logo.png" alt="logo" className="w-[13px]" />
+                           </div>
+                           <div className="text-green-600 font-[농협체M] text-xl">농협파트너스 정보시스템</div>
+                        </div>
                      </div>
                      <div className="flex items-center relative">
                         <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 border-r pr-2 border-gray-400">
@@ -97,30 +105,31 @@ const Login = () => {
          <div className="w-full h-[15%] justify-self-end">
             <div className="bg-blue-950 h-full">
                <div className="h-full flex p-5">
-                  <div className="w-[23%] h-full flex justify-center items-center text-white text-xl shadow ">회사이름</div>
+                  <div className="w-[23%] h-full flex justify-center items-center text-white text-xl shadow font-[농협체M] ">농협파트너스</div>
                   <div className="w-[54%] h-full  text-white text-sm text-gray-200/60">
                      <div className="h-full">
                         <div className="w-full flex justify-between px-2">
                            <div className="flex">
-                              <div>이용약관</div>
+                              {/* <div>이용약관</div>
                               <div>ㅣ</div>
-                              <div>개인정보 보호방침</div>
+                              <div>개인정보 보호방침</div> */}
                            </div>
 
-                           <div>© 2024. 회사이름 INC. All Rights Reserved.</div>
+                           <div>© 2025. 농협파트너스 INC. All Rights Reserved.</div>
 
                         </div>
                         <div className="w-full border-b my-2  "></div>
 
                         <div>
                            <div className="w-full grid grid-cols-2 px-2">
-                              <div>대표자 : 홍길동</div>
-                              <div className="lg:ps-28">이메일 : xxxxx@xxxxx.com</div>
-                              <div>대표전화 : 02-1234-5678</div>
-                              <div className="lg:ps-28">사업자등록번호 : 123-45-67890</div>
-                              <div>통신판매번호 : 제 2024-서울강남-0000호</div>
-                              <div className="lg:ps-28">주소 : 서울시 강남구 삼성동 123-45</div>
+                              <div>대표자 : 이 범 석</div>
+                              {/* <div className="lg:ps-28">이메일 : xxxxx@xxxxx.com</div> */}
+                              <div className="lg:ps-28">대표전화 : 02-569-9100</div>
+                              <div>사업자등록번호 : 106-81-95255</div>
+                              <div  className="lg:ps-28">팩스번호 : 02-560-9110</div>
+                              {/* <div>통신판매번호 : 제 2024-서울강남-0000호</div>  */}
                            </div>
+                           <div className="lg:ps-2">주소 : 서울특별시 강동구 올림픽로 48길 7(성내동 553), 농협서울지역본부 별관 1,2층</div>
 
                         </div>
 

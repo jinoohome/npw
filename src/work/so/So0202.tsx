@@ -10,11 +10,11 @@ interface Props {
    activeComp: any;
    leftMode: any;
    userInfo : any;
-   onLeftMenuClick: (menuItem: ZZ_MENU_RES ) => void;
+   handleAddMenuClick: (menuItem: ZZ_MENU_RES ) => void;
    setSoNo: (value: string) => void;
 }
 
-const So0202 = ({ item, activeComp, leftMode, userInfo, onLeftMenuClick, setSoNo }: Props) => {
+const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setSoNo }: Props) => {
 
    const GridRef1 = useRef<any>(null);
 
@@ -249,7 +249,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, onLeftMenuClick, setSoNo
       const rowData = grid.getRow(e.rowKey);
 
       setSoNo(rowData.soNo);
-      onLeftMenuClick(menu);
+      handleAddMenuClick(menu);
     
    }
 

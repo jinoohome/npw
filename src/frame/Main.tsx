@@ -32,6 +32,8 @@ function Main() {
    const [searchMenus, setSearchMenus] = useState<ZZ_MENU_RES[]>([]);
 
    const [count, setCount] = useState(0);
+   const [soNo, setSoNo] = useState("");
+
 
 
 
@@ -148,7 +150,7 @@ function Main() {
    };
 
    const handleLeftMenuClick = (menuItem: ZZ_MENU_RES) => {
-      console.log(menuItem)
+      setSoNo("");
       addComponent(menuItem);
       if (tabRef.current) {
          setTimeout(() => {
@@ -157,6 +159,22 @@ function Main() {
          }, 100); // 100ms 지연
       }
    };
+
+   
+   const handleAddMenuClick = (menuItem: ZZ_MENU_RES) => {
+    
+      addComponent(menuItem);
+      if (tabRef.current) {
+         setTimeout(() => {
+            const maxScrollLeft = tabRef.current!.scrollWidth - tabRef.current!.clientWidth;
+            tabRef.current!.scrollLeft = maxScrollLeft;
+         }, 100); // 100ms 지연
+      }
+   };
+
+
+   
+
 
    const handleTabClick = (item: any) => {
       setPrevComps((prev) => prev.filter((tabItem) => tabItem.id !== item.id));
@@ -278,7 +296,8 @@ function Main() {
             <motion.div animate={{ width: '100%'}} style={{ minWidth: leftMode === "large" || leftMode === "over" ? '794px' : '360px' }} transition={{ duration: 0.1, ease: "easeInOut" }} className="w-full h-full">
                <Top loginInfo={loginInfo} userInfo={userInfo} topMenus={topMenus}  searchMenus={searchMenus} onTopMenuClick={handleTopMenuClick} activeMenu={activeMenu} topMode={topMode} onLeftMode={handleLefMode} onTopMode={handleTopMode} onUserChange={handleUserChange} onSearchMenuClick={handleLeftMenuClick} ></Top>
                <Tab components={components} onTabMenuClick={handleTabClick} onTabCloseClick={handleTabCloseClick} activeComp={activeComp} onAllTabCloseClick={handleAllTabCloseClick} topMode={topMode}  tabRef={tabRef}></Tab>
-               <Work components={components} activeComp={activeComp} leftMode={leftMode} userInfo={userInfo}  onLeftMenuClick={handleLeftMenuClick}></Work>
+               <Work components={components} activeComp={activeComp} leftMode={leftMode} userInfo={userInfo}  
+                     handleAddMenuClick={handleAddMenuClick} soNo={soNo} setSoNo={setSoNo}></Work>
             </motion.div>
          </div>
          )}
