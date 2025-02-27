@@ -363,7 +363,7 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "품목", name: "itemNm", width: 200 },
       { header: "수량", name: "soQty", width: 40, align: "center" },
       { header: "정산금액", name: "totalAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "비율", name: "bpRate", align: "center", width: 60},
+      // { header: "비율", name: "bpRate", align: "center", width: 60},
       { header: "공급금액", name: "poNetAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "부가세", name: "poVatAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "조정금액", name: "poAdjAmt", align: "right", editor:"text", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
