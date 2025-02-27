@@ -216,6 +216,7 @@ const InputComp2 = forwardRef<HTMLInputElement, Props2>(({ title, target, setCha
       if (type === "number") {
          value = value.replace(/[^0-9]/g, "");
          setChangeGridData && setChangeGridData(target, value);
+         
          value = commas(Number(value));
          event.target.value = value;
       } else {
@@ -237,8 +238,9 @@ const InputComp2 = forwardRef<HTMLInputElement, Props2>(({ title, target, setCha
          <div>
             <input
                readOnly={readOnly}
+               data-type={type === "number" ? "number" : "text"}
                ref={ref}
-               type={type} // 수정된 부분: 전달받은 type을 사용
+               type="text"// 수정된 부분: 전달받은 type을 사용
                className={`border rounded-md h-8 p-2 w-full 
                ${readOnly ? "bg-gray-100 text-[#999]" : ""} 
                ${type === "number" ? "text-right" : ""} 

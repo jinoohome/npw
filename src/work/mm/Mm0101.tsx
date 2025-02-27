@@ -1,5 +1,5 @@
 import { userInfo } from "os";
-import { React, useEffect, useState, useRef, useCallback, initChoice, InputComp, SelectSearch, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
+import { React, useEffect, useState, useRef, useCallback,commas, initChoice, InputComp, SelectSearch, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import DaumPostcodeComp from "../../comp/DaumPostcodeComp";  // DaumPostcodeComp 컴포넌트 임포트
@@ -40,6 +40,8 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       zipCd: useRef<any>(null),
       addr1: useRef<any>(null),
       addr2: useRef<any>(null),
+      buriAmt: useRef<any>(null),
+      cremAmt: useRef<any>(null),
    };
 
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
@@ -275,9 +277,15 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          if (rowData) {
             Object.entries(rowData).forEach(([key, value]) => {
                const ref = refs[key as keyof typeof refs]; // Add index signature to allow indexing with a string
-
+               
+               
                if (ref && ref.current !== null) {
-                  ref.current.value = value;
+                  let type = ref.current.getAttribute("data-type");
+                  if (type === "number") {
+                     ref.current.value = commas(Number(value));
+                   } else {
+                     ref.current.value = value;
+                   }
                }
             });
          }
@@ -415,6 +423,13 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                <InputComp2 ref={refs.repreNm} title="대표자명" target="repreNm" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.bpRgstNo} title="사업자등록번호" target="bpRgstNo" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.bpRate} title="수수료비율" target="bpRate" setChangeGridData={setChangeGridData} />
+               <InputComp2 ref={refs.buriAmt} title="패키지금액 매장형" target="buriAmt" type="number" setChangeGridData={setChangeGridData} />
+               <InputComp2 ref={refs.cremAmt} title="패키지금액 화장형" target="cremAmt" type="number"  setChangeGridData={setChangeGridData} />
+              
+            </div>
+
+            
+            <div className="grid grid-cols-3  gap-12  justify-around items-center">
                <InputComp2 ref={refs.telNo} title="전화번호1" target="telNo" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.telNo2} title="전화번호2" target="telNo2" setChangeGridData={setChangeGridData} /> 
             </div>
@@ -480,6 +495,8 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "주소1", name: "addr1", hidden: true },
       { header: "주소2", name: "addr2", hidden: true },
       { header: "수수료비율", name: "bpRate", hidden: true },
+      { header: "패키지금액 화장", name: "cremAmt", hidden: true },
+      { header: "패키지금액 매장", name: "buriAmt", hidden: true },
       { header: "연락처", name: "telNo", hidden: true },
       { header: "연락처2", name: "telNo2", hidden: true },
       { header: "", name: "bankCd", hidden: true },
