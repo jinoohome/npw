@@ -3,6 +3,9 @@ import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -12,6 +15,7 @@ interface Props {
 }
 
 const Mm0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
+   const { fetchWithLoading } = useLoadingFetch();
 
    const GridRef1 = useRef<any>(null);
 
@@ -46,11 +50,13 @@ const Mm0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    };
 
    const setGridData = async () => {
-      try {
-         await MM0206_S01();
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      await fetchWithLoading(async () => {
+         try {
+            await MM0206_S01();
+         } catch (error) {
+            console.error("setGridData Error:", error);
+         }
+      });
    };
 
    // 탭 클릭시 Grid 리사이즈
@@ -68,7 +74,7 @@ const Mm0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          let focusRowKey = grid1.getFocusedCell()?.rowKey || 0;
 
          if (gridDatas1.length > 0) {
-            grid1.focusAt(focusRowKey, 0, true);
+        //    grid1.focusAt(focusRowKey, 0, true);
          }
       } 
    }, [gridDatas1]);
@@ -156,7 +162,8 @@ const Mm0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

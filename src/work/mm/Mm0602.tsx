@@ -4,6 +4,9 @@ import {
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import { hi } from "date-fns/locale";
 import "tui-date-picker/dist/tui-date-picker.css";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -12,6 +15,7 @@ interface Props {
 }
 
 const MM0602 = ({ item, activeComp, userInfo }: Props) => {
+   const { fetchWithLoading } = useLoadingFetch();
    const breadcrumbItem = [{ name: "기준정보" }, { name: "계약관리" }, { name: "계약등록" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
@@ -502,24 +506,30 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    
 
    const save = async() => {
-      let datas = await getGridCheckedDatas2(gridRef4);
-      console.log(datas);
-      inputValues.gridDatas4 = datas;
-      inputValues.contNo ? inputValues.status = 'U' : inputValues.status = 'I';
+      await fetchWithLoading(async () => {
+         try {
+            let datas = await getGridCheckedDatas2(gridRef4);
+            console.log(datas);
+            inputValues.gridDatas4 = datas;
+            inputValues.contNo ? inputValues.status = 'U' : inputValues.status = 'I';
 
      // if (!validateData("save", datas)) return false;
 
-      let data = {
-         contHdr: JSON.stringify(inputValues),
-         contDtl: JSON.stringify(inputValues.gridDatas4),
-         menuId: activeComp.menuId,
-         insrtUserId: userInfo.usrId,
-      };
+            let data = {
+               contHdr: JSON.stringify(inputValues),
+               contDtl: JSON.stringify(inputValues.gridDatas4),
+               menuId: activeComp.menuId,
+               insrtUserId: userInfo.usrId,
+            };
 
-   
-      const result = await fetchPost(`MM0602_U03`, data);
-      returnResult(result);
-     
+         
+            const result = await fetchPost(`MM0602_U03`, data);
+            returnResult(result);
+           
+         } catch (error) {
+            console.error("Save Error:", error);
+         }
+      });
    };
 
    const del = async() => {
@@ -1483,7 +1493,8 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-hidden h-full`}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

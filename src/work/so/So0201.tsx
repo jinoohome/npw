@@ -2,12 +2,15 @@ import { useEffect, useState, useRef,
    alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
    reSizeGrid, getGridDatas, InputComp, InputComp1, SelectSearch, InputSearchComp1, DateRangePickerComp, date, InputSearchComp, commas,
     RadioGroup, TextArea, Checkbox, CommonModal, DatePickerComp, formatCardNumber, formatExpiryDate, getGridCheckedDatas2 } from "../../comp/Import";
-import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, CheckIcon, TrashIcon, XMarkIcon, ReceiptRefundIcon, CreditCardIcon } from "@heroicons/react/24/outline";
+import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, CheckIcon, TrashIcon, XMarkIcon, ReceiptRefundIcon, CreditCardIcon, ArrowUturnDownIcon, PencilIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ReactSelectEditor";
 import { set } from "date-fns";
 import { setTime } from "react-datepicker/dist/date_utils";
 import { CreditCard } from "@mui/icons-material";
 import { error } from "console";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -17,6 +20,8 @@ interface Props {
 }
 
 const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
+    const { fetchWithLoading } = useLoadingFetch();
+
    const gridRef1 = useRef<any>(null);    // 고객사별 참고사항
    const gridRef2 = useRef<any>(null);    // 상품정보
    const gridRef3 = useRef<any>(null);    // 발주정보
@@ -538,8 +543,10 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
                onInputChange('branchGroup', branchGroup);
                onInputChange('poBpGubun', 'tsBp');
 
+                 await fetchWithLoading(async () => {
                let poBp = await SO0201_P07({ soQty: soQty, itemCd: itemCd, branchGroup: branchGroup, bpNm: '999' });
                setGridDatasP6(poBp);
+               });
          
                setIsOpen6(true);
                setTimeout(() => {
@@ -904,151 +911,156 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
    //-------------------event--------------------------
 
    const search = async (soNo:any) => {
-      setErrorMsgs({});
-      const param = {    
-         soNo: soNo,
-      };
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0201_S01", {data});
+      await fetchWithLoading(async () => {
+         setErrorMsgs({});
+         const param = {    
+            soNo: soNo,
+         };
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0201_S01", {data});
 
+         
+
+         // 조회된 값이 없으면 함수 종료
+         if (!result || result.length === 0) {
+            return;
+         }
+
+         if(result[0].confirmDt) {
+            setIsInputReadonly(true);
+         }else{
+
+            setIsInputReadonly(false);
+         }
+
+         handleTabIndex(0);
+
+         // 고객사별 참고사항
+         let tip = await SO0201_P05({ bpCd: result[0].soldToParty });
+         setGridDatas1(tip);
+
+         // 상품정보
+         let itemInfo = await SO0201_S02({ soNo: result[0].soNo });
+
+         console.log(itemInfo);
+         // 'MANDATORY_YN' 값이 'Y'인 것만 체크된 상태로 설정
       
+         setGridDatas(itemInfo);
 
-      // 조회된 값이 없으면 함수 종료
-      if (!result || result.length === 0) {
-         return;
-      }
+         // let filteredData = itemInfo.map((row:any) => ({
+         //    ...row,
+         //    _attributes: {
+         //       checked: row.mandatoryYn === 'Y',
+         //       ...row._attributes,
+         //    },
+         
+         // }));
 
-      if(result[0].confirmDt) {
-         setIsInputReadonly(true);
-      }else{
+         // setGridDatas2(filteredData);
+         // setGridDatas3(filteredData);
+         // setGridDatas7(filteredData);
+         // setGridDatas8(filteredData);
 
-         setIsInputReadonly(false);
-      }
+         // 사전상담
+         let preRcpt = await SO0101_S02({ preRcptNo: result[0].preRcptNo });
+         setGridDatas4(preRcpt);
 
-      handleTabIndex(0);
+         // 결제처리
+         let payInfo = await SO0201_S03({ soNo: result[0].soNo });
+         setGridDatas5(payInfo);
 
-      // 고객사별 참고사항
-      let tip = await SO0201_P05({ bpCd: result[0].soldToParty });
-      setGridDatas1(tip);
+         // 메모
+         let memo = await SO0201_S04({ soNo: result[0].soNo });
+         setGridDatas6(memo);
 
-      // 상품정보
-      let itemInfo = await SO0201_S02({ soNo: result[0].soNo });
+         // InputSearchComp1에 값 설정      
+         onInputChange('coCd', result[0].coCd);
+         onInputChange('soNo', result[0].soNo);
+         onInputChange('rcptMeth', result[0].rcptMeth);
+         onInputChange('orderDt', result[0].orderDt);
+         onInputChange('rcptUserId', result[0].rcptUserId);
+         onInputChange('ownNm', result[0].ownNm);
+         onInputChange('ownTelNo', result[0].ownTelNo);
+         onInputChange('soldToParty', result[0].soldToParty);
+         onInputChange('bpNm', result[0].bpNm);
+         onInputChange('contNo', result[0].contNo);
+         onInputChange('subCode', result[0].subCode);
+         onInputChange('hsCd', result[0].hsCd);
+         onInputChange('hsNm', result[0].hsNm);
+         onInputChange('itemType', result[0].itemType);
+         onInputChange('deptNm', result[0].deptNm);
+         onInputChange('roleNm', result[0].roleNm);
+         onInputChange('dlvyHopeDt', result[0].dlvyHopeDt);
+         onInputChange('roleNm', result[0].roleNm);
+         onInputChange('dlvyCd', result[0].dlvyCd);
+         onInputChange('dlvyNm', result[0].dlvyNm);
+         onInputChange('preDlvyNm', result[0].dlvyNm);
+         onInputChange('dlvyAddr', result[0].dlvyAddr);
+         onInputChange('roomNo', result[0].roomNo);
+         onInputChange('reqNm', result[0].reqNm);
+         onInputChange('reqTelNo', result[0].reqTelNo);
+         onInputChange('dNm', result[0].dNm);
+         onInputChange('memo', result[0].memo);
+         onInputChange('confirmDt', result[0].confirmDt);
+         onInputChange('preRcptNo', result[0].preRcptNo);
+         onInputChange('pkgYn', result[0].pkgYn);
+         onInputChange('mouYn', result[0].mouYn);
+         onInputChange('memberYn', result[0].memberYn);
+         onInputChange('dealType', result[0].dealType);
+         onInputChange('payAmt', result[0].payAmt);      
+         onInputChange('poStatus', result[0].poStatus);      
+         onInputChange('giQty', result[0].giQty);      
 
-      console.log(itemInfo);
-      // 'MANDATORY_YN' 값이 'Y'인 것만 체크된 상태로 설정
-     
-       setGridDatas(itemInfo);
+         setPayAmt();
 
-      // let filteredData = itemInfo.map((row:any) => ({
-      //    ...row,
-      //    _attributes: {
-      //       checked: row.mandatoryYn === 'Y',
-      //       ...row._attributes,
-      //    },
-        
-      // }));
-
-      // setGridDatas2(filteredData);
-      // setGridDatas3(filteredData);
-      // setGridDatas7(filteredData);
-      // setGridDatas8(filteredData);
-
-      // 사전상담
-      let preRcpt = await SO0101_S02({ preRcptNo: result[0].preRcptNo });
-      setGridDatas4(preRcpt);
-
-      // 결제처리
-      let payInfo = await SO0201_S03({ soNo: result[0].soNo });
-      setGridDatas5(payInfo);
-
-      // 메모
-      let memo = await SO0201_S04({ soNo: result[0].soNo });
-      setGridDatas6(memo);
-
-      // InputSearchComp1에 값 설정      
-      onInputChange('coCd', result[0].coCd);
-      onInputChange('soNo', result[0].soNo);
-      onInputChange('rcptMeth', result[0].rcptMeth);
-      onInputChange('orderDt', result[0].orderDt);
-      onInputChange('rcptUserId', result[0].rcptUserId);
-      onInputChange('ownNm', result[0].ownNm);
-      onInputChange('ownTelNo', result[0].ownTelNo);
-      onInputChange('soldToParty', result[0].soldToParty);
-      onInputChange('bpNm', result[0].bpNm);
-      onInputChange('contNo', result[0].contNo);
-      onInputChange('subCode', result[0].subCode);
-      onInputChange('hsCd', result[0].hsCd);
-      onInputChange('hsNm', result[0].hsNm);
-      onInputChange('itemType', result[0].itemType);
-      onInputChange('deptNm', result[0].deptNm);
-      onInputChange('roleNm', result[0].roleNm);
-      onInputChange('dlvyHopeDt', result[0].dlvyHopeDt);
-      onInputChange('roleNm', result[0].roleNm);
-      onInputChange('dlvyCd', result[0].dlvyCd);
-      onInputChange('dlvyNm', result[0].dlvyNm);
-      onInputChange('preDlvyNm', result[0].dlvyNm);
-      onInputChange('dlvyAddr', result[0].dlvyAddr);
-      onInputChange('roomNo', result[0].roomNo);
-      onInputChange('reqNm', result[0].reqNm);
-      onInputChange('reqTelNo', result[0].reqTelNo);
-      onInputChange('dNm', result[0].dNm);
-      onInputChange('memo', result[0].memo);
-      onInputChange('confirmDt', result[0].confirmDt);
-      onInputChange('preRcptNo', result[0].preRcptNo);
-      onInputChange('pkgYn', result[0].pkgYn);
-      onInputChange('mouYn', result[0].mouYn);
-      onInputChange('memberYn', result[0].memberYn);
-      onInputChange('dealType', result[0].dealType);
-      onInputChange('payAmt', result[0].payAmt);      
-      onInputChange('poStatus', result[0].poStatus);      
-      onInputChange('giQty', result[0].giQty);      
-
-      setPayAmt();
+      });
    };
 
    const create = async () => {
-      setErrorMsgs({});
-      setInputValues([]);
-      onInputChange('startDate', date(-1, 'month'));
-      onInputChange('endDate', date());
-      onInputChange('startDate2', date(-1, 'month'));
-      onInputChange('endDate2', date());
-      onInputChange('dealType', 'A');     
-      onInputChange('rcptUserId', userInfo.usrId);
-      onInputChange('rcptMeth', 'FU0007');
+      await fetchWithLoading(async () => {
+         setErrorMsgs({});
+         setInputValues([]);
+         onInputChange('startDate', date(-1, 'month'));
+         onInputChange('endDate', date());
+         onInputChange('startDate2', date(-1, 'month'));
+         onInputChange('endDate2', date());
+         onInputChange('dealType', 'A');     
+         onInputChange('rcptUserId', userInfo.usrId);
+         onInputChange('rcptMeth', 'FU0007');
 
-      setGridDatas1([]);
-      setGridDatas2([]);
-      setGridDatas3([]);
-      setGridDatas4([]);
-      setGridDatas5([]);
-      setGridDatas6([]);
-      setGridDatas7([]);
-      setGridDatas8([]);
+         setGridDatas1([]);
+         setGridDatas2([]);
+         setGridDatas3([]);
+         setGridDatas4([]);
+         setGridDatas5([]);
+         setGridDatas6([]);
+         setGridDatas7([]);
+         setGridDatas8([]);
 
-      setIsInputReadonly(false);
+         setIsInputReadonly(false);
+      });
    };
 
    const save = async () => {
-
+      await fetchWithLoading(async () => {
      
-      setErrorMsgs({});
-      const gridInstance = gridRef3.current.getInstance();
-      gridInstance.blur();
-      const gridInstance2 = gridRef7.current.getInstance();
-      gridInstance2.blur();
-      
-      const data = await getGridValues();
+         setErrorMsgs({});
+         const gridInstance = gridRef3.current.getInstance();
+         gridInstance.blur();
+         const gridInstance2 = gridRef7.current.getInstance();
+         gridInstance2.blur();
+         
+         const data = await getGridValues();
 
-      if (!validateData("save", data)) return false;
+         if (!validateData("save", data)) return false;
 
-      if (data) {
-         let result = await SO0201_U05(data);
-         if (result) {
-            await returnResult(result, 'save');
+         if (data) {
+            let result = await SO0201_U05(data);
+            if (result) {
+               await returnResult(result, 'save');
+            }
          }
-      }
-      
+      });
    };
 
    const validateData = (action: any, data: any): boolean => {
@@ -1659,61 +1671,70 @@ const fnConfirm = async () => {
 
    //주문 팝업조회
    const handleCallSearch2 = async () => {
-      const param = {    
-         startDt: inputValues.startDate,     
-         endDt: inputValues.endDate,     
-         soNo: searchRef8.current?.value || '999',
-         ownNm: searchRef1.current?.value || '999',
-         ownTelNo: searchRef9.current?.value || '999',
-      };
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0201_P01", { data });
-      setGridDatasP1(result);
+      await fetchWithLoading(async () => {
+         const param = {    
+            startDt: inputValues.startDate,     
+            endDt: inputValues.endDate,     
+            soNo: searchRef8.current?.value || '999',
+            ownNm: searchRef1.current?.value || '999',
+            ownTelNo: searchRef9.current?.value || '999',
+         };
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0201_P01", { data });
+         setGridDatasP1(result);
+      });
    };
 
    //고객사 팝업조회
    const handleCallSearch3 = async () => {
-      const param = {
-         coCd: '100',
-         bpNm: searchRef2.current?.value || '999',
-         bpDiv: '999',
-         bpType: '999',
-      };
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0201_P03", { data });
-      setGridDatasP2(result);
+      await fetchWithLoading(async () => {
+         const param = {
+            coCd: '100',
+            bpNm: searchRef2.current?.value || '999',
+            bpDiv: '999',
+            bpType: '999',
+         };
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0201_P03", { data });
+         setGridDatasP2(result);
+      });
    };
 
    // 사전상담 조회 (연락처)
    const handleCallSearch4 = async () => {
-      const param = {         
-         ownTelNo: inputValues.ownTelNo,
-      };
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0201_P02", { data });
+      await fetchWithLoading(async () => {
+         const param = {         
+            ownTelNo: inputValues.ownTelNo,
+         };
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0201_P02", { data });
 
-      if (result.length > 0) {
-         onInputChange('preRcptNo', result[0].preRcptNo);
+         if (result.length > 0) {
+            onInputChange('preRcptNo', result[0].preRcptNo);
 
-         // 사전상담
-         let preRcpt = await SO0101_S02({ preRcptNo: result[0].preRcptNo });
-         setGridDatas4(preRcpt);
-      }
+            // 사전상담
+            let preRcpt = await SO0101_S02({ preRcptNo: result[0].preRcptNo });
+            setGridDatas4(preRcpt);
+         }
+      });
    };
 
    //배송지 팝업조회
    const handleCallSearch5 = async () => {
-      const param = {
-         dlvyNm: searchRef3.current?.value || '999',
-         addr1: searchRef7.current?.value || '999',
-      };
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0201_P04", { data });
-      setGridDatasP3(result);
+      await fetchWithLoading(async () => {
+         const param = {
+            dlvyNm: searchRef3.current?.value || '999',
+            addr1: searchRef7.current?.value || '999',
+         };
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0201_P04", { data });
+         setGridDatasP3(result);
+      });
    };
 
    //사전상담 팝업조회
    const handleCallSearch6 = async () => {
+      await fetchWithLoading(async () => {
       const param = {    
          startDt: inputValues.startDate2,     
          endDt: inputValues.endDate2,     
@@ -1721,33 +1742,37 @@ const fnConfirm = async () => {
          ownNm: searchRef4.current?.value || '999',
          bpNm: '999',
       };
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0101_P01", { data });
-      setGridDatasP4(result);
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0101_P01", { data });
+         setGridDatasP4(result);
+      });
    };
 
    //품목 팝업조회
-   const handleCallSearch7 = async () => {      
-      const gridInstance = gridRef2.current.getInstance();
-      const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
+   const handleCallSearch7 = async () => {  
+      await fetchWithLoading(async () => {
+         const gridInstance = gridRef2.current.getInstance();
+         const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
 
-      const condType = gridInstance.getValue(rowKey, "condType"); // 해당 rowKey에서 soNo 값을 가져옴
+         const condType = gridInstance.getValue(rowKey, "condType"); // 해당 rowKey에서 soNo 값을 가져옴
 
-      const param = {
-         coCd: '100',
-         bpCd: inputValues.soldToParty,
-         itemNm: searchRef5.current?.value || '999',
-         dealType: inputValues.dealType,
-         dlvyCd: inputValues.dlvyCd,
-         condType: condType,
-      };
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0201_P10", { data });
-      setGridDatasP5(result);
+         const param = {
+            coCd: '100',
+            bpCd: inputValues.soldToParty,
+            itemNm: searchRef5.current?.value || '999',
+            dealType: inputValues.dealType,
+            dlvyCd: inputValues.dlvyCd,
+            condType: condType,
+         };
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0201_P10", { data });
+         setGridDatasP5(result);
+      });
    };
 
    //발주지점 팝업조회
    const handleCallSearch8 = async () => {
+      await fetchWithLoading(async () => {
       const param = {
          soQty: inputValues.soQty,
          itemCd: inputValues.itemCd,
@@ -1755,11 +1780,13 @@ const fnConfirm = async () => {
          bpNm: searchRef6.current?.value || '999',
       };
       const data = JSON.stringify(param);
-      const result = await fetchPost("SO0201_P07", { data });
-      setGridDatasP6(result);
+         const result = await fetchPost("SO0201_P07", { data });
+         setGridDatasP6(result);
+      });
    };
 
    const handleDblClick = async () => {
+
       const gridInstance = gridRefP1.current.getInstance();
       const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
 
@@ -1772,104 +1799,109 @@ const fnConfirm = async () => {
 
    // 거래처팝업 더블클릭
    const handleDblClick2 = async () => {
-      const gridInstance = gridRefP2.current.getInstance();
-      const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
+      await fetchWithLoading(async () => {
+         const gridInstance = gridRefP2.current.getInstance();
+         const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
 
-      const bpCd = gridInstance.getValue(rowKey, "bpCd"); // 해당 rowKey에서 bpCd 값을 가져옴
-      const bpNm = gridInstance.getValue(rowKey, "bpNm"); // 해당 rowKey에서 bpNm 값을 가져옴
-      const contNo = gridInstance.getValue(rowKey, "contNo"); // 해당 rowKey에서 bpNm 값을 가져옴
-      const mouYn = gridInstance.getValue(rowKey, "mouYn"); // 해당 rowKey에서 bpNm 값을 가져옴
+         const bpCd = gridInstance.getValue(rowKey, "bpCd"); // 해당 rowKey에서 bpCd 값을 가져옴
+         const bpNm = gridInstance.getValue(rowKey, "bpNm"); // 해당 rowKey에서 bpNm 값을 가져옴
+         const contNo = gridInstance.getValue(rowKey, "contNo"); // 해당 rowKey에서 bpNm 값을 가져옴
+         const mouYn = gridInstance.getValue(rowKey, "mouYn"); // 해당 rowKey에서 bpNm 값을 가져옴
 
-      if (!contNo) {
-         alertSwal("거래처", "계약번호가 없습니다. 계약을 확인 해주세요.", "warning");
-         return;
-      }
+         if (!contNo) {
+            alertSwal("거래처", "계약번호가 없습니다. 계약을 확인 해주세요.", "warning");
+            return;
+         }
 
-      onInputChange('subCode', '');
-      onInputChange('hsCd', '');
+         onInputChange('subCode', '');
+         onInputChange('hsCd', '');
 
-      // InputSearchComp1에 값 설정
-      onInputChange('bpNm', bpNm);
-      onInputChange('soldToParty', bpCd);
-      onInputChange('contNo', contNo);
-      onInputChange('mouYn', mouYn);
+         // InputSearchComp1에 값 설정
+         onInputChange('bpNm', bpNm);
+         onInputChange('soldToParty', bpCd);
+         onInputChange('contNo', contNo);
+         onInputChange('mouYn', mouYn);
 
-      // 고객사별 참고사항
-      const param = {       
-         bpCd: bpCd,
-      };
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0201_P05", { data });
+         // 고객사별 참고사항
+         const param = {       
+            bpCd: bpCd,
+         };
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0201_P05", { data });
 
-      setGridDatas1(result);
-      setGridDatas2([]);
-      setGridDatas3([]);
-      setGridDatas7([]);
-      setGridDatas8([]);
-      
+         setGridDatas1(result);
+         setGridDatas2([]);
+         setGridDatas3([]);
+         setGridDatas7([]);
+         setGridDatas8([]);
+         
 
 
-      setTimeout(() => {
-         setPayAmt();
-      },500);
-      setIsOpen2(false);
+         setTimeout(() => {
+            setPayAmt();
+         },500);
+         setIsOpen2(false);
+      });
    };
 
    // 배송지팝업 더블클릭
    const handleDblClick3 = async () => {
-      const grid = gridRef2.current.getInstance();
-      const firstRow = grid.getRow(0); // 첫 번째 행 가져오기
+      await fetchWithLoading(async () => {
+         const grid = gridRef2.current.getInstance();
+         const firstRow = grid.getRow(0); // 첫 번째 행 가져오기
 
-      const updateHSCode = async () => {
-         const gridInstance = gridRefP3.current.getInstance();
-         const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
+         const updateHSCode = async () => {
+            const gridInstance = gridRefP3.current.getInstance();
+            const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
 
-         const dlvyCd = gridInstance.getValue(rowKey, "dlvyCd"); // 해당 rowKey에서 soNo 값을 가져옴
-         const dlvyNm = gridInstance.getValue(rowKey, "dlvyNm"); // 해당 rowKey에서 soNo 값을 가져옴
-         const addr1 = gridInstance.getValue(rowKey, "addr1"); // 해당 rowKey에서 soNo 값을 가져옴
-         const dlvyRemark = gridInstance.getValue(rowKey, "dlvyRemark"); // 해당 rowKey에서 soNo 값을 가져옴
+            const dlvyCd = gridInstance.getValue(rowKey, "dlvyCd"); // 해당 rowKey에서 soNo 값을 가져옴
+            const dlvyNm = gridInstance.getValue(rowKey, "dlvyNm"); // 해당 rowKey에서 soNo 값을 가져옴
+            const addr1 = gridInstance.getValue(rowKey, "addr1"); // 해당 rowKey에서 soNo 값을 가져옴
+            const dlvyRemark = gridInstance.getValue(rowKey, "dlvyRemark"); // 해당 rowKey에서 soNo 값을 가져옴
+            
+            onInputChange('dlvyCd', dlvyCd);
+            onInputChange('dlvyNm', dlvyNm);
+            onInputChange('dlvyAddr', addr1);
          
-         onInputChange('dlvyCd', dlvyCd);
-         onInputChange('dlvyNm', dlvyNm);
-         onInputChange('dlvyAddr', addr1);
-        
 
-         if (dlvyRemark) {
-            onInputChange('dlvyRemark', dlvyRemark);
-            setIsOpen7(true);
-         }
+            if (dlvyRemark) {
+               onInputChange('dlvyRemark', dlvyRemark);
+               setIsOpen7(true);
+            }
 
-         await SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, itemType: inputValues.itemType, dlvyCd: dlvyCd, dealType: inputValues.dealType});
+            await SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, itemType: inputValues.itemType, dlvyCd: dlvyCd, dealType: inputValues.dealType});
 
-         setIsOpen3(false);
-      };
+            setIsOpen3(false);
+         };
 
-      if (firstRow && firstRow.chkYn === 'Y') {
-         alertSwal("상품조회", "계약조건이 변경되어 상품정보가 삭제 후 다시 조회 됩니다. 계속 하시겠습니까?", "warning", true).then(async (result) => {
-         if (result.isConfirmed) {
+         if (firstRow && firstRow.chkYn === 'Y') {
+            alertSwal("상품조회", "계약조건이 변경되어 상품정보가 삭제 후 다시 조회 됩니다. 계속 하시겠습니까?", "warning", true).then(async (result) => {
+            if (result.isConfirmed) {
+               await updateHSCode();
+            } else if (result.isDismissed) {
+               return;
+            }
+            });
+         } else {
             await updateHSCode();
-         } else if (result.isDismissed) {
-            return;
          }
-         });
-      } else {
-         await updateHSCode();
-      }
-      
+      });
    };
 
    // 사전상담 팝업 더블클릭
    const handleDblClick4 = async () => {
-      const gridInstance = gridRefP4.current.getInstance();
-      const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
+      await fetchWithLoading(async () => {
+         const gridInstance = gridRefP4.current.getInstance();
+         const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
 
-      const preRcptNo = gridInstance.getValue(rowKey, "preRcptNo"); // 해당 rowKey에서 bpCd 값을 가져옴
-      
-      let preRcpt = await SO0101_S02({ preRcptNo: preRcptNo });
+         const preRcptNo = gridInstance.getValue(rowKey, "preRcptNo"); // 해당 rowKey에서 bpCd 값을 가져옴
+         
+         let preRcpt = await SO0101_S02({ preRcptNo: preRcptNo });
 
-      setGridDatas4(preRcpt);
+         setGridDatas4(preRcpt);
 
-      setIsOpen4(false);
+         setIsOpen4(false);
+      });
    };
 
    // 품목 팝업 더블클릭
@@ -1939,181 +1971,191 @@ const fnConfirm = async () => {
 
    // 주문 팝업
    const handleInputSearch = async (e: any) => {
-      const param = {    
-         startDt: inputValues.startDate,     
-         endDt: inputValues.endDate,     
-         soNo: '999',
-         ownNm: searchRef1.current?.value || '999',
-      };
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0201_P01", { data });
-      setGridDatasP1(result);
+      await fetchWithLoading(async () => {      
+         const param = {    
+            startDt: inputValues.startDate,     
+            endDt: inputValues.endDate,     
+            soNo: '999',
+            ownNm: searchRef1.current?.value || '999',
+            };
+            const data = JSON.stringify(param);
+            const result = await fetchPost("SO0201_P01", { data });
+            setGridDatasP1(result);
 
-      await setIsOpen(true);
-      setTimeout(() => {
+            await setIsOpen(true);
+            setTimeout(() => {
 
-         refreshGrid(gridRefP1);
-      }, 100);
+               refreshGrid(gridRefP1);
+            }, 100);
+       });
    };
 
    // 고객사 팝업
    const handleInputSearch2 = async (e: any) => {
-      const target = e.target as HTMLInputElement; 
-      const param = {
-         coCd: '100',
-         bpNm: target.value || '999',
-         bpDiv: 'ZZ0188',
-         bpType: '999',
-      };
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0201_P03", { data });
-      setGridDatasP2(result);
-      if (result.length === 1) {
-            onInputChange('subCode', '');
-            onInputChange('hsCd', '');
-            onInputChange('itemType', '');
-
-            const bpCd = result[0].bpCd 
-            const bpNm = result[0].bpNm
-            const contNo = result[0].contNo
-            const mouYn = result[0].mouYn
-
-            // InputSearchComp1에 값 설정
-            onInputChange('bpNm', bpNm);
-            onInputChange('soldToParty', bpCd);
-            onInputChange('contNo', contNo);
-            onInputChange('mouYn', mouYn);
-
-            // 고객사별 참고사항
-            const param = {       
-               bpCd: bpCd,
+      await fetchWithLoading(async () => {
+         const target = e.target as HTMLInputElement; 
+         const param = {
+            coCd: '100',
+            bpNm: target.value || '999',
+            bpDiv: 'ZZ0188',
+            bpType: '999',
             };
-            const data = JSON.stringify(param);
-            const result2 = await fetchPost("SO0201_P05", { data });
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0201_P03", { data });
+         setGridDatasP2(result);
+         if (result.length === 1) {
+               onInputChange('subCode', '');
+               onInputChange('hsCd', '');
+               onInputChange('itemType', '');
 
-            setGridDatas1(result2);
-         } else {
-            await setIsOpen2(true);
-            setTimeout(() => {
+               const bpCd = result[0].bpCd 
+               const bpNm = result[0].bpNm
+               const contNo = result[0].contNo
+               const mouYn = result[0].mouYn
 
-               refreshGrid(gridRefP2);
-            }, 100);
-      }
+               // InputSearchComp1에 값 설정
+               onInputChange('bpNm', bpNm);
+               onInputChange('soldToParty', bpCd);
+               onInputChange('contNo', contNo);
+               onInputChange('mouYn', mouYn);
+
+               // 고객사별 참고사항
+               const param = {       
+                  bpCd: bpCd,
+               };
+               const data = JSON.stringify(param);
+               const result2 = await fetchPost("SO0201_P05", { data });
+
+               setGridDatas1(result2);
+            } else {
+               await setIsOpen2(true);
+               setTimeout(() => {
+
+                  refreshGrid(gridRefP2);
+               }, 100);
+         }
+      });
    };
 
    // 고객사 팝업 돋보기 클릭
    const handleInputSearch3 = async (e: any) => {
-      const param = {
-         coCd: '100',
-         bpNm: e || '999',
-         bpDiv: 'ZZ0188',
-         bpType: '999',
-      };
+      await fetchWithLoading(async () => {
+         const param = {
+            coCd: '100',
+            bpNm: e || '999',
+            bpDiv: 'ZZ0188',
+            bpType: '999',
+         };
 
-      onInputChange('bpNmS', e);
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0201_P03", { data });
+         onInputChange('bpNmS', e);
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0201_P03", { data });
 
-      setGridDatasP2(result);
-      
-      await setIsOpen2(true);
-      setTimeout(() => {
-
-         refreshGrid(gridRefP2);
-      }, 100);
+         setGridDatasP2(result);
+         
+         await setIsOpen2(true);
+         setTimeout(() => {
+            refreshGrid(gridRefP2);
+         }, 100);
+      });
    };
 
    // 배송지 팝업
-   const handleInputSearch4 = async (e: any) => {
-      const target = e.target as HTMLInputElement; 
-      const param = {
-         dlvyNm: target.value || '999',
-         addr1: searchRef7.current?.value || '999',
-      };
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0201_P04", { data });
-      setGridDatasP3(result);
-      if (result.length === 1) {
-            const grid = gridRef2.current.getInstance();
-            const firstRow = grid.getRow(0); // 첫 번째 행 가져오기
-            const dlvyCd = result[0].dlvyCd 
-            const dlvyNm = result[0].dlvyNm
-            const addr1 = result[0].addr1
-            const dlvyRemark =result[0].dlvyRemark // 해당 rowKey에서 soNo 값을 가져옴
-         
-            if (dlvyRemark) {
-               onInputChange('dlvyRemark', dlvyRemark);
-               setIsOpen7(true);
-            }
+   const handleInputSearch4 = async (e: any) => {  
+      await fetchWithLoading(async () => {
+         const target = e.target as HTMLInputElement; 
+         const param = {
+            dlvyNm: target.value || '999',
+            addr1: searchRef7.current?.value || '999',
+         };
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0201_P04", { data });
+         setGridDatasP3(result);
+         if (result.length === 1) {
+               const grid = gridRef2.current.getInstance();
+               const firstRow = grid.getRow(0); // 첫 번째 행 가져오기
+               const dlvyCd = result[0].dlvyCd 
+               const dlvyNm = result[0].dlvyNm
+               const addr1 = result[0].addr1
+               const dlvyRemark =result[0].dlvyRemark // 해당 rowKey에서 soNo 값을 가져옴
+            
+               if (dlvyRemark) {
+                  onInputChange('dlvyRemark', dlvyRemark);
+                  setIsOpen7(true);
+               }
 
-            if (firstRow && firstRow.chkYn === 'Y') {
-               alertSwal("상품조회", "계약조건이 변경되어 상품정보가 삭제 후 다시 조회 됩니다. 계속 하시겠습니까?", "warning", true).then((result) => {
-                  if (result.isConfirmed) {   
-                     // InputSearchComp1에 값 설정
-                     onInputChange('dlvyCd', dlvyCd);
-                     onInputChange('dlvyNm', dlvyNm);
-                     onInputChange('dlvyAddr', addr1);
-                     
-                     SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, itemType: inputValues.itemType, dlvyCd: dlvyCd, dealType: inputValues.dealType});
-                  } else if (result.isDismissed) {
-                     onInputChange('dlvyNm', inputValues.preDlvyNm);
-                     return;
-                  }
-              });
+               if (firstRow && firstRow.chkYn === 'Y') {
+                  alertSwal("상품조회", "계약조건이 변경되어 상품정보가 삭제 후 다시 조회 됩니다. 계속 하시겠습니까?", "warning", true).then((result) => {
+                     if (result.isConfirmed) {   
+                        // InputSearchComp1에 값 설정
+                        onInputChange('dlvyCd', dlvyCd);
+                        onInputChange('dlvyNm', dlvyNm);
+                        onInputChange('dlvyAddr', addr1);
+                        
+                        SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, itemType: inputValues.itemType, dlvyCd: dlvyCd, dealType: inputValues.dealType});
+                     } else if (result.isDismissed) {
+                        onInputChange('dlvyNm', inputValues.preDlvyNm);
+                        return;
+                     }
+               });
+               } else {
+                  onInputChange('dlvyCd', dlvyCd);
+                  onInputChange('dlvyNm', dlvyNm);
+                  onInputChange('dlvyAddr', addr1);
+
+                  SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, itemType: inputValues.itemType, dlvyCd: dlvyCd, dealType: inputValues.dealType});
+               }
             } else {
-               onInputChange('dlvyCd', dlvyCd);
-               onInputChange('dlvyNm', dlvyNm);
-               onInputChange('dlvyAddr', addr1);
+               await setIsOpen3(true);
+               setTimeout(() => {
 
-               SO0201_S10({soNo: inputValues.soNo, bpCd: inputValues.soldToParty, contNo: inputValues.contNo, subCode: inputValues.subCode, hsCd: inputValues.hsCd, itemType: inputValues.itemType, dlvyCd: dlvyCd, dealType: inputValues.dealType});
-            }
-         } else {
-            await setIsOpen3(true);
-            setTimeout(() => {
-
-               refreshGrid(gridRefP3);
-            }, 100);
-      }
+                  refreshGrid(gridRefP3);
+               }, 100);
+         }
+      });
    };
 
    // 배송지 팝업 돋보기 클릭
    const handleInputSearch5 = async (e: any) => {
-      const param = {
-         dlvyNm: e || '999',
-         addr1: searchRef7.current?.value || '999',
-      };
+      await fetchWithLoading(async () => {
+         const param = {
+            dlvyNm: e || '999',
+            addr1: searchRef7.current?.value || '999',
+         };
 
-      onInputChange('dlvyNmS', e);
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0201_P04", { data });
-      setGridDatasP3(result);
-      
-      await setIsOpen3(true);
-      setTimeout(() => {
+         onInputChange('dlvyNmS', e);
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0201_P04", { data });
+         setGridDatasP3(result);
+         
+         await setIsOpen3(true);
+         setTimeout(() => {
 
-         refreshGrid(gridRefP3);
-      }, 100);
+            refreshGrid(gridRefP3);
+         }, 100);
+      });
    };
 
    // 사전상담 팝업 돋보기 클릭
    const handleInputSearch6 = async (e: any) => {
-   
-      const param = {    
-         startDt: inputValues.startDate2,     
-         endDt: inputValues.endDate2,     
-         reqNm: '999',
-         ownNm: searchRef4.current?.value || '999',
-         bpNm: '999',
-      };
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0101_P01", { data });
-      setGridDatasP4(result);
+      await fetchWithLoading(async () => {
+         const param = {    
+            startDt: inputValues.startDate2,     
+            endDt: inputValues.endDate2,     
+            reqNm: '999',
+            ownNm: searchRef4.current?.value || '999',
+            bpNm: '999',
+         };
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0101_P01", { data });
+         setGridDatasP4(result);
 
-      await setIsOpen4(true);
-      setTimeout(() => {
+         await setIsOpen4(true);
+         setTimeout(() => {
 
-         refreshGrid(gridRefP4);
-      }, 100);
+            refreshGrid(gridRefP4);
+         }, 100);
+      });
    };
 
 
@@ -2514,8 +2556,8 @@ const changeSoPrice = async (price: number, rowKey: any) => {
    //상단 버튼 div
    const buttonDiv = () => (
       <div className="flex justify-end space-x-2">
-         <button type="button" onClick={create} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
-            <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
+         <button type="button" onClick={create} className="bg-green-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+            <PencilIcon className="w-5 h-5 mr-1" />
             신규
          </button>
          
@@ -2737,6 +2779,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                                        const firstRow = grid.getRow(0); // 첫 번째 행 가져오기 
 
                                        const updateItemType = async (value:any) => {
+                                          await fetchWithLoading(async () => {
                                           onInputChange('itemType', value);
                                      
                                           await SO0201_S10({
@@ -2749,8 +2792,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                                              dlvyCd: inputValues.dlvyCd,
                                              dealType: inputValues.dealType
                                              });
-      
-                                        
+                                          });
                                        };
                                        
                                        if (firstRow && firstRow.chkYn === 'Y') {
@@ -3797,6 +3839,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
 
    return (
       <div className={`space-y-2 overflow-y-auto `}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

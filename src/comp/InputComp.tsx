@@ -415,10 +415,11 @@ interface Props4 {
    textAlign?: "left" | "center" | "right";
    readonly?: boolean;
    require?: boolean;
+   type?: "date" | "month" | "year";
 }
 
 const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
-   ({ title, value = '', format = 'yyyy-MM-dd', timePicker = false, readonly =false, require=false, textAlign = "right", onChange, onClick, layout = 'horizontal', minWidth }, ref) => {
+   ({ title, value = '', format = 'yyyy-MM-dd', timePicker = false, readonly =false, require=false, textAlign = "right", onChange, onClick, layout = 'horizontal', minWidth, type }, ref) => {
        const [selectedDate, setSelectedDate] = useState<Date | null>(value ? new Date(value) : null);
 
        useEffect(() => {
@@ -501,6 +502,8 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
                            wrapperClassName="w-full z-50"
                            popperClassName="custom-datepicker-popper"  
                            showIcon
+                           showMonthYearPicker={type === "month"}
+                           
                        />
                    </div>
                </div>

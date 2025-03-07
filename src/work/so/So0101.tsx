@@ -2,7 +2,10 @@ import { React, useEffect, useState, useRef, useCallback, initChoice,
    updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, 
    reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, TextArea2, InputSearchComp1, SelectSearch, SelectComp1, SelectComp2, SelectSearchComp, DateRangePickerComp, date, InputSearchComp, commas,
     RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp } from "../../comp/Import";
-import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, ArrowUturnDownIcon } from "@heroicons/react/24/outline";
+import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, ArrowUturnDownIcon, XMarkIcon, TrashIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -65,6 +68,8 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    const [isOpen2, setIsOpen2] = useState(false);
 
    const breadcrumbItem = [{ name: "주문관리" }, { name: "사전상담" }, { name: "사전상담등록" }];
+
+   const { fetchWithLoading } = useLoadingFetch();
 
    // 첫 페이지 시작시 실행
    useEffect(() => {
@@ -193,36 +198,38 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const search = async (preRcptNo:any) => {
-      const param = {    
-         preRcptNo: preRcptNo,
-      };
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0101_S01", {data});
+      await fetchWithLoading(async () => {
+         const param = {    
+            preRcptNo: preRcptNo,
+         };
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0101_S01", {data});
 
-      if (result.length === 0) {
-         return;
-      }
-      let itemIn = await ZZ_CONT_INFO({ contNo: result[0].contNo, bpCd: result[0].bpCd, subCode: result[0].subCode, searchDiv: "ITEM", hsCd: result[0].hsCd});
+         if (result.length === 0) {
+            return;
+         }
+         let itemIn = await ZZ_CONT_INFO({ contNo: result[0].contNo, bpCd: result[0].bpCd, subCode: result[0].subCode, searchDiv: "ITEM", hsCd: result[0].hsCd});
 
-      setGridDatas(itemIn);
+         setGridDatas(itemIn);
 
-      const result2 = await fetchPost("SO0101_S02", {data});
+         const result2 = await fetchPost("SO0101_S02", {data});
 
-      setGridDatas2(result2);
+         setGridDatas2(result2);
 
-      // InputSearchComp1에 값 설정      
-      onInputChange('preRcptNo', result[0].preRcptNo);
-      onInputChange('contNo', result[0].contNo);
-      onInputChange('reqNm', result[0].reqNm);
-      onInputChange('rcptUserId', result[0].rcptUserId);
-      onInputChange('reqTelNo', result[0].reqTelNo);
-      onInputChange('bpCd', result[0].bpCd);
-      onInputChange('bpNm', result[0].bpNm);
-      onInputChange('mouYn', result[0].mouYn);
-      onInputChange('rcptDt', result[0].rcptDt);
-      onInputChange('subCode', result[0].subCode);
-      onInputChange('hsCd', result[0].hsCd);
-      onInputChange('ownNm', result[0].ownNm);
+         // InputSearchComp1에 값 설정      
+         onInputChange('preRcptNo', result[0].preRcptNo);
+         onInputChange('contNo', result[0].contNo);
+         onInputChange('reqNm', result[0].reqNm);
+         onInputChange('rcptUserId', result[0].rcptUserId);
+         onInputChange('reqTelNo', result[0].reqTelNo);
+         onInputChange('bpCd', result[0].bpCd);
+         onInputChange('bpNm', result[0].bpNm);
+         onInputChange('mouYn', result[0].mouYn);
+         onInputChange('rcptDt', result[0].rcptDt);
+         onInputChange('subCode', result[0].subCode);
+         onInputChange('hsCd', result[0].hsCd);
+         onInputChange('ownNm', result[0].ownNm);
+      });
    };
 
    const add = async () => {
@@ -238,35 +245,37 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const save = async () => {
-      const data = await getGridValues();
-      if (data) {
-         let result = await SO0101_U03(data);
-         if (result) {
-            await returnResult(result);
+      await fetchWithLoading(async () => {
+         const data = await getGridValues();
+         if (data) {
+            let result = await SO0101_U03(data);
+            if (result) {
+               await returnResult(result);
+            }
          }
-      }
+      });
    };
 
    const del = async () => {
       if (inputValues.preRcptNo) {
          alertSwal("사전상담삭제", "사전상담을 삭제하시겠습니까?", "warning", true).then(async (result) => {
             if (result.isConfirmed) {
-               let preRcptNo = inputValues.preRcptNo;
+               await fetchWithLoading(async () => {
+                  let preRcptNo = inputValues.preRcptNo;
 
-               let data = {
-                  menuId: activeComp.menuId,
-                  insrtUserId: userInfo.usrId,
-                  preRcptNo: preRcptNo
-               };
+                  let data = {
+                     menuId: activeComp.menuId,
+                     insrtUserId: userInfo.usrId,
+                     preRcptNo: preRcptNo
+                  };
 
-               if (data) {
-                  let result = await SO0101_U04(data);
-                  if (result) {
-                     await returnResult(result);
+                  if (data) {
+                     let result = await SO0101_U04(data);
+                     if (result) {
+                        await returnResult(result);
+                     }
                   }
-               }
-            } else if (result.isDismissed) {
-               return;
+               });
             }
          });  
       } else {
@@ -345,19 +354,19 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
 
    //사전상담 팝업조회
    const handleCallSearch2 = async () => {
-    
-
-      const param = {    
-         startDt: inputValues.startDate,     
-         endDt: inputValues.endDate,     
-         reqNm: '999',
-         ownNm: searchRef2.current?.value || '999',
-         reqTelNo : searchRef3.current?.value || '999',
-         bpNm: '999',
-      };
-      const data = JSON.stringify(param);
-      const result = await fetchPost("SO0101_P01", { data });
-      setGridDatas3(result);
+      await fetchWithLoading(async () => {
+         const param = {    
+            startDt: inputValues.startDate,     
+            endDt: inputValues.endDate,     
+            reqNm: '999',
+            ownNm: searchRef2.current?.value || '999',
+            reqTelNo : searchRef3.current?.value || '999',
+            bpNm: '999',
+         };
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0101_P01", { data });
+         setGridDatas3(result);
+      });
    };
 
    //고객사 팝업조회
@@ -549,17 +558,17 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    //상단 버튼 div
    const buttonDiv = () => (
       <div className="flex justify-end space-x-2">
+         <button type="button" onClick={del} className="bg-rose-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+            <TrashIcon className="w-5 h-5 mr-1" />
+            삭제
+         </button>
          <button type="button" onClick={add} className="bg-green-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
-         <ArrowUturnDownIcon className="w-5 h-5 mr-1" />
+         <PencilIcon className="w-5 h-5 mr-1" />
             신규
          </button>
          <button type="button" onClick={save} className="bg-blue-500 text-white  rounded-lg px-2 py-1 flex items-center shadow">
             <ServerIcon className="w-5 h-5 mr-1" />
             저장
-         </button>
-         <button type="button" onClick={del} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
-            <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
-            삭제
          </button>
       </div>
    );
@@ -812,7 +821,8 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-2 overflow-y-auto `}>
+      <div className={`space-y-2 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

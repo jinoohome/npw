@@ -2,7 +2,7 @@ import {
    React, useEffect, useState, commas, useRef, SelectSearch, date, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
-import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
+import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon, ArrowUturnDownIcon, PencilIcon } from "@heroicons/react/24/outline";
 import "tui-date-picker/dist/tui-date-picker.css";
 import DatePicker from "tui-date-picker";
 import { on } from "events";
@@ -14,6 +14,9 @@ import LoadingMask from "../../comp/LoadingMask";
 
 import { ZZ0101_S02_API } from "../../ts/ZZ0101_S02";
 import { tr } from "date-fns/locale";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -22,6 +25,7 @@ interface Props {
 }
 
 const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
+   const { fetchWithLoading } = useLoadingFetch();
    const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발주관리" }, { name: "수발주등록" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
@@ -438,46 +442,37 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const save = async () => {
-     
-      let datas = await getGridDatas(gridRef);
-      let datas2 = await getGridDatas(gridRef4);
+      await fetchWithLoading(async () => {
+         try {
+            let datas = await getGridDatas(gridRef);
+            let datas2 = await getGridDatas(gridRef4);
 
-      inputValues.gridDatas = datas;
-      inputValues.soNo ? (inputValues.status = "U") : (inputValues.status = "I");
+            inputValues.gridDatas = datas;
+            inputValues.soNo ? (inputValues.status = "U") : (inputValues.status = "I");
 
+            if(inputValues.cfmFlag === "Y") {
+               inputValues.workStatus = "MA0016"
+            } else {
+               inputValues.workStatus = "MA0015"
+            }
+            
+            let oilSoHdr = [inputValues];
 
-     // inputValues.gridDatas4 = datas2;
+            let data = {
+               menuId: activeComp.menuId,
+               insrtUserId: userInfo.usrId,
+               soNo: inputValues.soNo,
+               oilSoHdr: JSON.stringify(oilSoHdr),
+               oilSoDtl: JSON.stringify(datas2),
+               oilSoDtlItem: JSON.stringify(datas),
+         };
 
-      if(inputValues.cfmFlag === "Y") {
-         inputValues.workStatus = "MA0016"
-      } else {
-         inputValues.workStatus = "MA0015"
-      }
-      
-      let oilSoHdr = [inputValues];
-
-      let data = {
-         menuId: activeComp.menuId,
-         insrtUserId: userInfo.usrId,
-         soNo: inputValues.soNo,
-         oilSoHdr: JSON.stringify(oilSoHdr),
-         oilSoDtl: JSON.stringify(datas2),
-         oilSoDtlItem: JSON.stringify(datas),
-    };
-
-
-      try {
-        setLoading(true); 
-         const result = await fetchPost(`SP0110_U04`, data);
-         returnResult(result);
-      } catch (error) {
-            console.error("save Error:", error);
-      } finally {
-         setLoading(false);
-      }
-
-      
-     
+            const result = await fetchPost(`SP0110_U04`, data);
+            returnResult(result);
+         } catch (error) {
+            console.error("Save Error:", error);
+         }
+      });
    };
 
    const confirm = async () => {
@@ -509,15 +504,8 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                oilSoDtlItem: JSON.stringify(datas),
          };
 
-            try {
-               setLoading(true); 
-               const result = await fetchPost(`SP0110_U04`, data);
-               returnResult(result);
-            } catch (error) {
-                  console.error("save Error:", error);
-            } finally {
-               setLoading(false);
-            }
+            const result = await fetchPost(`SP0110_U04`, data);
+            returnResult(result);
          } else if (result.isDismissed) {
             return;
          }
@@ -553,16 +541,8 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                oilSoDtlItem: JSON.stringify(datas),
          };
 
-
-            try {
-               setLoading(true); 
-               const result = await fetchPost(`SP0110_U04`, data);
-               returnResult(result);
-            } catch (error) {
-                  console.error("save Error:", error);
-            } finally {
-               setLoading(false);
-            }
+            const result = await fetchPost(`SP0110_U04`, data);
+            returnResult(result);
          } else if (result.isDismissed) {
             return;
          }
@@ -1161,8 +1141,8 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const buttonDiv = () => (
       <div className="flex justify-end space-x-2">
-         <button type="button" onClick={create} className="bg-orange-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
-            <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
+         <button type="button" onClick={create} className="bg-green-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+            <PencilIcon className="w-5 h-5 mr-1" />
             신규
          </button>
          <button type="button" onClick={del} className="bg-rose-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
@@ -1342,8 +1322,8 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-hidden `}>
-           <LoadingMask loading={loading} />
+      <div className={`space-y-5 overflow-y-hidden`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

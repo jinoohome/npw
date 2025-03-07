@@ -3,6 +3,9 @@ import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -12,6 +15,7 @@ interface Props {
 }
 
 const Mm0504 = ({ item, activeComp, leftMode, userInfo }: Props) => {
+   const { fetchWithLoading } = useLoadingFetch();
 
    const GridRef1 = useRef<any>(null);
 
@@ -38,11 +42,13 @@ const Mm0504 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    }, []);
 
    const setGridData = async () => {
-      try {
-         await MM0504_S01();
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      await fetchWithLoading(async () => {
+         try {
+            await MM0504_S01();
+         } catch (error) {
+            console.error("setGridData Error:", error);
+         }
+      });
    };
 
    // 탭 클릭시 Grid 리사이즈
@@ -88,8 +94,14 @@ const Mm0504 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    //-------------------event--------------------------
 
-   const search = () => {
-      setGridData();
+   const search = async () => {
+      await fetchWithLoading(async () => {
+         try {
+            await MM0504_S01();
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
    };
 
    //검색 창 클릭 또는 엔터시 조회
@@ -141,7 +153,9 @@ const Mm0504 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                      onChange={(e) => { 
                         onInputChange('yyyymm', e);  
                      }} 
+                     type="month"
                      format="yyyy-MM"
+                     //월선택으로
                   />
             <SelectSearch
                         title="본부"
@@ -245,7 +259,8 @@ const Mm0504 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

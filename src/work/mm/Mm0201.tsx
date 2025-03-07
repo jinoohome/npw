@@ -1,6 +1,9 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, SelectSearch, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp, InputComp1, InputComp2, SelectComp1, SelectComp2, commas } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -58,6 +61,8 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
    const [coCds, setCoCds] = useState<ZZ_CODE_RES[]>([]);
    const [focusRow, setFocusRow] = useState<any>(0);
 
+   const { fetchWithLoading } = useLoadingFetch();
+
    // 첫 페이지 시작시 실행
    useEffect(() => {
       setChoiceUI();
@@ -89,48 +94,50 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const setGridData = async () => {
-      try {
-         let cd0004Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0004", div: "999" });
-         if (cd0004Data !== null) {
-            setCd0004(cd0004Data);
+      await fetchWithLoading(async () => {
+         try {
+            let cd0004Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0004", div: "999" });
+            if (cd0004Data !== null) {
+               setCd0004(cd0004Data);
 
-            let cd0004IntupData = cd0004Data.filter((item) => !(item.value === "999" && item.text === "전체"));
-            cd0004IntupData.unshift({ value: "", text: "" });
+               let cd0004IntupData = cd0004Data.filter((item) => !(item.value === "999" && item.text === "전체"));
+               cd0004IntupData.unshift({ value: "", text: "" });
 
-            setCd0004Input(cd0004IntupData);
+               setCd0004Input(cd0004IntupData);
+            }
+
+            let cd0005Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0005", div: "999" });
+            if (cd0005Data !== null) {
+               setCd0005(cd0005Data);
+
+               let cd0005IntupData = cd0005Data.filter((item) => !(item.value === "999" && item.text === "전체"));
+               cd0005IntupData.unshift({ value: "", text: "" });
+
+               setCd0005Input(cd0005IntupData);
+            }
+
+            let coCdData = await ZZ_B_BIZ();
+            if (coCdData !== null) {
+               setCoCds(coCdData);
+            }
+
+            const result = await MM0201_S01();
+
+            if (!result || result.length === 0) {
+               // 데이터가 없을 때 refs 값들 초기화
+               Object.keys(refs).forEach((key) => {
+                  const ref = refs[key as keyof typeof refs];
+                  if (ref?.current) {                  
+                        ref.current.value = ""; // 각 ref의 값을 빈 값으로 설정
+                  }
+               });
+
+               setInputValues([]);
+            }
+         } catch (error) {
+            console.error("setGridData Error:", error);
          }
-
-         let cd0005Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0005", div: "999" });
-         if (cd0005Data !== null) {
-            setCd0005(cd0005Data);
-
-            let cd0005IntupData = cd0005Data.filter((item) => !(item.value === "999" && item.text === "전체"));
-            cd0005IntupData.unshift({ value: "", text: "" });
-
-            setCd0005Input(cd0005IntupData);
-         }
-
-         let coCdData = await ZZ_B_BIZ();
-         if (coCdData !== null) {
-            setCoCds(coCdData);
-         }
-
-         const result = await MM0201_S01();
-
-         if (!result || result.length === 0) {
-            // 데이터가 없을 때 refs 값들 초기화
-            Object.keys(refs).forEach((key) => {
-               const ref = refs[key as keyof typeof refs];
-               if (ref?.current) {                  
-                     ref.current.value = ""; // 각 ref의 값을 빈 값으로 설정
-               }
-            });
-
-            setInputValues([]);
-         }
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      });
    };
 
    //------------------useEffect--------------------------
@@ -321,24 +328,24 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const save = async () => {
-      setErrorMsgs({});
-      let grid = gridRef.current.getInstance();
-      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
-      let rowIndex = grid.getIndexOfRow(rowKey);
-      setFocusRow(rowKey); // 저장 후에는 추가Row가 맨마지막으로 이동하므로 rowkey로 지정
+      await fetchWithLoading(async () => {
+         setErrorMsgs({});
+         let grid = gridRef.current.getInstance();
+         let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+         let rowIndex = grid.getIndexOfRow(rowKey);
+         setFocusRow(rowKey); // 저장 후에는 추가Row가 맨마지막으로 이동하므로 rowkey로 지정
 
- 
-      const data = await getGridValues();
+         const data = await getGridValues();
 
-   
-      if (data) {
-         let result = await MM0201_U01(data);
-         if (result) {
-            returnResult(result);
+         if (data) {
+            let result = await MM0201_U01(data);
+            if (result) {
+               returnResult(result);
+            }
+         } else {
+            grid.focusAt(rowIndex, 0, true); //저장이 안된경우는 추가행이 맨위에 있으므로 rowIndex로 지정
          }
-      } else {
-         grid.focusAt(rowIndex, 0, true); //저장이 안된경우는 추가행이 맨위에 있으므로 rowIndex로 지정
-      }
+      });
    };
 
    const returnResult = async (result: any) => {
@@ -641,7 +648,8 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

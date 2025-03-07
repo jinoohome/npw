@@ -1,6 +1,9 @@
 import { useEffect, useState, useRef,  initChoice, updateChoices,  fetchPost, SelectSearch, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid,  InputComp1, SelectComp1 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MagnifyingGlassIcon} from "@heroicons/react/24/outline";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -25,6 +28,8 @@ const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
 
    const breadcrumbItem = [{ name: "기준정보" }, { name: "거래처" }, { name: "거래처 조회 (장례지원단)" }];
 
+   const { fetchWithLoading } = useLoadingFetch();
+
    // 첫 페이지 시작시 실행
    useEffect(() => {
       setGridData();
@@ -32,11 +37,14 @@ const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
    }, []);
 
    const setGridData = async () => {
-      try {
-         await MM0102_S01();
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      await fetchWithLoading(async () => {
+         try {
+            await MM0102_S01();
+         } catch (error) {
+            console.error("setGridData Error:", error);
+           // alertSwal("오류", "데이터 조회 중 오류가 발생했습니다.", "error");
+         }
+      });
    };
    //------------------useEffect--------------------------
 
@@ -124,14 +132,16 @@ const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
 
    //grid 포커스변경시
    const handleFocusChange = async ({ rowKey }: any) => {
-      if (rowKey !== null && gridRef.current) {
-         const grid = gridRef.current.getInstance();
-         const rowData = grid.getRow(rowKey);
+      await fetchWithLoading(async () => {
+         if (rowKey !== null && gridRef.current) {
+            const grid = gridRef.current.getInstance();
+            const rowData = grid.getRow(rowKey);
 
-         if (rowData) {
-            Object.entries(rowData).forEach(([key, value]) => {});
+            if (rowData) {
+               Object.entries(rowData).forEach(([key, value]) => {});
+            }
          }
-      }
+      });
    };
 
    //-------------------div--------------------------
@@ -235,7 +245,8 @@ const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

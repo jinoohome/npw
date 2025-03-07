@@ -3,6 +3,9 @@ import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 // import ChoicesEditor from "../../util/ChoicesEditor";
 import ChoicesEditor from "../../util/ReactSelectEditor";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 const breadcrumbItem = [{ name: "관리자" }, { name: "메뉴" }, { name: "고객사별 기준정보 등록" }];
 interface Props {
    item: any;
@@ -73,6 +76,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
 
    const [tabIndex, setTabIndex] = useState(0);
    
+   const { fetchWithLoading } = useLoadingFetch();
 
    useEffect(() => {
       setChoiceUI();
@@ -92,47 +96,49 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
 
 
    const setGridData = async () => {
-      try {
-         ZZ_CODE('FU0017');
+      await fetchWithLoading(async () => {
+         try {
+            ZZ_CODE('FU0017');
 
-         let sosocData = await ZZ_B_PO_BP();
+            let sosocData = await ZZ_B_PO_BP();
    
-         if (sosocData != null) {
-            sosocData.unshift({ value: "", text: "" });
-            setBpCds(sosocData);
+            if (sosocData != null) {
+               sosocData.unshift({ value: "", text: "" });
+               setBpCds(sosocData);
+            }
+   
+            let gridDatas1 = await MM0601_S01();
+            let gridDatas2 = []; // gridDatas2를 블록 외부에서 선언
+            const hsType = gridDatas1[0]?.hsType;
+   
+            if (gridDatas1?.length) {
+               gridDatas2 = await MM0601_S02(hsType);
+            }
+   
+            let gridDatas3 = await MM0601_S03();
+            let gridDatas4 = await MM0601_S04();
+            let gridDatas5 = await MM0601_S05();
+            let gridDatas6 = await MM0601_S06();
+            let gridDatas7 = await MM0601_S08();
+                     
+            let subCodeData = await SUB_CODE();
+   
+            if (subCodeData != null) {
+               subCodeData.unshift({ value: "", text: "" });
+               setSubCode(subCodeData);
+            }
+   
+            setGridDatas1(gridDatas1);
+            setGridDatas2(gridDatas2); // 이제 이 부분에서 gridDatas2는 유효합니다.
+            setGridDatas3(gridDatas3);
+            setGridDatas4(gridDatas4);
+            setGridDatas5(gridDatas5);
+            setGridDatas6(gridDatas6);
+            setGridDatas7(gridDatas7);
+         } catch (error) {
+            console.error("setGridData Error:", error);
          }
-   
-         let gridDatas1 = await MM0601_S01();
-         let gridDatas2 = []; // gridDatas2를 블록 외부에서 선언
-         const hsType = gridDatas1[0]?.hsType;
-   
-         if (gridDatas1?.length) {
-            gridDatas2 = await MM0601_S02(hsType);
-         }
-   
-         let gridDatas3 = await MM0601_S03();
-         let gridDatas4 = await MM0601_S04();
-         let gridDatas5 = await MM0601_S05();
-         let gridDatas6 = await MM0601_S06();
-         let gridDatas7 = await MM0601_S08();
-                  
-         let subCodeData = await SUB_CODE();
-   
-         if (subCodeData != null) {
-            subCodeData.unshift({ value: "", text: "" });
-            setSubCode(subCodeData);
-         }
-   
-         setGridDatas1(gridDatas1);
-         setGridDatas2(gridDatas2); // 이제 이 부분에서 gridDatas2는 유효합니다.
-         setGridDatas3(gridDatas3);
-         setGridDatas4(gridDatas4);
-         setGridDatas5(gridDatas5);
-         setGridDatas6(gridDatas6);
-         setGridDatas7(gridDatas7);
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      });
    };
    
 
@@ -671,68 +677,74 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const save = async () => {
-      const data = await getGridValues();
+      await fetchWithLoading(async () => {
+         try {
+            const data = await getGridValues();
 
-      // 경조 TYPE과 품목리스트의 필수 필드 체크 함수
-      const validateRequiredFields = () => {
-         // 경조 TYPE 그리드에서 HS_TYPE 필드가 비어있는지 확인
-         const grid1 = gridRef1.current.getInstance();
-         const hsTypeRows = grid1.getData();
+            // 경조 TYPE과 품목리스트의 필수 필드 체크 함수
+            const validateRequiredFields = () => {
+               // 경조 TYPE 그리드에서 HS_TYPE 필드가 비어있는지 확인
+               const grid1 = gridRef1.current.getInstance();
+               const hsTypeRows = grid1.getData();
 
-         // 소속 그리드에서 소속코드 필드가 비어있는지 확인
-         const grid3 = gridRef3.current.getInstance();
-         const subCodeRows = grid3.getData();
+               // 소속 그리드에서 소속코드 필드가 비어있는지 확인
+               const grid3 = gridRef3.current.getInstance();
+               const subCodeRows = grid3.getData();
+               
+               // 품목리스트 그리드에서 필수여부와 발주구분 필드가 비어있는지 확인
+               const grid4 = gridRef4.current.getInstance();
+               const itemRows = grid4.getData();
+
+               // 지원타입 그리드에서 지원타입 필드가 비어있는지 확인
+               const grid7 = gridRef7.current.getInstance();
+               const itemTypeRows = grid7.getData();
+
+               // 경조 TYPE의 HS_TYPE 필수 체크
+               const missingSubCode = subCodeRows.some((row: { subCode: any; }) => !row.subCode);
+               if (missingSubCode) {
+                  alertSwal("재직구분의 소속은 필수 입력 항목입니다.", "", "warning");
+                  return false;
+               }
+
+               // 경조 TYPE의 HS_TYPE 필수 체크
+               const missingHSType = hsTypeRows.some((row: { hsType: any; }) => !row.hsType);
+               if (missingHSType) {
+                  alertSwal("경조 TYPE의 HS_TYPE은 필수 입력 항목입니다.", "", "warning");
+                  return false;
+               }
+
+               // 지원타입의 ITEM_TYPE 필수 체크
+               const missingItemType = itemTypeRows.some((row: { itemType: any; }) => !row.itemType);
+               if (missingItemType) {
+                  alertSwal("경조 TYPE의 HS_TYPE은 필수 입력 항목입니다.", "", "warning");
+                  return false;
+               }
+
+               // 품목리스트의 필수여부와 발주구분 필수 체크
+               const missingRequiredFields = itemRows.some((row: { mandatoryYn: any; branchGroup: any; }) => !row.mandatoryYn || !row.branchGroup);
+               if (missingRequiredFields) {
+                  alertSwal("품목리스트의 필수여부와 발주구분은 필수 입력 항목입니다.", "", "warning");
+                  return false;
+               }
+
+               return true; // 모든 필수 필드가 채워졌다면 true 반환
+            };
+
+            // 필수 필드 체크
+            if (!validateRequiredFields()) {
+                  return; // 필수 필드가 채워지지 않았다면 저장 중단
+            }
          
-         // 품목리스트 그리드에서 필수여부와 발주구분 필드가 비어있는지 확인
-         const grid4 = gridRef4.current.getInstance();
-         const itemRows = grid4.getData();
-
-         // 지원타입 그리드에서 지원타입 필드가 비어있는지 확인
-         const grid7 = gridRef7.current.getInstance();
-         const itemTypeRows = grid7.getData();
-
-         // 경조 TYPE의 HS_TYPE 필수 체크
-         const missingSubCode = subCodeRows.some((row: { subCode: any; }) => !row.subCode);
-         if (missingSubCode) {
-            alertSwal("재직구분의 소속은 필수 입력 항목입니다.", "", "warning");
-            return false;
+            if (data) {
+               let result = await MM0601_U07();
+               if (result) {
+                  await returnResult(result);
+               }
+            }
+         } catch (error) {
+            console.error("Save Error:", error);
          }
-
-         // 경조 TYPE의 HS_TYPE 필수 체크
-         const missingHSType = hsTypeRows.some((row: { hsType: any; }) => !row.hsType);
-         if (missingHSType) {
-            alertSwal("경조 TYPE의 HS_TYPE은 필수 입력 항목입니다.", "", "warning");
-            return false;
-         }
-
-         // 지원타입의 ITEM_TYPE 필수 체크
-         const missingItemType = itemTypeRows.some((row: { itemType: any; }) => !row.itemType);
-         if (missingItemType) {
-            alertSwal("경조 TYPE의 HS_TYPE은 필수 입력 항목입니다.", "", "warning");
-            return false;
-         }
-
-         // 품목리스트의 필수여부와 발주구분 필수 체크
-         const missingRequiredFields = itemRows.some((row: { mandatoryYn: any; branchGroup: any; }) => !row.mandatoryYn || !row.branchGroup);
-         if (missingRequiredFields) {
-            alertSwal("품목리스트의 필수여부와 발주구분은 필수 입력 항목입니다.", "", "warning");
-            return false;
-         }
-
-         return true; // 모든 필수 필드가 채워졌다면 true 반환
-      };
-
-      // 필수 필드 체크
-      if (!validateRequiredFields()) {
-            return; // 필수 필드가 채워지지 않았다면 저장 중단
-      }
-   
-      if (data) {
-         let result = await MM0601_U07();
-         if (result) {
-            await returnResult(result);
-         }
-      }
+      });
    };
 
    const returnResult = (result:any) => {
@@ -1691,7 +1703,8 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    const tabLabels = ['경조매핑', '재직구분', '품목매핑', '주문팁', '담당자연락처', '지원타입'];
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
                <div className="flex justify-between">
                   <Breadcrumb items={breadcrumbItem} />

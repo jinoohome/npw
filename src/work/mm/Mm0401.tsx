@@ -2,6 +2,9 @@ import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoi
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import DaumPostcodeComp from "../../comp/DaumPostcodeComp";  // DaumPostcodeComp 컴포넌트 임포트
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 
 interface Props {
@@ -13,6 +16,7 @@ interface Props {
 const MM0401 = ({ item, activeComp, userInfo }: Props) => {
    const gridRef = useRef<any>(null);
    const gridContainerRef = useRef(null);
+   const { fetchWithLoading } = useLoadingFetch();
 
 
    //검색창 ref
@@ -77,47 +81,49 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const setGridData = async () => {
-      try {          
-         let cd0006Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0006", div: "999" });
-         if (cd0006Data != null) {  
-            let cd0006IntupData = cd0006Data.filter(item => !(item.value === "999" && item.text === "전체"));
-            cd0006IntupData.unshift({ value: "", text: "" });
+      await fetchWithLoading(async () => {
+         try {          
+            let cd0006Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0006", div: "999" });
+            if (cd0006Data != null) {  
+               let cd0006IntupData = cd0006Data.filter(item => !(item.value === "999" && item.text === "전체"));
+               cd0006IntupData.unshift({ value: "", text: "" });
 
-            setCd0006Input(cd0006IntupData);   
-         }      
+               setCd0006Input(cd0006IntupData);   
+            }      
 
-         let wo0002Data = await ZZ_CODE({ coCd: "999", majorCode: "WO0002", div: "999" });
-         if (wo0002Data != null) {  
-            let wo0002IntupData = wo0002Data.filter(item => !(item.value === "999" && item.text === "전체"));
-            wo0002IntupData.unshift({ value: "", text: "" });
+            let wo0002Data = await ZZ_CODE({ coCd: "999", majorCode: "WO0002", div: "999" });
+            if (wo0002Data != null) {  
+               let wo0002IntupData = wo0002Data.filter(item => !(item.value === "999" && item.text === "전체"));
+               wo0002IntupData.unshift({ value: "", text: "" });
 
-            setWo0002Input(wo0002IntupData);   
-         }      
+               setWo0002Input(wo0002IntupData);   
+            }      
 
-         let wo0003Data = await ZZ_CODE({ coCd: "999", majorCode: "WO0003", div: "999" });
-         if (wo0003Data != null) {  
-            let wo0003IntupData = wo0003Data.filter(item => !(item.value === "999" && item.text === "전체"));
-            wo0003IntupData.unshift({ value: "", text: "" });
+            let wo0003Data = await ZZ_CODE({ coCd: "999", majorCode: "WO0003", div: "999" });
+            if (wo0003Data != null) {  
+               let wo0003IntupData = wo0003Data.filter(item => !(item.value === "999" && item.text === "전체"));
+               wo0003IntupData.unshift({ value: "", text: "" });
 
-            setWo0003Input(wo0003IntupData);   
-         }       
+               setWo0003Input(wo0003IntupData);   
+            }       
 
-         const result = await MM0401_S01();
+            const result = await MM0401_S01();
 
-         if (!result || result.length === 0) {
-            // 데이터가 없을 때 refs 값들 초기화
-            Object.keys(refs).forEach((key) => {
-               const ref = refs[key as keyof typeof refs];
-               if (ref?.current) {                  
-                     ref.current.value = ""; // 각 ref의 값을 빈 값으로 설정
-               }
-            });
+            if (!result || result.length === 0) {
+               // 데이터가 없을 때 refs 값들 초기화
+               Object.keys(refs).forEach((key) => {
+                  const ref = refs[key as keyof typeof refs];
+                  if (ref?.current) {                  
+                        ref.current.value = ""; // 각 ref의 값을 빈 값으로 설정
+                  }
+               });
 
-            setInputValues([]);
+               setInputValues([]);
+            }
+         } catch (error) {
+            console.error("setGridData Error:", error);
          }
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      });
    };
 
    //------------------useEffect--------------------------
@@ -490,7 +496,8 @@ const MM0401 = ({ item, activeComp, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

@@ -4,6 +4,9 @@ import {
 import { ArrowUpTrayIcon, ArrowDownTrayIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import "tui-date-picker/dist/tui-date-picker.css";
 import * as XLSX from "xlsx";  // 엑셀 파일 처리를 위한 라이브러리
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 
 interface Props {
@@ -30,6 +33,8 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
 
    const searchBpNmRef = useRef<HTMLInputElement>(null);
    const searchSoNoRef = useRef<HTMLInputElement>(null);
+
+   const { fetchWithLoading } = useLoadingFetch();
 
    const setGridData = async () => {
       try {
@@ -157,10 +162,14 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const search = async () => {
-
-       const result = await SP0109_S01();
-
-       onInputChange("gridDatas3", result);
+      await fetchWithLoading(async () => {
+         try {
+            const result = await SP0109_S01();
+            onInputChange("gridDatas2", result);
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
    };
 
    const excel = async () => {
@@ -168,40 +177,17 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const save = async () => {
-      if (!inputValues.workCd || inputValues.workCd.trim() === '') {
-         alertSwal('작업명을 입력해 주세요.', '확인요청', 'error');
-         return;
-      }
-
-      if (!inputValues.poBpCd || inputValues.poBpCd.trim() === '') {
-         alertSwal('협력업체를 입력해 주세요.', '확인요청', 'error');
-         return;
-      }
-      // 저장 기능 구현
-      // 그리드에서 체크된 row 데이터 확인
-      const gridInstance = gridRef2.current.getInstance();
-      const checkedRows = gridInstance.getCheckedRows();
-
-      if (!checkedRows || checkedRows.length === 0) {
-         alertSwal('일괄발주 할 데이터를 선택하시기 바랍니다.', '확인요청', 'error');
-         return;
-      }
-
-      alertSwal("발주등록확인", "발주 등록 하시겠습니까?", "warning", true).then(async (result) => {
-         if (result.isConfirmed) {
+      await fetchWithLoading(async () => {
+         try {
             const data = await getGridValues('I');
-
-            if (data) {
-               let result = await SP0109_U01(data);
-               if (result) {
-                  await returnResult(result);
-               }
+            const result = await SP0109_U01(data);
+            if (result) {
+               returnResult(result);
             }
-
-         } else if (result.isDismissed) {
-            return;
+         } catch (error) {
+            console.error("Save Error:", error);
          }
-      });  
+      });
    };
 
    const del = async () => {
@@ -472,6 +458,7 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
 
    return (
       <div className={`space-y-5 overflow-y-auto h-screen`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between ">
                <Breadcrumb items={breadcrumbItem} />

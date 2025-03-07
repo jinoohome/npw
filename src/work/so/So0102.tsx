@@ -3,6 +3,9 @@ import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -41,6 +44,8 @@ const So0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    const breadcrumbItem = [{ name: "주문관리" }, { name: "사전상담" }, { name: "사전상담 조회" }];
 
+   const { fetchWithLoading } = useLoadingFetch();
+
    // 첫 페이지 시작시 실행
    useEffect(() => {
       setGridData();
@@ -49,11 +54,13 @@ const So0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
 
    const setGridData = async () => {
-      try {
-         await SO0102_S01();
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      await fetchWithLoading(async () => {
+         try {
+            await SO0102_S01();
+         } catch (error) {
+            console.error("setGridData Error:", error);
+         }
+      });
    };
 
    // 탭 클릭시 Grid 리사이즈
@@ -164,7 +171,8 @@ const So0206 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

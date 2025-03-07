@@ -2,6 +2,9 @@ import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoi
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ReactSelectEditor";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 const breadcrumbItem = [{ name: "관리자" }, { name: "메뉴" }, { name: "메뉴권한관리" }];
 interface Props {
    item: any;
@@ -10,6 +13,7 @@ interface Props {
 }
 
 const Zz0202 = ({ item, activeComp, userInfo }: Props) => {
+   const { fetchWithLoading } = useLoadingFetch();
    const searchRef1 = useRef<any>(null);
    const searchRef2 = useRef<any>(null);
    const searchRef3 = useRef<any>(null);
@@ -52,31 +56,32 @@ const Zz0202 = ({ item, activeComp, userInfo }: Props) => {
 
 
    const setGridData = async () => {
-      try {
-         await ZZ_B_BIZ();
-         await ZZ_MENU_LIST();
-         await ZZ_USER_LIST();
-   
-         let gridDatas1 = await ZZ0202_S01();
-   
-         if (gridDatas1.length > 0) {
-            let gId = gridDatas1[0].gId;
-            if (gId) {
-               let gridDatas2 = await ZZ0202_S02(gId);
-               let gridDatas3 = await ZZ0202_S03(gId);
-               setGridDatas1(gridDatas1);
-               setGridDatas2(gridDatas2);
-               setGridDatas3(gridDatas3);
+      await fetchWithLoading(async () => {
+         try {
+            await ZZ_B_BIZ();
+            await ZZ_MENU_LIST();
+            await ZZ_USER_LIST();
+      
+            let gridDatas1 = await ZZ0202_S01();
+      
+            if (gridDatas1.length > 0) {
+               let gId = gridDatas1[0].gId;
+               if (gId) {
+                  let gridDatas2 = await ZZ0202_S02(gId);
+                  let gridDatas3 = await ZZ0202_S03(gId);
+                  setGridDatas1(gridDatas1);
+                  setGridDatas2(gridDatas2);
+                  setGridDatas3(gridDatas3);
+               }
+            } else {
+               setGridDatas1([]);
+               setGridDatas2([]);
+               setGridDatas3([]);
             }
-         } else {
-            // gridDatas1에 값이 없으면 gridDatas2와 gridDatas3을 빈 배열로 설정
-            setGridDatas1([]);
-            setGridDatas2([]);
-            setGridDatas3([]);
+         } catch (error) {
+            console.error("setGridData Error:", error);
          }
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      });
    };
    
 
@@ -640,7 +645,8 @@ console.log(formattedResult);
       </div>
    );
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

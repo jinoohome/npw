@@ -9,6 +9,9 @@ import { on } from "events";
 import { set } from "date-fns";
 import { Input, Label } from "@headlessui/react";
 import ChoicesEditor from "../../util/ChoicesEditor";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 import { ZZ0101_S02_API } from "../../ts/ZZ0101_S02";
 
@@ -68,6 +71,8 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
    const contTypeRef = useRef<any>(null);
    const payCondRef = useRef<any>(null);
    const chargeDeptRef = useRef<any>(null);
+
+   const { fetchWithLoading } = useLoadingFetch();
 
    const setGridData = async () => {
       try {
@@ -387,9 +392,14 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const search = async () => {
-
-      const result = await SP0104_S01(inputValues.searchSoNo);
-      onInputChange("gridDatas2", result);
+      await fetchWithLoading(async () => {
+         try {
+            const result = await SP0104_S01(inputValues.searchSoNo);
+            onInputChange("gridDatas2", result);
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
    };
 
    const save = async () => {
@@ -1123,7 +1133,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
    //                <InputComp title="발주번호" ref={searchSoNoRef} value={inputValues.searchSoNo} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchSoNo", e)} />
 
    //                <InputComp title="고객사" ref={searchBpNmRef} value={inputValues.searchBpNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchBpNm", e)} />
-                 
+                  
    //                <InputComp title="협력업체" value={inputValues.searchPoBpNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchPoBpNm", e)} />
                   
    //                <InputComp title="작업명" value={inputValues.searchWorkNm} handleCallSearch={searchModalDiv} onChange={(e) => onInputChange("searchWorkNm", e)} />
@@ -1175,7 +1185,8 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto h-screen`}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between ">
                <Breadcrumb items={breadcrumbItem} />

@@ -1,8 +1,11 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, DatePickerComp, getGridCheckedDatas2, fetchPost, Breadcrumb, TuiGrid01, commas, reSizeGrid, InputComp, SelectSearchComp, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, DateRangePickerComp, date } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
-import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, CheckIcon, XMarkIcon, CalendarDateRangeIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -44,6 +47,8 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
   };
 
    const breadcrumbItem = [{ name: "정산관리" }, { name: "정산관리" }, { name: "매출등록" }];
+
+   const { fetchWithLoading } = useLoadingFetch();
 
    // 첫 페이지 시작시 실행
    useEffect(() => {
@@ -179,7 +184,14 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    //-------------------event--------------------------
 
    const search = async () => {
-      await SM0101_S01();
+      await fetchWithLoading(async () => {
+         try {
+            const result = await SM0101_S01();
+            setGridDatas(result);
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
    };
 
    //검색 창 클릭 또는 엔터시 조회
@@ -456,8 +468,10 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                               onInputChange('yyyyMm', e);  
                            }} 
                            format="yyyy-MM"
+                           type="month"
                         />
-                        <button type="button" onClick={addClose} className="bg-green-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
+                        <button type="button" onClick={addClose} className="bg-green-400 text-white rounded-3xl px-3 py-1 flex items-center shadow">
+                           <CheckIcon className="w-5 h-5" />
                            마감
                         </button>
                      </>
@@ -465,11 +479,13 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    
                   {/* 마감완료일 때 마감 취소 버튼 표시 */}
                   {isCloseYnComplete && (
-                     <button type="button" onClick={delClose} className="bg-red-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
+                     <button type="button" onClick={delClose} className="bg-rose-500 text-white rounded-3xl px-3 py-1 flex items-center shadow">
+                        <XMarkIcon className="w-5 h-5" />
                         마감취소
                      </button>
                   )}
-                  <button type="button" onClick={saveClose} className="bg-blue-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
+                  <button type="button" onClick={saveClose} className="bg-blue-500 text-white rounded-3xl px-3 py-1 flex items-center shadow">
+                        <CalendarDateRangeIcon className="w-5 h-5" />
                         입금일 저장
                   </button>
                </div>
@@ -481,7 +497,8 @@ const So0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    };
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

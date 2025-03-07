@@ -4,6 +4,9 @@ import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
 import { ZZ_MENU_RES } from "../../ts/ZZ_MENU";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -15,6 +18,7 @@ interface Props {
 }
 
 const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setSoNo }: Props) => {
+   const { fetchWithLoading } = useLoadingFetch();
 
    const GridRef1 = useRef<any>(null);
 
@@ -56,11 +60,13 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
 
 
    const setGridData = async () => {
-      try {
-         await SO0202_S01();
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      await fetchWithLoading(async () => {
+         try {
+            await SO0202_S01();
+         } catch (error) {
+            console.error("setGridData Error:", error);
+         }
+      });
    };
 
    // 탭 클릭시 Grid 리사이즈
@@ -111,14 +117,25 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
 
    //-------------------event--------------------------
 
-   const search = () => {
-      setGridData();
+   const search = async () => {
+      await fetchWithLoading(async () => {
+         try {
+            await SO0202_S01();
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
    };
 
    //검색 창 클릭 또는 엔터시 조회
    const handleCallSearch = async () => {
-      //setGridData();
-      await SO0202_S01();
+      await fetchWithLoading(async () => {      
+         try {
+            await SO0202_S01();
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
    };
 
    
@@ -254,7 +271,8 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
    }
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

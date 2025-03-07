@@ -3,6 +3,9 @@ import { React, useEffect, useState, useRef, useCallback,commas, initChoice, Inp
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import DaumPostcodeComp from "../../comp/DaumPostcodeComp";  // DaumPostcodeComp 컴포넌트 임포트
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -58,6 +61,8 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    const breadcrumbItem = [{ name: "기준정보" }, { name: "거래처" }, { name: "거래처등록 (장례지원단)" }];
 
+   const { fetchWithLoading } = useLoadingFetch();
+
    // 첫 페이지 시작시 실행
    useEffect(() => {
       setChoiceUI();
@@ -77,28 +82,36 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    };
 
    const setGridData = async () => {
-      try {
-         let zz0005Data = await ZZ_CODE({ coCd: "999", majorCode: "ZZ0005", div: "999" });
-         if (zz0005Data != null) {            
-            setZz0005(zz0005Data);
+      await fetchWithLoading(async () => {
+         try {
+            // 병렬로 API 호출
+            const [zz0005Data, result] = await Promise.all([
+               ZZ_CODE({ coCd: "999", majorCode: "ZZ0005", div: "999" }),
+               MM0101_S01()
+            ]);
+
+            if (zz0005Data) {            
+               setZz0005(zz0005Data);
+            }
+
+            if (!result?.length) {
+               // 데이터가 없을 때 초기화
+               const emptyValues = Object.fromEntries(
+                  Object.keys(refs).map(key => [key, ""])
+               );
+               setInputValues(emptyValues);
+               
+               Object.values(refs).forEach(ref => {
+                  if (ref?.current) ref.current.value = "";
+               });
+            }
+
+            setGridDatas(result);
+         } catch (error) {
+            console.error("setGridData Error:", error);
+            alertSwal("오류", "데이터 조회 중 오류가 발생했습니다.", "error");
          }
-
-         const result = await MM0101_S01();
-
-         if (!result || result.length === 0) {
-            // 데이터가 없을 때 refs 값들 초기화
-            Object.keys(refs).forEach((key) => {
-               const ref = refs[key as keyof typeof refs];
-               if (ref?.current) {                  
-                     ref.current.value = ""; // 각 ref의 값을 빈 값으로 설정
-               }
-            });
-
-            setInputValues([]);
-         }
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      });
    };
 
    //------------------useEffect--------------------------
@@ -205,13 +218,15 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    };
 
    const save = async () => {
-      const data = await getGridValues();
-      if (data) {
-         let result = await MM0101_U01(data);
-         if (result) {
-            returnResult(result);
+      await fetchWithLoading(async () => {
+         const data = await getGridValues();
+         if (data) {
+            let result = await MM0101_U01(data);
+            if (result) {
+               returnResult(result);
+            }
          }
-      }
+      });
    };
 
    const returnResult = (result: any) => {
@@ -263,33 +278,30 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    //grid 포커스변경시
    const handleFocusChange = async ({ rowKey }: any) => {
-      if (rowKey !== null && gridRef.current) {
-         const grid = gridRef.current.getInstance();
-         const rowData = grid.getRow(rowKey);
+      await fetchWithLoading(async () => {
+         if (rowKey !== null && gridRef.current) {
+            const grid = gridRef.current.getInstance();
+            const rowData = grid.getRow(rowKey);
 
-         if (rowData) {
-            Object.entries(rowData).forEach(([key, value]) => {
-               
-               onInputChange(key, value);
-            }); 
-         }
+            if (rowData) {
+               Object.entries(rowData).forEach(([key, value]) => {
+                  onInputChange(key, value);
+               }); 
 
-         if (rowData) {
-            Object.entries(rowData).forEach(([key, value]) => {
-               const ref = refs[key as keyof typeof refs]; // Add index signature to allow indexing with a string
-               
-               
-               if (ref && ref.current !== null) {
-                  let type = ref.current.getAttribute("data-type");
-                  if (type === "number") {
-                     ref.current.value = commas(Number(value));
-                   } else {
-                     ref.current.value = value;
-                   }
-               }
-            });
+               Object.entries(rowData).forEach(([key, value]) => {
+                  const ref = refs[key as keyof typeof refs];
+                  if (ref?.current) {
+                     let type = ref.current.getAttribute("data-type");
+                     if (type === "number") {
+                        ref.current.value = commas(Number(value));
+                     } else {
+                        ref.current.value = value;
+                     }
+                  }
+               });
+            }
          }
-      }
+      });
    };
 
    const setChangeGridData = (columnName: string, value: any) => {
@@ -531,7 +543,8 @@ const Mm0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

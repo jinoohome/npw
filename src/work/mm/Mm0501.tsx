@@ -5,6 +5,9 @@ import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon,
 import ChoicesEditor from "../../util/ChoicesEditor";
 import DatePickerEditor from "../../util/DatePickerEditor";
 import { on } from "events";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -14,6 +17,7 @@ interface Props {
 }
 
 const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
+   const { fetchWithLoading } = useLoadingFetch();
 
    const GridRef1 = useRef<any>(null);
    const GridRef2 = useRef<any>(null);
@@ -64,28 +68,30 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    }, []);
 
    const setGridData = async () => {
-      try {
-         const grid1Result = await MM0501_S01();
-         if (grid1Result?.length) {
-            let whNm = searchRef2.current?.value || '999'            
-            const grid2Result = await MM0501_S02(grid1Result[0].bpCd,whNm);
-            if (grid2Result?.length) {
-               let itemNm = searchRef3.current?.value || '999'
-               await MM0501_S03( grid2Result[0].bpCd, grid2Result[0].whCd, itemNm);
-            } 
-         } else {
-            if (GridRef2.current) {
-               GridRef2.current.getInstance().clear();
-            }
+      await fetchWithLoading(async () => {
+         try {
+            const grid1Result = await MM0501_S01();
+            if (grid1Result?.length) {
+               let whNm = searchRef2.current?.value || '999'            
+               const grid2Result = await MM0501_S02(grid1Result[0].bpCd,whNm);
+               if (grid2Result?.length) {
+                  let itemNm = searchRef3.current?.value || '999'
+                  await MM0501_S03( grid2Result[0].bpCd, grid2Result[0].whCd, itemNm);
+               } 
+            } else {
+               if (GridRef2.current) {
+                  GridRef2.current.getInstance().clear();
+               }
 
-            if (GridRef3.current) {
-               GridRef3.current.getInstance().clear();
+               if (GridRef3.current) {
+                  GridRef3.current.getInstance().clear();
+               }
             }
+            await MM0503_S02();
+         } catch (error) {
+            console.error("setGridData Error:", error);
          }
-         await MM0503_S02();
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      });
    };
 
    // 탭 클릭시 Grid 리사이즈
@@ -385,9 +391,10 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    };
 
    const save = async () => {
-      let grid3Data = await getGridDatas(GridRef3);
+      await fetchWithLoading(async () => {
+         let grid3Data = await getGridDatas(GridRef3);
 
-      // 입고일자 체크 로직 추가
+         // 입고일자 체크 로직 추가
    //    const missingEnterDtRows = grid3Data.filter((row: any) => !row.enterDt || row.enterDt.trim() === "");
 
    //    if (missingEnterDtRows.length > 0) {
@@ -396,10 +403,11 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    //    return;
    // }
 
-      let result = await MM0501_U03();
-      if (result) {
-         returnResult(result);
-      }
+         let result = await MM0501_U03();
+         if (result) {
+            returnResult(result);
+         }
+      });
    };
    const returnResult = (result:any) => {
       alertSwal(result.msgText, result.msgCd, result.msgStatus);
@@ -1216,7 +1224,8 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

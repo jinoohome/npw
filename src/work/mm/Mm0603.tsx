@@ -4,6 +4,9 @@ import {
 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -18,6 +21,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
       contNo: "",
       searchContNo: "",
       searchBpCd: "",
+    //  searchBpNm: "",
       contDt: "",
    });
    const gridRef = useRef<any>(null);
@@ -28,6 +32,8 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
    const contNoRef = useRef<HTMLInputElement>(null);
    const searchContNoRef = useRef<HTMLInputElement>(null);
    const searchBpCdRef = useRef<HTMLInputElement>(null);
+
+   const { fetchWithLoading } = useLoadingFetch();
 
    const onInputChange = (name: string, value: any) => {
       setInputValues((prevValues) => ({
@@ -128,13 +134,9 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
    }, []);
 
    useEffect(() => {
-      if (gridRef.current && inputValues.gridDatas1) {
-         let grid = gridRef.current.getInstance();
+      if (gridRef.current && inputValues.gridDatas1?.length > 0) {
+         const grid = gridRef.current.getInstance();
          grid.resetData(inputValues.gridDatas1);
-         
-         if (inputValues.gridDatas1.length > 0) {
-            grid.focusAt(0, 0, true);
-         }
       }
    }, [inputValues.gridDatas1]);
 
@@ -243,8 +245,32 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
       }
    };
 
-   const search = () => {
-      MM0603_S01(inputValues.contNo);
+   const setGridData = async () => {
+      await fetchWithLoading(async () => {
+         try {
+            const result = await MM0603_S01(inputValues.contNo);
+            if (gridRef.current) {
+               const grid = gridRef.current.getInstance();
+               grid.resetData(result || []);
+            }
+         } catch (error) {
+            console.error("setGridData Error:", error);
+         }
+      });
+   };
+
+   const search = async () => {
+      await fetchWithLoading(async () => {
+         try {
+            const result = await MM0603_S01(inputValues.contNo);
+            if (gridRef.current) {
+               const grid = gridRef.current.getInstance();
+               grid.resetData(result || []);
+            }
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
    };
 
    const columns = [
@@ -398,10 +424,8 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
                   onInputChange("hsType", value);
                }}
                datas={inputValues.hsTypeDatas}
-            />            
-         </div>
-         <div className="grid grid-cols-3 justify-around items-center pt-4 w-[70%]>">
-            <SelectSearch
+            />     
+             <SelectSearch
                   title="지원타입"
                   value={inputValues.itemType}
                   onChange={(label, value) => {
@@ -410,8 +434,9 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
                      handleFilterChange();
                      }}
                      datas={inputValues.itemTypeDatas}
-               />
+               />       
          </div>
+        
       </div>
    );
 
@@ -450,7 +475,8 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

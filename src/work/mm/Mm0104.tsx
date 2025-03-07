@@ -2,6 +2,9 @@ import { userInfo } from "os";
 import { React, useEffect, useState, useRef, useCallback, initChoice, SelectSearch, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid,  InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, QrCodeIcon } from "@heroicons/react/24/outline";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -26,6 +29,8 @@ const Mm0104 = ({ item, activeComp, userInfo }: Props) => {
 
    const breadcrumbItem = [{ name: "기준정보" }, { name: "거래처" }, { name: "거래처 조회 (유지보수)" }];
 
+   const { fetchWithLoading } = useLoadingFetch();
+
    // 첫 페이지 시작시 실행
    useEffect(() => {
       setGridData();
@@ -33,11 +38,13 @@ const Mm0104 = ({ item, activeComp, userInfo }: Props) => {
    }, []);
 
    const setGridData = async () => {
-      try {
-         await MM0102_S01();
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      await fetchWithLoading(async () => {
+         try {
+            await MM0102_S01();
+         } catch (error) {
+            console.error("setGridData Error:", error);
+         }
+      });
    };
    //------------------useEffect--------------------------
 
@@ -241,7 +248,8 @@ const Mm0104 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

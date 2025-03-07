@@ -1,6 +1,9 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -47,6 +50,8 @@ const Cd0201 = ({ item, activeComp, userInfo }: Props) => {
    const [isUsrIdReadOnly, setUsrIdReadOnly] = useState<boolean>(false);
 
    const breadcrumbItem = [{ name: "기준정보" }, { name: "품목관리" }, { name: "품목등록" }];
+
+   const { fetchWithLoading } = useLoadingFetch();
 
    // 첫 페이지 시작시 실행
    useEffect(() => {
@@ -164,26 +169,25 @@ const Cd0201 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const SOL_CD0201_S01 = async () => {
-      try {
+      await fetchWithLoading(async () => {
+         try {
+            const param = {
+               itemNm: searchRef1.current.value ?? "999",
+               itemGrp: searchRef2.current.value ?? "999",
+               itemDiv: searchRef3.current.value ?? "999",
+               useYn: searchRef4.current.value ?? "999",
+               coCd: userInfo.coCd,
+            };
 
-         
-         const param = {
-            itemNm:  searchRef1.current.value ?? "999" ,
-            itemGrp: searchRef2.current.value ?? "999",
-            itemDiv: searchRef3.current.value ?? "999",
-            useYn:  searchRef4.current.value ?? "999",
-            coCd:  userInfo.coCd,
-         };
-
-         const data = JSON.stringify(param);
-         const result = await fetchPost(`SOL_CD0201_S01`, { data });
-         
-         setGridDatas(result);
-         return result;
-      } catch (error) {
-         console.error("SOL_CD0201_S01 Error:", error);
-         throw error;
-      }
+            const data = JSON.stringify(param);
+            const result = await fetchPost(`SOL_CD0201_S01`, { data });
+            setGridDatas(result);
+            return result;
+         } catch (error) {
+            console.error("SOL_CD0201_S01 Error:", error);
+            throw error;
+         }
+      });
    };
 
    const SOL_MM001_U01 = async (data: any) => {
@@ -203,13 +207,15 @@ const Cd0201 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const save = async () => {
-      const data = await getGridValues();
-      if (data) {
-         let result = await SOL_MM001_U01(data);
-         if (result) {
-            returnResult();
+      await fetchWithLoading(async () => {
+         const data = await getGridValues();
+         if (data) {
+            let result = await SOL_MM001_U01(data);
+            if (result) {
+               returnResult();
+            }
          }
-      }
+      });
    };
    const returnResult = () => {
       let grid = gridRef.current.getInstance();
@@ -427,7 +433,8 @@ const Cd0201 = ({ item, activeComp, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

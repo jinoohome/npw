@@ -3,34 +3,44 @@ import { React, useEffect, useState, useRef, useCallback, initChoice, initChoice
 import { useNavigate } from "react-router-dom";
 
 import { UserIcon ,KeyIcon } from "@heroicons/react/24/outline";
+import { useLoading } from '../context/LoadingContext';
+import { useLoadingFetch } from '../hooks/useLoadingFetch';
+import LoadingSpinner from '../components/LoadingSpinner';
+
+
 
 const Login = () => {
    const [username, setUsername] = useState("");
    const [password, setPassword] = useState("");
    const [error, setError] = useState("");
    const navigate = useNavigate();
+   const { fetchWithLoading } = useLoadingFetch();
+
+   // 엔터키 이벤트 핸들러
+   const handleKeyPress = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+         handleLogin();
+      }
+   };
 
    const handleLogin = async () => {
-      const data = {
-         id: username,
-         pw: password,
-      };
+      await fetchWithLoading(async () => {
+         const data = {
+            id: username,
+            pw: password,
+         };
 
-      let result = await ZZ_LOGIN_TOKEN(data);
+         let result = await ZZ_LOGIN_TOKEN(data);
 
-      //console.log(result);
-      
-
-      if (result.result === "SUCCESS") {
-         sessionStorage.setItem('loginInfo', JSON.stringify(result));
-         sessionStorage.setItem('accessToken', result.accesstoken);
-         sessionStorage.setItem('refreshToken', result.refreshtoken);
-
-         //console.log('accessToken',sessionStorage.getItem('accessToken'));
-         navigate('/Main', { state: { result: result } });
-      } else {
-         setError("아이디 또는 비밀번호가 일치하지 않습니다.");
-      }
+         if (result.result === "SUCCESS") {
+            sessionStorage.setItem('loginInfo', JSON.stringify(result));
+            sessionStorage.setItem('accessToken', result.accesstoken);
+            sessionStorage.setItem('refreshToken', result.refreshtoken);
+            navigate('/Main', { state: { result: result } });
+         } else {
+            setError("아이디 또는 비밀번호가 일치하지 않습니다.");
+         }
+      });
    };
 
    //---------------------- api -----------------------------
@@ -46,7 +56,8 @@ const Login = () => {
    };
 
    return (
-      <div className="w-full h-screen bg-gray-100 flex flex-col items-center ">
+      <div className="w-full h-screen bg-gray-100 flex flex-col items-center">
+         <LoadingSpinner />
          <div className="flex h-[85%] w-[60%] justify-center items-center">
             <div className="w-full h-[75%] flex justify-center items-center bg-white rounded-lg">
                <div className="w-1/3 px-10    ">
@@ -72,7 +83,10 @@ const Login = () => {
                            type="text" 
                            value={username} 
                            placeholder="User ID"
-                           className="w-full pl-16 pr-3 py-3 border border-gray-300 rounded-lg text-base shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" onChange={(e) => setUsername(e.target.value)} />
+                           className="w-full pl-16 pr-3 py-3 border border-gray-300 rounded-lg text-base shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" 
+                           onChange={(e) => setUsername(e.target.value)}
+                           onKeyPress={handleKeyPress}
+                        />
                      </div>
                      <div className="flex items-center relative">
                         <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 border-r pr-2 border-gray-400">
@@ -84,6 +98,7 @@ const Login = () => {
                            value={password}
                            className="w-full pl-16 pr-3 py-3 border border-gray-300 rounded-lg text-base shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                            onChange={(e) => setPassword(e.target.value)}
+                           onKeyPress={handleKeyPress}
                         />
                      </div>
 
@@ -105,7 +120,7 @@ const Login = () => {
          <div className="w-full h-[15%] justify-self-end">
             <div className="bg-blue-950 h-full">
                <div className="h-full flex p-5">
-                  <div className="w-[23%] h-full flex justify-center items-center text-white text-xl shadow font-[농협체M] ">농협파트너스</div>
+                  <div className="w-[23%] h-full flex justify-center items-center text-white/50 text-xl shadow font-[농협체M] ">농협파트너스</div>
                   <div className="w-[54%] h-full  text-white text-sm text-gray-200/60">
                      <div className="h-full">
                         <div className="w-full flex justify-between px-2">

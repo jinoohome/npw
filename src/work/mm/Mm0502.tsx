@@ -3,6 +3,9 @@ import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -33,6 +36,8 @@ const Mm0402 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    const breadcrumbItem = [{ name: "기준정보" }, { name: "재고" }, { name: "입출고 이력조회" }];
 
+   const { fetchWithLoading } = useLoadingFetch();
+
    // 첫 페이지 시작시 실행
    useEffect(() => {
       setGridData();
@@ -40,11 +45,13 @@ const Mm0402 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    }, []);
 
    const setGridData = async () => {
-      try {
-         await MM0501_P02();
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      await fetchWithLoading(async () => {
+         try {
+            await MM0501_P02();
+         } catch (error) {
+            console.error("setGridData Error:", error);
+         }
+      });
    };
 
    // 탭 클릭시 Grid 리사이즈
@@ -93,14 +100,25 @@ const Mm0402 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    //-------------------event--------------------------
 
-   const search = () => {
-      setGridData();
+   const search = async () => {
+      await fetchWithLoading(async () => {
+         try {
+            await MM0501_P02();
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
    };
 
    //검색 창 클릭 또는 엔터시 조회
    const handleCallSearch = async () => {
-      //setGridData();
-      await MM0501_P02();
+      await fetchWithLoading(async () => {
+         try {
+            await MM0501_P02();
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
    };
 
    const onInputChange = (name: string, value: any) => {
@@ -259,7 +277,8 @@ const Mm0402 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

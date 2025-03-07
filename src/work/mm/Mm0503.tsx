@@ -1,7 +1,7 @@
 import { React, useEffect, useState, useRef, useCallback, DatePickerComp, commas, date, getGridCheckedDatas2, SelectSearch, InputComp, DateRangePickerComp, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, reSizeGrid, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
-import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
 import { Grid } from "@mui/material";
 import { on } from "events";
@@ -473,11 +473,13 @@ const Mm0402 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                         onInputChange('yyyymm', e);  
                      }} 
                      format="yyyy-MM"
+                     type="month"
                   />
                   {/* <button type="button" onClick={searchClose} className="bg-red-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
                      모의마감조회
                   </button> */}
-                  <button type="button" onClick={addClose} className="bg-green-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
+                  <button type="button" onClick={addClose} className="bg-green-400 text-white rounded-3xl px-3 py-1 flex items-center shadow">
+                  <CheckIcon className="w-5 h-5" />
                      마감
                   </button>
             </div>
@@ -497,7 +499,8 @@ const Mm0402 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                <div className="">재고마감현황</div>
             </div>
             <div className="flex space-x-1">                  
-                  <button type="button" onClick={cancelClose} className="bg-green-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
+                  <button type="button" onClick={cancelClose} className="bg-rose-500 text-white rounded-3xl px-3  py-2 flex items-center shadow">
+                     <XMarkIcon className="w-5 h-5" />
                      마감취소
                   </button>
             </div>

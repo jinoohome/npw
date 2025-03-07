@@ -3,6 +3,9 @@ import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -12,6 +15,7 @@ interface Props {
 }
 
 const Mm0403 = ({ item, activeComp, leftMode, userInfo }: Props) => {
+   const { fetchWithLoading } = useLoadingFetch();
 
    const GridRef1 = useRef<any>(null);
    const GridRef2 = useRef<any>(null);
@@ -42,28 +46,30 @@ const Mm0403 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    }, []);
 
    const setGridData = async () => {
-      try {
-         let zz0019Data = await ZZ_CODE({ coCd: "999", majorCode: "zz0019", div: "999" });
-         if (zz0019Data != null) {
-            setZz0019(zz0019Data);
-         }
+      await fetchWithLoading(async () => {
+         try {
+            let zz0019Data = await ZZ_CODE({ coCd: "999", majorCode: "zz0019", div: "999" });
+            if (zz0019Data != null) {
+               setZz0019(zz0019Data);
+            }
 
-         let poBp = await ZZ_B_PO_BP('999');
+            let poBp = await ZZ_B_PO_BP('999');
            
-         if (poBp != null) {
-            poBp.unshift({ value: "", text: "" });
-            setPoBp(poBp);
-         }
+            if (poBp != null) {
+               poBp.unshift({ value: "", text: "" });
+               setPoBp(poBp);
+            }
 
-         const grid1Result = await MM0403_S01();
-         if (grid1Result?.length) {
-            let result = await MM0403_S02({ siGunGu: grid1Result[0].code });
+            const grid1Result = await MM0403_S01();
+            if (grid1Result?.length) {
+               let result = await MM0403_S02({ siGunGu: grid1Result[0].code });
 
-            
+               
+            }
+         } catch (error) {
+            console.error("setGridData Error:", error);
          }
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      });
    };
 
    // 탭 클릭시 Grid 리사이즈
@@ -201,16 +207,23 @@ const Mm0403 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    //-------------------event--------------------------
 
-   const search = () => {
-      setGridData();
+   const search = async () => {
+      await fetchWithLoading(async () => {
+         try {
+            setGridData();
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
    };
 
    const save = async () => {
-      let result = await MM0403_U01();
-console.log(result);
-      if (result) {
-         returnResult(result);
-      }
+      await fetchWithLoading(async () => {
+         let result = await MM0403_U01();
+         if (result) {
+            returnResult(result);
+         }
+      });
    };
    const returnResult = (result : any) => {
       alertSwal(result.msgText, result.msgCd, result.msgStatus);
@@ -365,11 +378,16 @@ console.log(result);
 
    //검색 창 클릭 또는 엔터시 조회
    const handleCallSearch = async () => {
-      //setGridData();
-      const grid1Result = await MM0403_S01();
-      if (grid1Result?.length) {
-         await MM0403_S02({ siGunGu: grid1Result[0].code });
-      }
+      await fetchWithLoading(async () => {
+         try {
+            const grid1Result = await MM0403_S01();
+            if (grid1Result?.length) {
+               await MM0403_S02({ siGunGu: grid1Result[0].code });
+               }
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
    };
 
    //-------------------div--------------------------
@@ -464,7 +482,8 @@ console.log(result);
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

@@ -5,6 +5,9 @@ import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ReactSelectEditor";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -33,6 +36,8 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
    const breadcrumbItem = [{ name: "관리자" }, { name: "공통" }, { name: "기준정보등록" }];
 
+   const { fetchWithLoading } = useLoadingFetch();
+
    // 첫 페이지 시작시 실행
    useEffect(() => {
       setChoiceUI();
@@ -51,21 +56,22 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    };
 
    const setGridData = async () => {
-      try {
-         let zz0001Data = await ZZ_CODE({ coCd: "999", majorCode: "zz0001", div: "999" });
-         if (zz0001Data != null) {
-            setZz0001(zz0001Data);
+      await fetchWithLoading(async () => {
+         try {
+            let zz0001Data = await ZZ_CODE({ coCd: "999", majorCode: "zz0001", div: "999" });
+            if (zz0001Data != null) {
+               setZz0001(zz0001Data);
+            }
+            const majorResult = await ZZ0101_S01();
+            if (majorResult?.length) {
+               await ZZ0101_S02({ majorCode: majorResult[0].majorCode });
+            } else {
+               setMinors([]);
+            }
+         } catch (error) {
+            console.error("setGridData Error:", error);
          }
-         const majorResult = await ZZ0101_S01();
-         if (majorResult?.length) {
-            await ZZ0101_S02({ majorCode: majorResult[0].majorCode });
-         } else {
-            // majorResult가 없으면 minors를 빈 배열로 세팅
-            setMinors([]);
-         }
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      });
    };
 
    // 탭 클릭시 Grid 리사이즈
@@ -433,7 +439,8 @@ const Zz0101 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

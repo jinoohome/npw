@@ -3,6 +3,9 @@ import {
 } from "../../comp/Import";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import "tui-date-picker/dist/tui-date-picker.css";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 
 interface Props {
@@ -48,6 +51,8 @@ const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
    
    const searchBpNmRef = useRef<HTMLInputElement>(null);
    const searchSoNoRef = useRef<HTMLInputElement>(null);
+
+   const { fetchWithLoading } = useLoadingFetch();
 
    //------------------api--------------------------
 
@@ -124,9 +129,14 @@ const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const search = async () => {
-
-      const result = await SP0102_S01(inputValues.searchSoNo);
-      onInputChange("gridDatas2", result);
+      await fetchWithLoading(async () => {
+         try {
+            const result = await SP0102_S01(inputValues.searchSoNo);
+            onInputChange("gridDatas2", result);
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
    };
   
    //-------------------grid----------------------------
@@ -291,7 +301,8 @@ const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between ">
                <Breadcrumb items={breadcrumbItem} />

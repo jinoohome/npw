@@ -1,6 +1,9 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, commas } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -28,6 +31,8 @@ const Mm0204 = ({ item, activeComp, userInfo }: Props) => {
    const [workCdsSearch, setWorkCdsSearch] = useState<any>([]);
    const [focusRow, setFocusRow] = useState<any>(0);
 
+   const { fetchWithLoading } = useLoadingFetch();
+
    // 첫 페이지 시작시 실행
    useEffect(() => {
       setChoiceUI();
@@ -51,30 +56,32 @@ const Mm0204 = ({ item, activeComp, userInfo }: Props) => {
 
 
    const setGridData = async () => {
-      try {
-         let cd0004Data = await ZZ_CODE({ coCd: "999", majorCode: "MA0006", div: "999" });
-         if (cd0004Data != null) {
-            setCd0004(cd0004Data);
-         }
+      await fetchWithLoading(async () => {
+         try {
+            let cd0004Data = await ZZ_CODE({ coCd: "999", majorCode: "MA0006", div: "999" });
+            if (cd0004Data != null) {
+               setCd0004(cd0004Data);
+            }
 
-         let cd0005Data = await ZZ_CODE({ coCd: "999", majorCode: "MA0007", div: "999" });
-         if (cd0005Data != null) {
-            setCd0005(cd0005Data);
-         }
-         
-         let workCdData = await ZZ_WORKS();
-         if (workCdData != null) {
-            let workCdSearch = workCdData.slice();
-            workCdSearch = workCdSearch.filter((item) => !(item.value === "" && item.text === ""));
-            workCdSearch.unshift({ value: "999", text: "전체" });
-            setWorkCdsSearch(workCdSearch);
-         }
+            let cd0005Data = await ZZ_CODE({ coCd: "999", majorCode: "MA0007", div: "999" });
+            if (cd0005Data != null) {
+               setCd0005(cd0005Data);
+            }
+            
+            let workCdData = await ZZ_WORKS();
+            if (workCdData != null) {
+               let workCdSearch = workCdData.slice();
+               workCdSearch = workCdSearch.filter((item) => !(item.value === "" && item.text === ""));
+               workCdSearch.unshift({ value: "999", text: "전체" });
+               setWorkCdsSearch(workCdSearch);
+            }
 
 
-         await MM0204_S01();
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+            await MM0204_S01();
+         } catch (error) {
+            console.error("setGridData Error:", error);
+         }
+      });
    };
 
    //------------------useEffect--------------------------
@@ -91,7 +98,7 @@ const Mm0204 = ({ item, activeComp, userInfo }: Props) => {
          grid.resetData(gridDatas);
          if (gridDatas.length > 0) {
             let checkFocusRow = grid.getValue(focusRow, "itemCd") ? focusRow : 0;
-            grid.focusAt(checkFocusRow, 0, true);
+            // grid.focusAt(checkFocusRow, 0, true);
          }
       }
    }, [gridDatas]);
@@ -285,7 +292,8 @@ const Mm0204 = ({ item, activeComp, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

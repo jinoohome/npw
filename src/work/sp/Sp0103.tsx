@@ -14,6 +14,9 @@ import LoadingMask from "../../comp/LoadingMask";
 
 import { ZZ0101_S02_API } from "../../ts/ZZ0101_S02";
 import { tr } from "date-fns/locale";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -21,7 +24,8 @@ interface Props {
    userInfo: any;
 }
 
-const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
+const Sp0103 = ({ item, activeComp, userInfo }: Props) => {
+   const { fetchWithLoading } = useLoadingFetch();
    const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발주관리" }, { name: "발주등록" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
@@ -363,21 +367,22 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const search = async () => {
-      if (!inputValues.soNo) {
-         alertSwal("수주번호를 입력해주세요.", "", "warning");
-         return;
-      }
+      await fetchWithLoading(async () => {
+         try {
+            const result = await SP0103_S01(inputValues.soNo, inputValues.soSeq);
+            SP0103_S02(inputValues.soNo, inputValues.soSeq);
 
-      const result = await SP0103_S01(inputValues.soNo, inputValues.soSeq);
-      SP0103_S02(inputValues.soNo, inputValues.soSeq);
+            if (result) {
+               Object.entries(result[0]).forEach(([key, value]) => {
+                  onInputChange(key, value);
+               });
 
-      if (result) {
-         Object.entries(result[0]).forEach(([key, value]) => {
-            onInputChange(key, value);
-         });
-
-         onInputChange("isOpen", false);
-      }
+               onInputChange("isOpen", false);
+            }
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
    };
 
    const save = async () => {
@@ -1210,7 +1215,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    return (
       <div className={`space-y-5 overflow-y-hidden h-screen`}>
-           <LoadingMask loading={loading} />
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />
@@ -1239,4 +1244,4 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    );
 };
 
-export default Sp0101;
+export default Sp0103;

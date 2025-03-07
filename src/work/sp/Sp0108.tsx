@@ -7,7 +7,9 @@ import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "moment/locale/ko";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import LoadingMask from "../../comp/LoadingMask";
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
 
 moment.locale("ko");
 
@@ -30,6 +32,7 @@ const Sp0108 = ({ item, activeComp, userInfo }: Props) => {
    const [loading, setLoading] = useState(false);
    const localizer = momentLocalizer(moment);
    const [currentDate, setCurrentDate] = useState(new Date()); // State to store the current calendar date
+   const { fetchWithLoading } = useLoadingFetch();
 
    const onInputChange = (name: string, value: any) => {
       setInputValues((prevValues) => {
@@ -46,32 +49,31 @@ const Sp0108 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const fetchEventsForMonth = async (start: Date, end: Date) => {
-      try {
-         setLoading(true);
-         const param = {
-            bpCd: inputValues.bpCd,
-            poBpCd: inputValues.poBpCd,
-            startDate: moment(start).format("YYYY-MM-DD"),
-            endDate: moment(end).format("YYYY-MM-DD"),
-            workCd: inputValues.workCd,
-            dtDiv: inputValues.dtDiv,
-         };
+      await fetchWithLoading(async () => {
+         try {
+            const param = {
+               bpCd: inputValues.bpCd,
+               poBpCd: inputValues.poBpCd,
+               startDate: moment(start).format("YYYY-MM-DD"),
+               endDate: moment(end).format("YYYY-MM-DD"),
+               workCd: inputValues.workCd,
+               dtDiv: inputValues.dtDiv,
+            };
 
-         const data = JSON.stringify(param);
-         const result = await fetchPost("SP0108_S01", { data });
+            const data = JSON.stringify(param);
+            const result = await fetchPost("SP0108_S01", { data });
 
-         const formattedResult = result.map((event: any) => ({
-            ...event,
-            start: new Date(event.start),
-            end: event.end ? new Date(event.end) : new Date(event.start),
-         }));
+            const formattedResult = result.map((event: any) => ({
+               ...event,
+               start: new Date(event.start),
+               end: event.end ? new Date(event.end) : new Date(event.start),
+            }));
 
-         onInputChange("calendarList", formattedResult);
-      } catch (error) {
-         console.error("fetchEventsForMonth Error:", error);
-      } finally {
-         setLoading(false);
-      }
+            onInputChange("calendarList", formattedResult);
+         } catch (error) {
+            console.error("fetchEventsForMonth Error:", error);
+         }
+      });
    };
 
    useEffect(() => {
@@ -211,7 +213,7 @@ const Sp0108 = ({ item, activeComp, userInfo }: Props) => {
 
    return (
       <div className={`space-y-5 overflow-y-hidden h-screen`}>
-         <LoadingMask loading={loading} />
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

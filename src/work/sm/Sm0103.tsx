@@ -1,9 +1,12 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, SelectSearch, alertSwal, DatePickerComp, getGridCheckedDatas2, fetchPost, Breadcrumb, TuiGrid01, commas, reSizeGrid, InputComp, SelectSearchComp, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, DateRangePickerComp, date } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
-import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
 import { ro } from "date-fns/locale";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -13,6 +16,7 @@ interface Props {
 }
 
 const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
+   const { fetchWithLoading } = useLoadingFetch();
 
    const GridRef1 = useRef<any>(null);
 
@@ -147,7 +151,14 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    //-------------------event--------------------------
 
    const search = async () => {
-      await SM0103_S01();
+      await fetchWithLoading(async () => {
+         try {
+            const result = await SM0103_S01();
+            setGridDatas(result);
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
    };
 
    //검색 창 클릭 또는 엔터시 조회
@@ -432,7 +443,8 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                   {/* 마감전일 때 마감 버튼 표시 */}
                   {isCloseYnNotComplete && (
                      <>
-                        <button type="button" onClick={addClose} className="bg-green-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
+                        <button type="button" onClick={addClose} className="bg-green-400 text-white rounded-3xl px-3 py-1 flex items-center shadow">
+                           <CheckIcon className="w-5 h-5" />
                            마감
                         </button>
                      </>
@@ -441,11 +453,13 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                   {/* 마감완료일 때 마감 취소 버튼 표시 */}
                   {isCloseYnComplete && (
                      <>
-                        <button type="button" onClick={delClose} className="bg-red-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
+                        <button type="button" onClick={delClose} className="bg-rose-500 text-white rounded-3xl px-3 py-1 flex items-center shadow">
+                           <XMarkIcon className="w-5 h-5" />
                            마감취소
                         </button>
-                        <button type="button" onClick={saveClose} className="bg-blue-400 text-white rounded-3xl px-6 py-1 flex items-center shadow">
-                              저장 
+                        <button type="button" onClick={saveClose} className="bg-blue-500 text-white rounded-3xl px-3 py-1 flex items-center shadow">
+                           <ServerIcon className="w-5 h-5" />
+                           저장 
                         </button>
                      </>
                   )}
@@ -459,7 +473,8 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    };
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

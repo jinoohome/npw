@@ -2,6 +2,9 @@ import { refresh } from "aos";
 import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid,  InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import ChoicesEditor from "../../util/ChoicesEditor";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -12,6 +15,7 @@ interface Props {
 const Zz0201 = ({ item, activeComp, userInfo }: Props) => {
    const gridRef = useRef<any>(null);
    const gridContainerRef = useRef(null); 
+   const { fetchWithLoading } = useLoadingFetch();
 
    const [gridDatas, setGridDatas] = useState<any[]>();
 
@@ -23,14 +27,14 @@ const Zz0201 = ({ item, activeComp, userInfo }: Props) => {
       reSizeGrid({ ref: gridRef, containerRef: gridContainerRef, sec: 200 });
    }, []);
 
-
-
    const setGridData = async () => {
-      try {
-         await ZZ_MENU();
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      await fetchWithLoading(async () => {
+         try {
+            await ZZ_MENU();
+         } catch (error) {
+            console.error("setGridData Error:", error);
+         }
+      });
    };
    //------------------useEffect--------------------------
 
@@ -55,19 +59,19 @@ const Zz0201 = ({ item, activeComp, userInfo }: Props) => {
    //---------------------- api -----------------------------
 
    const ZZ_MENU = async () => {
-      try {
-         const param = {
-            usrId: userInfo.usrId,
-         };
-
-         const result = await fetchPost(`ZZ_MENU`, param);
-         setGridDatas(result);
-         
-         return result;
-      } catch (error) {
-         console.error("ZZ_MENU Error:", error);
-         throw error;
-      }
+      await fetchWithLoading(async () => {
+         try {
+            const param = {
+               usrId: userInfo.usrId,
+            };
+            const result = await fetchPost(`ZZ_MENU`, param);
+            setGridDatas(result);
+            return result;
+         } catch (error) {
+            console.error("ZZ_MENU Error:", error);
+            throw error;
+         }
+      });
    };
    const ZZ0201_U01 = async (data: any) => {
       try {
@@ -285,7 +289,8 @@ const Zz0201 = ({ item, activeComp, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

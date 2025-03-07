@@ -2,6 +2,9 @@ import { React, useEffect, useState, useRef, commas, useCallback, initChoice, up
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { XMarkIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
 import ChoicesEditor from "../../util/ChoicesEditor";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -40,6 +43,8 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const [cd0004, setCd0004] = useState<ZZ_CODE_RES[]>([]);
    const [cd0005, setCd0005] = useState<ZZ_CODE_RES[]>([]);
 
+   const { fetchWithLoading } = useLoadingFetch();
+
    useEffect(() => {
       setChoiceUI();
       setGridData();
@@ -61,27 +66,27 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    };
 
    const setGridData = async () => {
-      try {
-         const grid1Result = await MM0205_S01();
-         if (grid1Result?.length) {
-            await MM0205_S02({ pkgItemCd: grid1Result[0].pkgItemCd });
+      await fetchWithLoading(async () => {
+         try {
+            const grid1Result = await MM0205_S01();
+            if (grid1Result?.length) {
+               await MM0205_S02({ pkgItemCd: grid1Result[0].pkgItemCd });
+            }
+
+            let cd0004Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0004", div: "999" });
+            if (cd0004Data != null) {
+               setCd0004(cd0004Data);
+            }
+
+            let cd0005Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0005", div: "999" });
+            if (cd0005Data != null) {
+               setCd0005(cd0005Data);
+            }
+
+         } catch (error) {
+            console.error("setGridData Error:", error);
          }
-
-         let cd0004Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0004", div: "999" });
-         if (cd0004Data != null) {
-            setCd0004(cd0004Data);
-         }
-
-         let cd0005Data = await ZZ_CODE({ coCd: "999", majorCode: "CD0005", div: "999" });
-         if (cd0005Data != null) {
-            setCd0005(cd0005Data);
-         }
-
-        
-
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      });
    };
 
    useEffect(() => {
@@ -219,10 +224,12 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    };
 
    const save = async () => {
-      let result = await MM0205_U03();
-      if (result) {
-         returnResult(result);
-      }
+      await fetchWithLoading(async () => {
+         let result = await MM0205_U03();
+         if (result) {
+            returnResult(result);
+         }
+      });
    };
    const returnResult = async(result: any) => {
       alertSwal(result.msgText, result.msgCd, result.msgStatus);
@@ -644,7 +651,8 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    );
 
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

@@ -1,6 +1,9 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, SelectSearchComp, SelectSearch, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -39,14 +42,14 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
 
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       coCd: '',
+      searchBpCd: '999',
+      searchBpNm: '',
+      searchUseYn: '999',
   });
 
    const [gridDatas, setGridDatas] = useState<any[]>();
    const [bpCdsIn, setBpCdsIn] = useState<any>([]);
 
-   const [choice1, setChoice1] = useState<any>();
-   const [choice2, setChoice2] = useState<any>();   
-   
    const [focusRow, setFocusRow] = useState<any>(0);
 
    const [isUsrIdReadOnly, setUsrIdReadOnly] = useState<boolean>(false);
@@ -54,9 +57,10 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
 
    const breadcrumbItem = [{ name: "관리자" }, { name: "사용자" }, { name: "사용자등록" }];
 
+   const { fetchWithLoading } = useLoadingFetch();
+
    // 첫 페이지 시작시 실행
    useEffect(() => {
-      setChoiceUI();
       setGridData();
       reSizeGrid({ ref: gridRef, containerRef: gridContainerRef, sec: 200 });
    }, []);
@@ -68,40 +72,46 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
    //--------------------init---------------------------
 
    const setChoiceUI = () => {
-      initChoice(searchRef2, setChoice1);
-      initChoice(searchRef3, setChoice2, [
-         { value: "999", label: "전체", selected: true },
-         { value: "Y", label: "사용" },
-         { value: "N", label: "미사용" },
-      ]);     
+      // 기존 initChoice 호출 제거
    };
 
    const setGridData = async () => {
-      try {  
-         let sosocDataIn = await MM0101_S01();
+      await fetchWithLoading(async () => {
+         try {
+            // 병렬로 API 호출 실행
+            // const [sosocDataIn, result] = await Promise.all([
+            //    MM0101_S01(),
+            //    ZZ0301_S01()
+            // ]);
+            const result = await ZZ0301_S01();
+           // console.log("result", result);
 
-         if (sosocDataIn != null) {
-            sosocDataIn.unshift({ value: "999", text: "전체" });
-            setBpCdsIn(sosocDataIn);
+           // 데이터 처리
+            // if (sosocDataIn) {
+            //    // 새 배열을 생성하여 불변성 유지
+             
+            //    setBpCdsIn(sosocDataIn);
+            // }
+
+            // 결과 데이터 처리
+            // if (!result?.length) {
+            //    const emptyRefs = Object.fromEntries(
+            //       Object.keys(refs).map(key => [key, ""])
+            //    );
+            //    setInputValues(emptyRefs);
+               
+            //    // refs 일괄 업데이트
+            //    Object.values(refs).forEach(ref => {
+            //       if (ref?.current) ref.current.value = "";
+            //    });
+            // }
+
+            setGridDatas(result);
+         } catch (error) {
+            console.error("setGridData Error:", error);
+            alertSwal("오류", "데이터 조회 중 오류가 발생했습니다.", "error");
          }
-
-         const result = await ZZ0301_S01();
-
-         if (!result || result.length === 0) {
-            // 데이터가 없을 때 refs 값들 초기화
-            Object.keys(refs).forEach((key) => {
-               const ref = refs[key as keyof typeof refs];
-               if (ref?.current) {                  
-                     ref.current.value = ""; // 각 ref의 값을 빈 값으로 설정
-               }
-            });
-
-            setInputValues([]);
-         }
-
-      } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      });
    };
 
    //------------------useEffect--------------------------
@@ -123,9 +133,9 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
 
    }, [gridDatas]);
 
-   useEffect(() => {
-       updateChoices(choice1, bpCdsIn, "value", "text");
-   }, [bpCdsIn]);
+   // useEffect(() => {
+   //     updateChoices(choice1, bpCdsIn, "value", "text");
+   // }, [bpCdsIn]);
 
    //---------------------- api -----------------------------   
 
@@ -137,8 +147,8 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
             usrNm:  searchRef4.current?.value   || "999",
             usrDiv: "999",
             sysDiv: "999",
-            bpNm:  searchRef2.current?.value   || "999",
-            useYn: searchRef3.current?.value   || "999",
+            bpNm:  inputValues.searchBpCd || "999",
+            useYn: inputValues.searchUseYn || "999"
          };
 
          const data = JSON.stringify(param);
@@ -253,19 +263,21 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const save = async () => {
-      let grid = gridRef.current.getInstance();
-      let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
-      let rowIndex = grid.getIndexOfRow(rowKey);
-    
-      const data = await getGridValues();
-      if (data) {
-         let result = await ZZ0301_U01(data);
-         if (result) {
-            await returnResult(result);
+      await fetchWithLoading(async () => {
+         let grid = gridRef.current.getInstance();
+         let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+         let rowIndex = grid.getIndexOfRow(rowKey);
+       
+         const data = await getGridValues();
+         if (data) {
+            let result = await ZZ0301_U01(data);
+            if (result) {
+               await returnResult(result);
+            }
+         } else {
+            grid.focusAt(rowIndex, 0, true);
          }
-      } else {
-         grid.focusAt(rowIndex, 0, true); //저장이 안된경우는 추가행이 맨위에 있으므로 rowIndex로 지정
-      }
+      });
    };
    const returnResult = async(result: any) => {
      
@@ -320,40 +332,39 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
 
    //grid 포커스변경시
    const handleFocusChange = async ({ rowKey }: any) => {
-      if (rowKey !== null && gridRef.current) {
-         const grid = gridRef.current.getInstance();
-         const rowData = grid.getRow(rowKey);
+      await fetchWithLoading(async () => {
+         if (rowKey !== null && gridRef.current) {
+            const grid = gridRef.current.getInstance();
+            const rowData = grid.getRow(rowKey);
 
-         if(rowData.usrId){
-            setUsrIdReadOnly(true);
-         }else{
-            setUsrIdReadOnly(false);
-         }
+            if(rowData.usrId){
+               setUsrIdReadOnly(true);
+            }else{
+               setUsrIdReadOnly(false);
+            }
 
-         if(rowData.insrtUserId || userInfo.coCd !== '999'){
-            setCoCdReadOnly(true);
-         }else{
-            setCoCdReadOnly(false);
-         }
+            if(rowData.insrtUserId || userInfo.coCd !== '999'){
+               setCoCdReadOnly(true);
+            }else{
+               setCoCdReadOnly(false);
+            }
 
-         if (rowData) {
-            Object.entries(rowData).forEach(([key, value]) => {
-               
-               onInputChange(key, value);
-            }); 
-         }
+            if (rowData) {
+               Object.entries(rowData).forEach(([key, value]) => {
+                  onInputChange(key, value);
+               }); 
+            }
 
-         if (rowData) {
-            Object.entries(rowData).forEach(([key, value]) => {
-               const ref = refs[key as keyof typeof refs]; // Add index signature to allow indexing with a string
-               if (ref && ref.current) {                 
-                  
+            if (rowData) {
+               Object.entries(rowData).forEach(([key, value]) => {
+                  const ref = refs[key as keyof typeof refs];
+                  if (ref && ref.current) {                 
                      ref.current.value = value;
-               }
-               
-            });
+                  }
+               });
+            }
          }
-      }
+      });
    };
 
    const setChangeGridData = (columnName: string, value: any) => {
@@ -385,12 +396,43 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
 
    //검색창 div
    const searchDiv = () => (
-      <div className="bg-gray-100 rounded-lg p-5 search text-sm search">
-         <div className="grid grid-cols-3  gap-y-3  justify-start w-[60%]">
-            <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch} title="사번"></InputComp1>
-            <InputComp1 ref={searchRef4} handleCallSearch={handleCallSearch} title="사용자명"></InputComp1>
-            <SelectComp1 ref={searchRef2} title="소속" handleCallSearch={handleCallSearch}></SelectComp1>
-            <SelectComp1 ref={searchRef3} title="사용유무" handleCallSearch={handleCallSearch}></SelectComp1>
+      <div className="bg-gray-100 rounded-lg p-3 search text-sm search h-full">
+         <div className="space-y-2 w-[60%]">
+            <div className="grid grid-cols-3 gap-y-2 justify-start ">
+               <InputComp1 ref={searchRef1} handleCallSearch={handleCallSearch} title="사번"></InputComp1>
+               <InputComp1 ref={searchRef4} handleCallSearch={handleCallSearch} title="사용자명"></InputComp1>
+               <SelectSearch
+                  title="소속"
+                  value={inputValues.searchBpCd}
+                  onChange={(label, value) => {
+                     setInputValues(prev => ({
+                        ...prev,
+                        searchBpCd: value,
+                        searchBpNm: label || ''
+                     }));
+                  }}
+                  stringify={true}
+                  addData="999"
+                  param={{ coCd: inputValues.coCd, bpNm: "999", bpType: "999", useYn: "Y" }}
+                  procedure="MM0101_S01"
+                  dataKey={{ label: "bpNm", value: "bpCd" }}
+               />
+               <SelectSearch
+                  title="사용유무"
+                  value={inputValues.searchUseYn}
+                  onChange={(label, value) => {
+                     setInputValues(prev => ({
+                        ...prev,
+                        searchUseYn: value
+                     }));
+                  }}
+                  datas={[
+                     { value: "999", label: "전체" },
+                     { value: "Y", label: "사용" },
+                     { value: "N", label: "미사용" }
+                  ]}
+               />
+            </div>
          </div>
       </div>
    );
@@ -545,8 +587,16 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
       </div>
    );
 
+   // 상태 변경 감지를 위한 useEffect 추가
+   useEffect(() => {
+      if (inputValues.searchBpNm !== undefined || inputValues.searchUseYn !== undefined) {
+         setGridData();
+      }
+   }, [inputValues.searchBpNm, inputValues.searchUseYn]);
+
    return (
-      <div className={`space-y-5 overflow-y-auto `}>
+      <div className={`space-y-5 overflow-y-auto`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

@@ -3,6 +3,9 @@ import {
 } from "../../comp/Import";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import "tui-date-picker/dist/tui-date-picker.css";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 //import { useDropzone } from "react-dropzone";
 //import imageCompression from "browser-image-compression";
 
@@ -13,6 +16,7 @@ interface Props {
 }
 
 const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
+   const { fetchWithLoading } = useLoadingFetch();
    const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "완료 보고 등록" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
@@ -526,20 +530,26 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const handleDblClick = async (e: any) => {
-      const gridInstance = gridRef2.current.getInstance();
-      const rowData = gridInstance.getRow(e.rowKey);
-      onInputChange("soSeq", rowData.soSeq);
-      SP0103_S02(rowData.soNo, rowData.soSeq);
-      SP0107_S03(rowData.soNo, rowData.soSeq);
+      await fetchWithLoading(async () => {
+         try {
+            const gridInstance = gridRef2.current.getInstance();
+            const rowData = gridInstance.getRow(e.rowKey);
+            onInputChange("soSeq", rowData.soSeq);
+            SP0103_S02(rowData.soNo, rowData.soSeq);
+            SP0107_S03(rowData.soNo, rowData.soSeq);
 
-      if (rowData) {
-         Object.entries(rowData).forEach(([key, value]) => {
-            //console.log(key, value);
-            onInputChange(key, value);
-         });
+            if (rowData) {
+               Object.entries(rowData).forEach(([key, value]) => {
+                  //console.log(key, value);
+                  onInputChange(key, value);
+                  });
 
-         onInputChange("isOpen", false);
-      }
+                  onInputChange("isOpen", false);
+            }
+         } catch (error) {
+            console.error("DblClick Error:", error);
+         }
+      });
    };
 
    const handleDblClick2 = async (e: any) => {
@@ -1280,8 +1290,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    return (
       <div className={`space-y-5 overflow-y-auto h-full work-scroll `}>
-
-
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

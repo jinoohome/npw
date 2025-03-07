@@ -12,6 +12,9 @@ import { Input, Label } from "@headlessui/react";
 import ChoicesEditor from "../../util/ReactSelectEditor";
 
 import { ZZ0101_S02_API } from "../../ts/ZZ0101_S02";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -59,6 +62,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    const payCondRef = useRef<any>(null);
    const chargeDeptRef = useRef<any>(null);
 
+   const { fetchWithLoading } = useLoadingFetch();
 
    const setGridData = async () => {
     try {
@@ -331,16 +335,14 @@ useEffect(() => {
    };
 
    const search = async () => {
-        console.log(inputValues.soNo);
-         const result = await SP0101_S01(inputValues.soNo);
-        SP0101_S02(inputValues.soNo);
-
-    //     console.log(result);
-    //    if (result.length == 1) {
-    //        Object.entries(result[0]).forEach(([key, value]) => {
-    //            onInputChange(key, value);
-    //        });
-    //    }
+      await fetchWithLoading(async () => {
+         try {
+            const result = await SP0101_S01(inputValues.soNo);
+            SP0101_S02(inputValues.soNo);
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
    };
 
    const save = async () => {
@@ -734,6 +736,7 @@ useEffect(() => {
 
    return (
        <div className={`space-y-5 overflow-y-hidden h-screen`}>
+           <LoadingSpinner />
            <div className="space-y-2">
                <div className="flex justify-between">
                    <Breadcrumb items={breadcrumbItem} />

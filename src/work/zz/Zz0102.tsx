@@ -4,6 +4,9 @@ import {useEffect, useState, useRef,
    TextArea, RadioGroup, RadioGroup2, CheckboxGroup, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import { useLoading } from '../../context/LoadingContext';
+import { useLoadingFetch } from '../../hooks/useLoadingFetch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Props {
    item: any;
@@ -12,6 +15,7 @@ interface Props {
 }
 
 const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
+   const { fetchWithLoading } = useLoadingFetch();
    //검색창 ref
    const searchRef1 = useRef<any>(null);
    const searchRef2 = useRef<any>(null);
@@ -79,18 +83,18 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
 
 
    const setGridData = async () => {
-      try {
-      
-         let wo0002Data = await ZZ_CODE({ coCd: "999", majorCode: "WO0002", div: "999" });
-         if (wo0002Data != null) {
-            let wo0002IntupData = wo0002Data.filter((item) => !(item.value === "999" && item.text === "전체"));
-            wo0002IntupData.unshift({ value: "", text: "" });
-
-            setWo0002Input(wo0002IntupData);
+      await fetchWithLoading(async () => {
+         try {
+            let wo0002Data = await ZZ_CODE({ coCd: "999", majorCode: "WO0002", div: "999" });
+            if (wo0002Data != null) {
+               let wo0002IntupData = wo0002Data.filter((item) => !(item.value === "999" && item.text === "전체"));
+               wo0002IntupData.unshift({ value: "", text: "" });
+               setWo0002Input(wo0002IntupData);
+            }
+         } catch (error) {
+            console.error("setGridData Error:", error);
          }
-   } catch (error) {
-         console.error("setGridData Error:", error);
-      }
+      });
    };
 
 
@@ -474,6 +478,7 @@ const Zz0102 = ({ item, activeComp, userInfo }: Props) => {
 
    return (
       <div className={`space-y-5 overflow-y-hidden h-screen`}>
+         <LoadingSpinner />
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />
