@@ -1,4 +1,4 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, commas, reSizeGrid, InputComp, SelectSearchComp, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, DateRangePickerComp, date } from "../../comp/Import";
+import { React, useEffect, useState, useRef, CommonModal, TextArea2, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, commas, reSizeGrid, InputComp, SelectSearchComp, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, DateRangePickerComp, date } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
@@ -37,6 +37,8 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       startDate: date(-1, 'month'),
       endDate: date(),
+      startDate2: date(-1, 'day'),
+      endDate2: date(),
    });
 
    const onInputChange = (name: string, value: any) => {
@@ -49,6 +51,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
 
 
    const [focusRow, setFocusRow] = useState<any>(0);
+   const [isOpen, setIsOpen] = useState(false);
 
    const breadcrumbItem = [{ name: "주문관리" }, { name: "주문" }, { name: "주문 조회" }];
 
@@ -115,12 +118,48 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       return result;
    };
 
+   const ZZ_DAY_REPORT = async () => {
+      const param = {
+         startDt: inputValues.startDate2,
+         endDt: inputValues.endDate2,
+      };
+
+      const data = JSON.stringify(param);
+      const result = await fetchPost(`ZZ_DAY_REPORT`, { data });
+      onInputChange('txt', result[0].txt);
+      console.log(result);
+
+      return result;
+   };
+
    //-------------------event--------------------------
 
    const search = async () => {
       await fetchWithLoading(async () => {
          try {
             await SO0202_S01();
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
+   };
+
+   const searchDay = async (e: any) => {
+      await setIsOpen(true);
+
+      await fetchWithLoading(async () => {
+         try {
+            await ZZ_DAY_REPORT();
+         } catch (error) {
+            console.error("Search Error:", error);
+         }
+      });
+   };
+
+   const searchDay2 = async (e: any) => {
+      await fetchWithLoading(async () => {
+         try {
+            await ZZ_DAY_REPORT();
          } catch (error) {
             console.error("Search Error:", error);
          }
@@ -148,6 +187,10 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
          <button type="button" onClick={search} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
             <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
             조회
+         </button>
+         <button type="button" onClick={searchDay} className="bg-blue-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+            <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
+            일일보고
          </button>
       </div>
    );
@@ -199,6 +242,39 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
                      }} />
          </div>
       </div>
+   );
+
+   const modalSearchDiv = () => (
+      <div className="bg-gray-100 rounded-lg p-5 px-3 search text-sm search">
+         <div className="w-full flex justify-between">
+            <div className="grid grid-cols-2 justify-start gap-y-2">
+               <DateRangePickerComp 
+                     title="기간"
+                     startValue= {inputValues.startDate2}
+                     endValue= {inputValues.endDate2}
+                     onChange={(startDate2, endDate2) => {
+                        onInputChange('startDate2', startDate2);
+                        onInputChange('endDate2', endDate2);   
+               }
+               
+               } /> 
+            </div>
+            <div className="w-[20%] flex justify-end">
+               <button type="button" onClick={searchDay2} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow  h-[30px]">
+                  <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
+                  조회
+               </button>
+            </div>            
+         </div>
+         <div className="space-x-2 p-2">
+            <TextArea2 title="" value={inputValues.txt} 
+                        onChange={(e) => 
+                           onInputChange("txt", e)
+                           }
+                        layout="vertical" textAlign="left"
+                     />
+         </div>      
+      </div>    
    );
 
    //-------------------grid----------------------------
@@ -283,6 +359,9 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
          <div className="w-full h-full md:flex p-2 md:space-x-2 md:space-y-0 space-y-2">
             <div className="w-full" ref={gridGridContainerRef}>{Grid1()}</div>
          </div>
+         <CommonModal isOpen={isOpen} size="md" onClose={() => setIsOpen(false)} title="">
+            {modalSearchDiv()}
+         </CommonModal>
       </div>
    );
 };
