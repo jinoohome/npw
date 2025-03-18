@@ -4,9 +4,9 @@ import {
 import { ArrowUpTrayIcon, ArrowDownTrayIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import "tui-date-picker/dist/tui-date-picker.css";
 import * as XLSX from "xlsx";  // 엑셀 파일 처리를 위한 라이브러리
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { useLoading } from '../../context/LoadingContext';
 import { useLoadingFetch } from '../../hooks/useLoadingFetch';
-import LoadingSpinner from '../../components/LoadingSpinner';
 
 
 interface Props {
@@ -163,12 +163,8 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
 
    const search = async () => {
       await fetchWithLoading(async () => {
-         try {
-            const result = await SP0109_S01();
-            onInputChange("gridDatas2", result);
-         } catch (error) {
-            console.error("Search Error:", error);
-         }
+         const result = await SP0109_S01();
+         onInputChange("gridDatas3", result);
       });
    };
 
@@ -177,21 +173,40 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const save = async () => {
-      await fetchWithLoading(async () => {
-         try {
-            const data = await getGridValues('I');
-            const result = await SP0109_U01(data);
-            if (result) {
-               returnResult(result);
-            }
-         } catch (error) {
-            console.error("Save Error:", error);
+      if (!inputValues.workCd || inputValues.workCd.trim() === '') {
+         alertSwal('작업명을 입력해 주세요.', '확인요청', 'error');
+         return;
+      }
+
+      if (!inputValues.poBpCd || inputValues.poBpCd.trim() === '') {
+         alertSwal('협력업체를 입력해 주세요.', '확인요청', 'error');
+         return;
+      }
+
+      const gridInstance = gridRef2.current.getInstance();
+      const checkedRows = gridInstance.getCheckedRows();
+
+      if (!checkedRows || checkedRows.length === 0) {
+         alertSwal('일괄발주 할 데이터를 선택하시기 바랍니다.', '확인요청', 'error');
+         return;
+      }
+
+      alertSwal("발주등록확인", "발주 등록 하시겠습니까?", "warning", true).then(async (result) => {
+         if (result.isConfirmed) {
+            await fetchWithLoading(async () => {
+               const data = await getGridValues('I');
+               if (data) {
+                  let result = await SP0109_U01(data);
+                  if (result) {
+                     await returnResult(result);
+                  }
+               }
+            });
          }
-      });
+      });  
    };
 
    const del = async () => {
-      // 그리드에서 체크된 row 데이터 확인
       const gridInstance = gridRef3.current.getInstance();
       const checkedRows = gridInstance.getCheckedRows();
 
@@ -202,17 +217,15 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
 
       alertSwal("발주삭제확인", "선택된 발주를 삭제 하시겠습니까?", "warning", true).then(async (result) => {
          if (result.isConfirmed) {
-            const data = await getGridValues2('D');
-
-            if (data) {
-               let result = await SP0109_U01(data);
-               if (result) {
-                  await returnResult(result);
+            await fetchWithLoading(async () => {
+               const data = await getGridValues2('D');
+               if (data) {
+                  let result = await SP0109_U01(data);
+                  if (result) {
+                     await returnResult(result);
+                  }
                }
-            }
- 
-         } else if (result.isDismissed) {
-            return;
+            });
          }
       });  
    };
@@ -421,40 +434,36 @@ const Sp0109 = ({ item, activeComp, userInfo }: Props) => {
 
    
   const handleDownloadFile = async (mgNo: string) => {
-   try {
-     const param = { mgNo: mgNo };
-     const data = JSON.stringify(param);
-     const baseURL = process.env.REACT_APP_API_URL;
+      await fetchWithLoading(async () => {
+         try {
+            const param = { mgNo: mgNo };
+            const data = JSON.stringify(param);
+            const baseURL = process.env.REACT_APP_API_URL;
+            const accessToken = sessionStorage.getItem('accessToken');
 
-      const accessToken = sessionStorage.getItem('accessToken') ;
+            const response = await fetch(`${baseURL}/ZZ_FILE`, {
+               method: 'POST',
+               headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${accessToken}`,
+               },
+               body: data,
+            });
 
-
-      console.log(baseURL);
-  
-     const response = await fetch(`${baseURL}/ZZ_FILE`, {
-       method: 'POST',
-       headers: {
-         'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}` , // 인증 헤더 추가
-       },
-       body: data,
-     });
-
-  
-
-     const blob = await response.blob();
-     const url = window.URL.createObjectURL(blob);
-     const a = document.createElement('a');
-     a.href = url;
-     a.download = "엑셀일괄발주.xlsx";
-     document.body.appendChild(a);
-     a.click();
-     document.body.removeChild(a);
-     window.URL.revokeObjectURL(url);
-   } catch (error) {
-     console.error("파일 다운로드 오류:", error);
-   }
- };
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "엑셀일괄발주.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+         } catch (error) {
+            console.error("파일 다운로드 오류:", error);
+         }
+      });
+   };
 
    return (
       <div className={`space-y-5 overflow-y-auto h-screen`}>

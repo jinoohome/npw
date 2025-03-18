@@ -12,8 +12,14 @@ const commas = (input: string | number | null | undefined) => {
     return '0';
   }
 
-  // 음수와 양수 모두에 쉼표 추가
-  return numberValue.toLocaleString('en', { maximumFractionDigits: 0 });
+  // 소수점 자릿수 확인
+  const decimalPlaces = numberValue.toString().split('.')[1]?.length || 0;
+
+  // 소수점이 있는 경우 해당 자릿수까지 표시, 없는 경우 0자리
+  return numberValue.toLocaleString('en', {
+    minimumFractionDigits: decimalPlaces,
+    maximumFractionDigits: decimalPlaces
+  });
 }
 
 

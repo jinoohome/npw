@@ -1254,51 +1254,74 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
 
    // 주문취소
    const fnCancel = async () => {
-      if (inputValues.giQty !== 0) {
-         alertSwal("", "이미 출고되었습니다. 담당자에게 문의하세요.", "warning");
-         return;
-      }
 
-      if (inputValues.poStatus === "고객서명" || inputValues.poStatus === "고객결제") {  
-         alertSwal("", "고객확인 단계입니다. 담당자에게 문의하세요.", "warning");
-         return;
-      }
+         const param = {    
+            soNo: inputValues.soNo,
+         };
+         const data = JSON.stringify(param);
+         const result = await fetchPost("SO0201_S01", {data});
 
-      alertSwal(
-               "주문취소", 
-               "주문 취소하시겠습니까?", 
-               "warning", 
-               true,
-               "checkbox", // 입력 필드 유형
-               "알림톡을 전송합니다.", // 체크박스에 표시될 설명
-               1, // 체크박스 기본 값 (0: 체크 해제, 1: 체크됨)
-               ).then(async (result) => {
-         if (result.isConfirmed) {
-            const alimYn = result.value === 1;
-            let soNo = inputValues.soNo;
 
-            let data = {
-               menuId: activeComp.menuId,
-               insrtUserId: userInfo.usrId,
-               soNo: soNo,
-               div: "CANCEL",
-               alimYn,
-            };
 
-            if (data) {
-               let result = await SO0201_U07(data);
-               if (result) {
-                  await returnResult(result, data.div);
-               }
-            }
-         } else if (result.isDismissed) {
+         if (result[0].giQty !== 0) {
+            alertSwal("", "이미 출고되었습니다. 담당자에게 문의하세요.", "warning");
             return;
          }
-      });      
+   
+         if (result[0].poStatus === "고객서명" || result[0].poStatus === "고객결제") {  
+            alertSwal("", "고객확인 단계입니다. 담당자에게 문의하세요.", "warning");
+            search(inputValues.soNo);
+            return;
+         }
+   
+         alertSwal(
+                  "주문취소", 
+                  "주문 취소하시겠습니까?", 
+                  "warning", 
+                  true,
+                  "checkbox", // 입력 필드 유형
+                  "알림톡을 전송합니다.", // 체크박스에 표시될 설명
+                  1, // 체크박스 기본 값 (0: 체크 해제, 1: 체크됨)
+                  ).then(async (result) => {
+            if (result.isConfirmed) {
+               const alimYn = result.value === 1;
+               let soNo = inputValues.soNo;
+   
+               let data = {
+                  menuId: activeComp.menuId,
+                  insrtUserId: userInfo.usrId,
+                  soNo: soNo,
+                  div: "CANCEL",
+                  alimYn,
+               };
+   
+               if (data) {
+                  // let result = await SO0201_U07(data);
+                  // if (result) {
+                  //    await returnResult(result, data.div);
+                  // }
+               }
+            } else if (result.isDismissed) {
+               return;
+            }
+         });      
+      
    }; 
 
    // 주문삭제
    const fnDel = async () => {
+      const param = {    
+         soNo: inputValues.soNo,
+      };
+      const data = JSON.stringify(param);
+      const result = await fetchPost("SO0201_S01", {data});
+
+      if(result[0].poStatus !== "발주대기" ) {
+         alertSwal("", "발주대기 상태만 삭제 가능합니다.", "warning");
+         search(inputValues.soNo);
+         return;
+      }
+
       alertSwal("주문삭제", "주문 삭제하시겠습니까?", "warning", true).then(async (result) => {
          if (result.isConfirmed) {
             let soNo = inputValues.soNo;
@@ -2826,12 +2849,12 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                </div>
                <div className="grid grid-cols-2 pb-2 pr-2">
                <InputComp value={inputValues.deptNm} title="부서" target="deptNm" 
-                           readOnly={isInputReadonly}
+                           // readOnly={isInputReadonly}
                           onChange={(e) => {
                            onInputChange('deptNm', e);                           
                         }}   />
                <InputComp value={inputValues.roleNm} title="직급" target="roleNm" 
-                           readOnly={isInputReadonly}
+                           // readOnly={isInputReadonly}
                           onChange={(e) => {
                            onInputChange('roleNm', e);                           
                         }}   />               
@@ -2902,7 +2925,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                            onInputChange('roomNo', e);                           
                         }}   />
                <InputComp value={inputValues.reqNm} title="주문자" target="reqNm"  minWidth="100px" layout="flex"
-                           readOnly={isInputReadonly}
+                           // readOnly={isInputReadonly}
                            onChange={(e) => {
                               onInputChange('reqNm', e);                      
                            }} />
@@ -2912,7 +2935,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                               onInputChange('reqTelNo', e);                      
                            }} />
                <InputComp value={inputValues.dNm}  title={inputValues.hsDiv !== '경사' ? "고인명" : "신랑/신부명"}  target="dNm"  minWidth="100px" layout="flex"
-                        readOnly={isInputReadonly}
+                        // readOnly={isInputReadonly}
                           onChange={(e) => {
                               onInputChange('dNm', e);                      
                            }} />
@@ -2996,7 +3019,8 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                                     setChangeGridData("payYn", value);
                                  }}
                               // readonly={true}
-                              readonly={userInfo.usrId !== "alstj"}
+                              // 테스트 계정은 수정 가능
+                              readonly={userInfo.usrId !== "alstj" && userInfo.usrId !== "u1"}
                               //초기값 세팅시
                               param={{ coCd: "999", majorCode: "FU0008", div: "-999" }}
                               procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 

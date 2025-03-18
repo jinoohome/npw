@@ -140,7 +140,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const handleFilePreview = async (mgNo: string, fileUrl: string, fileName: string, saveFileName: string) => {
     const extension = fileName.split('.').pop()?.toLowerCase();
     const baseURL = process.env.REACT_APP_API_URL;
-    const fileFullPath = `${baseURL}/${fileUrl}`;
+    const fileFullPath = `https://fnr.nhp.co.kr:8443/files${fileUrl}/${saveFileName}`;
     console.log("fileFullPath:", fileFullPath);
     if (extension === 'jpg' || extension === 'jpeg' || extension === 'png' || extension === 'gif') {
       // 이미지 파일 미리보기
