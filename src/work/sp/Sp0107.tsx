@@ -13,9 +13,11 @@ interface Props {
    item: any;
    activeComp: any;
    userInfo: any;
+   soNo: string;
+   soSeq: string;
 }
 
-const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
+const Sp0101 = ({ item, activeComp, userInfo, soNo, soSeq }: Props) => {
    const { fetchWithLoading } = useLoadingFetch();
    const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "완료 보고 등록" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
@@ -37,7 +39,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       reportFiles: [],
       photoFiles: [],
       deleteFiles: [],
-      searchWorkStatus: "MA0017",
+      searchWorkStatus: "999",
 
    });
 
@@ -156,6 +158,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
          workNm: inputValues.searchWorkNm || "999",
          workStatus: inputValues.searchWorkStatus,
       };
+      console.log(param);
 
       const data = JSON.stringify(param);
       const result = await fetchPost("SP0107_P01", { data });
@@ -269,7 +272,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
       if (majorCode === "MA0004") onInputChange("zzMA0004", formattedResult);
       if (majorCode === "MA0005") {
-         formattedResult = formattedResult.filter((item: any) => item.value == "999" || item.value == "MA0017" || item.value == "MA0018");
+         formattedResult = formattedResult.filter((item: any) => item.value == "999" || item.value == "MA0017" || item.value == "MA0018" || item.value == "MA0019");
          onInputChange("zzMA0005", formattedResult);
       }
 
@@ -277,6 +280,12 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    //------------------useEffect--------------------------
+   useEffect(() => {
+      if(soNo && soSeq){
+         search(soNo, soSeq);
+      }
+   }, [soNo, soSeq]);
+
    useEffect(() => {
       setGridData();
       reSizeGrid({ ref: gridRef, containerRef: gridContainerRef, sec: 200 });
@@ -321,6 +330,12 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
          refreshGrid(gridRef3);
       }
    }, [inputValues.gridDatas3]);
+
+   useEffect(() => {
+      if(inputValues.searchWorkStatus){
+         searchModalDiv();
+      }
+   }, [inputValues.searchWorkStatus]); 
 
    //-------------------event--------------------------
    const onInputChange = (name: string, value: any) => {
@@ -387,15 +402,16 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       }
    };
 
-   const search = async () => {
-      if (!inputValues.soNo) {
+   const search = async (soNo: string, soSeq: string) => {
+      if (!soNo || !soSeq) {
          alertSwal("발주번호를 입력해주세요.", "", "warning");
          return;
       }
 
-      const result = await SP0103_S01(inputValues.soNo, inputValues.soSeq);
-      SP0103_S02(inputValues.soNo, inputValues.soSeq);
-      SP0107_S03(inputValues.soNo, inputValues.soSeq);
+      const result = await SP0103_S01(soNo, soSeq);
+      SP0103_S02(soNo, soSeq);
+      SP0107_S03(soNo, soSeq);
+
 
       setFiles1([]); // 단일 파일 초기화
       setFiles2([]);
@@ -426,11 +442,20 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       inputValues.gridDatas = datas;
       inputValues.soNo ? (inputValues.status = "U") : (inputValues.status = "I");
 
-      if (inputValues.cfmFlag2 === "Y") {
+      if(inputValues.finishDt){
          inputValues.workStatus = "MA0018";
-      } else {
+         if(inputValues.cfmFlag2 === "Y"){
+            inputValues.workStatus = "MA0019";
+         }
+      }else{
          inputValues.workStatus = "MA0017";
       }
+
+      // if (inputValues.cfmFlag2 === "Y") {
+      //    inputValues.workStatus = "MA0018";
+      // } else {
+      //    inputValues.workStatus = "MA0017";
+      // }
 
       const formData = new FormData();
 
@@ -525,7 +550,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
    const returnResult = async (result: any) => {
       alertSwal(result.msgText, result.msgCd, result.msgStatus);
       if (result.msgCd === "1") {
-         search();
+         search (inputValues.soNo, inputValues.soSeq);
       }
    };
 
@@ -983,7 +1008,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
             <TrashIcon className="w-5 h-5 mr-1" />
             삭제
          </button> */}
-         <button type="button" onClick={search} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+         <button type="button" onClick={() => search(inputValues.soNo, inputValues.soSeq)} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
             <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
             조회
          </button>
@@ -1153,7 +1178,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                   </button>
                )}
 
-               {inputValues.cfmFlag2 === 'Y' && (
+               {inputValues.cfmFlag2 === 'Y'  && userInfo.bpCd == '999' && (
                   <button
                      type="button"
                      onClick={() => cfmSave('N')}
@@ -1236,6 +1261,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
                      value={inputValues.searchWorkStatus}
                      onChange={(label, value) => {
                         onInputChange("searchWorkStatus", value);
+                     
                      }}
                      datas={inputValues.zzMA0005}
                      

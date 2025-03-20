@@ -9,10 +9,12 @@ interface WorkProps {
   userInfo: any;
   handleAddMenuClick: (menuItem: ZZ_MENU_RES) => void;
   soNo: string;
+  soSeq: string;
   setSoNo: (soNo: string) => void;
+  setSoSeq: (soSeq: string) => void;
 }
 
-const Work = ({ components, activeComp, leftMode, userInfo, handleAddMenuClick, soNo, setSoNo }: WorkProps) => {
+const Work = ({ components, activeComp, leftMode, userInfo, handleAddMenuClick, soNo, soSeq, setSoNo, setSoSeq }: WorkProps) => {
   
   
   
@@ -27,7 +29,8 @@ const Work = ({ components, activeComp, leftMode, userInfo, handleAddMenuClick, 
                           item={item} activeComp={activeComp} 
                           leftMode={leftMode} userInfo={userInfo} 
                           handleAddMenuClick={handleAddMenuClick}
-                          soNo={soNo} setSoNo={setSoNo}
+                          soNo={soNo} soSeq={soSeq} setSoNo={setSoNo}
+                          setSoSeq={setSoSeq}
                           />
             </div>
           </Suspense>

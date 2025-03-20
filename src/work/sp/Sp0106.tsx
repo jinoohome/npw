@@ -12,18 +12,21 @@ import ChoicesEditor from "../../util/ChoicesEditor";
 import { useLoading } from '../../context/LoadingContext';
 import { useLoadingFetch } from '../../hooks/useLoadingFetch';
 import LoadingSpinner from '../../components/LoadingSpinner';
-
+import { ZZ_MENU_RES } from "../../ts/ZZ_MENU";
 import { ZZ0101_S02_API } from "../../ts/ZZ0101_S02";
 
 interface Props {
    item: any;
    activeComp: any;
    userInfo: any;
+   handleAddMenuClick: (menuItem: ZZ_MENU_RES ) => void;
+   setSoNo: (value: string) => void;
+   setSoSeq: (value: string) => void;
 }
 
-const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
+const Sp0104 = ({ item, activeComp, userInfo,  handleAddMenuClick, setSoNo, setSoSeq }: Props) => {
    const { fetchWithLoading } = useLoadingFetch();
-   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발주관리" }, { name: "완료보고조회" }];
+   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발주관리" }, { name: "최종완료대상" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
       gridDatas2: [],
@@ -219,7 +222,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
       if (majorCode === "MA0004") onInputChange("zzMA0004", formattedResult);
       if (majorCode === "MA0005"){
          formattedResult = formattedResult.filter(
-            (item: any) => item.value == "999" || item.value == "MA0017"  || item.value == "MA0018" 
+            (item: any) => item.value == "999" || item.value == "MA0017"  || item.value == "MA0018" || item.value == "MA0019"
         ); 
       onInputChange("zzMA0005", formattedResult);
       
@@ -227,6 +230,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
 
       return formattedResult;
    };
+
 
 //    useEffect(() => {
 //       if (inputValues.zzItmes) {
@@ -457,19 +461,35 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const handleDblClick = async (e: any) => {
-      const gridInstance = gridRef2.current.getInstance();
-      const rowData = gridInstance.getRow(e.rowKey);
-      onInputChange("soSeq", rowData.soSeq);
-      SP0103_S02(rowData.soNo, rowData.soSeq);
+        // SP0110 탭 열리기
+       //주문 상세 화면으로 이동
+      const menu: ZZ_MENU_RES = {
+         menuId: "5007", // 메뉴 ID
+         paMenuId: "5050", // 부모 메뉴 ID (상위 메뉴)
+         menuName: "완료 보고 등록", // 메뉴 이름
+         description: "", // 메뉴 설명
+         prgmId: "Sp0107", // 프로그램 ID
+         prgmFullPath: "sp/Sp0107", // 프로그램 전체 경로
+         prgmPath: "", // 프로그램 폴더 경로
+         prgmFileName: "", // 프로그램 파일명
+         menuOrdr: "05000 >> 15050 >> 15007", // 메뉴 순서 (상위 메뉴 내 정렬)
+         remark: "", // 비고 (추가 설명)
+         icon: "", // 아이콘 (사용할 아이콘 이름)
+         useYn: "Y", // 사용 여부 ("Y": 사용, "N": 미사용)
+         lev: 2, // 메뉴 레벨 (2단계 메뉴)
+         zMenuOrdr: "1", // 추가적인 메뉴 정렬 순서
+         status: "S"  ,
+         menuDiv: ""
+      };
 
-      if (rowData) {
-         Object.entries(rowData).forEach(([key, value]) => {
-            
-            onInputChange(key, value);
-         });
-
-        
-      }
+      //주문번호를 상위 컴포넌트로 전달
+      const grid = gridRef2.current.getInstance();
+      const rowData = grid.getRow(e.rowKey);
+  
+      setSoNo(rowData.soNo);
+      setSoSeq(rowData.soSeq);
+      handleAddMenuClick(menu);
+      
    };
    const handleFocusChange = async (e: any) => {
       const gridInstance = gridRef2.current.getInstance();

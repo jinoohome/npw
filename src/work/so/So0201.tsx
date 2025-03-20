@@ -1296,10 +1296,10 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
                };
    
                if (data) {
-                  // let result = await SO0201_U07(data);
-                  // if (result) {
-                  //    await returnResult(result, data.div);
-                  // }
+                  let result = await SO0201_U07(data);
+                  if (result) {
+                     await returnResult(result, data.div);
+                  }
                }
             } else if (result.isDismissed) {
                return;

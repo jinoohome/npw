@@ -33,7 +33,7 @@ function Main() {
 
    const [count, setCount] = useState(0);
    const [soNo, setSoNo] = useState("");
-
+   const [soSeq, setSoSeq] = useState("");
 
 
 
@@ -297,7 +297,7 @@ function Main() {
                <Top loginInfo={loginInfo} userInfo={userInfo} topMenus={topMenus}  searchMenus={searchMenus} onTopMenuClick={handleTopMenuClick} activeMenu={activeMenu} topMode={topMode} onLeftMode={handleLefMode} onTopMode={handleTopMode} onUserChange={handleUserChange} onSearchMenuClick={handleLeftMenuClick} ></Top>
                <Tab components={components} onTabMenuClick={handleTabClick} onTabCloseClick={handleTabCloseClick} activeComp={activeComp} onAllTabCloseClick={handleAllTabCloseClick} topMode={topMode}  tabRef={tabRef}></Tab>
                <Work components={components} activeComp={activeComp} leftMode={leftMode} userInfo={userInfo}  
-                     handleAddMenuClick={handleAddMenuClick} soNo={soNo} setSoNo={setSoNo}></Work>
+                     handleAddMenuClick={handleAddMenuClick} soNo={soNo} soSeq={soSeq} setSoNo={setSoNo} setSoSeq={setSoSeq}></Work>
             </motion.div>
          </div>
          )}

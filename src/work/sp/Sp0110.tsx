@@ -22,9 +22,10 @@ interface Props {
    item: any;
    activeComp: any;
    userInfo: any;
+   soNo: string;
 }
 
-const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
+const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
    const { fetchWithLoading } = useLoadingFetch();
    const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발주관리" }, { name: "수발주등록" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
@@ -64,6 +65,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const setGridData = async () => {
       try {
+      
          ZZ_WORKS();
          ZZ_B_PO_BP();
          ZZ_CODE("MA0004");
@@ -257,6 +259,12 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
 
    //------------------useEffect--------------------------
    useEffect(() => {
+      if(soNo){
+         search(soNo);
+      }
+   }, [soNo]);
+
+   useEffect(() => {
       setGridData();
       reSizeGrid({ ref: gridRef, containerRef: gridContainerRef, sec: 200 });
       reSizeGrid({ ref: gridRef2, containerRef: gridContainerRef2, sec: 200 });
@@ -423,14 +431,14 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
       }
    };
 
-   const search = async () => {
-      if (!inputValues.soNo) {
+   const search = async (soNo: string) => {
+      if (!soNo) {
          alertSwal("수주번호를 확인 해주세요.", "", "warning");
          return;
       }
 
-      const result = await SP0110_S01(inputValues.soNo);
-      SP0110_S02(inputValues.soNo);
+      const result = await SP0110_S01(soNo);
+      SP0110_S02(soNo);
 
       if (result) {
          Object.entries(result[0]).forEach(([key, value]) => {
@@ -616,7 +624,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
             }));
            } else {
                inputValues.soNo = result.soNoOut;
-               search();
+               search(result.soNoOut);
            }
       }
    };
@@ -1149,7 +1157,7 @@ const Sp0101 = ({ item, activeComp, userInfo }: Props) => {
             <TrashIcon className="w-5 h-5 mr-1" />
             삭제
          </button>
-         <button type="button" onClick={search} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+         <button type="button" onClick={() => search(inputValues.soNo)} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
             <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
             조회
          </button>

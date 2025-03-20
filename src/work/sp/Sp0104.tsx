@@ -12,16 +12,20 @@ import ChoicesEditor from "../../util/ChoicesEditor";
 import { useLoading } from '../../context/LoadingContext';
 import { useLoadingFetch } from '../../hooks/useLoadingFetch';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { ZZ_MENU_RES } from "../../ts/ZZ_MENU";
 
 import { ZZ0101_S02_API } from "../../ts/ZZ0101_S02";
 
 interface Props {
    item: any;
+   leftMode: any;
    activeComp: any;
    userInfo: any;
+   handleAddMenuClick: (menuItem: ZZ_MENU_RES ) => void;
+   setSoNo: (value: string) => void;
 }
 
-const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
+const Sp0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setSoNo}: Props) => {
    const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "발주 상세조회" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
@@ -281,6 +285,11 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
         search();
     }, [inputValues.searchWorkStatus]);
     
+    useEffect(() => {
+      search();
+  }, [ inputValues.searchWorkNm ]);
+  
+
 
    useEffect(() => {
       if (gridRef.current && inputValues.gridDatas1) {
@@ -464,19 +473,38 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const handleDblClick = async (e: any) => {
-      const gridInstance = gridRef2.current.getInstance();
-      const rowData = gridInstance.getRow(e.rowKey);
-      onInputChange("soSeq", rowData.soSeq);
-      SP0103_S02(rowData.soNo, rowData.soSeq);
 
-      if (rowData) {
-         Object.entries(rowData).forEach(([key, value]) => {
-            
-            onInputChange(key, value);
-         });
+      // SP0110 탭 열리기
+       //주문 상세 화면으로 이동
+      const menu: ZZ_MENU_RES = {
+         menuId: "5010", // 메뉴 ID
+         paMenuId: "5050", // 부모 메뉴 ID (상위 메뉴)
+         menuName: "수발주등록", // 메뉴 이름
+         description: "", // 메뉴 설명
+         prgmId: "Sp0110", // 프로그램 ID
+         prgmFullPath: "sp/Sp0110", // 프로그램 전체 경로
+         prgmPath: "", // 프로그램 폴더 경로
+         prgmFileName: "", // 프로그램 파일명
+         menuOrdr: "05000 >> 15050 >> 15010", // 메뉴 순서 (상위 메뉴 내 정렬)
+         remark: "", // 비고 (추가 설명)
+         icon: "", // 아이콘 (사용할 아이콘 이름)
+         useYn: "Y", // 사용 여부 ("Y": 사용, "N": 미사용)
+         lev: 2, // 메뉴 레벨 (2단계 메뉴)
+         zMenuOrdr: "1", // 추가적인 메뉴 정렬 순서
+         status: "S"  ,
+         menuDiv: ""
+      };
 
-        
-      }
+      //주문번호를 상위 컴포넌트로 전달
+      const grid = gridRef2.current.getInstance();
+      const rowData = grid.getRow(e.rowKey);
+
+      setSoNo(rowData.soNo);
+      handleAddMenuClick(menu);
+    
+      
+
+    
    };
    const handleFocusChange = async (e: any) => {
       const gridInstance = gridRef2.current.getInstance();
@@ -710,7 +738,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
     { header: "퓸목구분", name: "itemDiv", width: 120, align: "center", hidden: true },
     { header: "작업코드", name: "workCd", width: 250, align: "center", hidden: true  }, 
     {
-       header: "수량", name: "qty", width: 60, align: "right", editor: "text",
+       header: "수량", name: "qty", width: 60, align: "right",
        formatter: function (e: any) { return commas(e.value);},
     }, // QTY: 수량    
     {
@@ -723,11 +751,11 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
        formatter: function (e: any) { return commas(e.value); },
     }, // SO_VAT_AMT: 발주 부가세
     {
-       header: "단가", name: "poPrice", width: 80, align: "right", editor: "text",
+       header: "단가", name: "poPrice", width: 80, align: "right", 
        formatter: function (e: any) {  return commas(e.value); },
     }, // PO_PRICE: 발주 가격
     {
-       header: "금액", name: "poAmt", width: 80, align: "right", 
+       header: "금액", name: "poAmt", width: 120, align: "right", 
        formatter: function (e: any) {  return commas(e.value); },
     }, // PO_AMT: 발주 금액
     {
@@ -738,7 +766,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
        header: "부가세", name: "poVatAmt", width: 100, align: "right", 
        formatter: function (e: any) {  return commas(e.value);  },
     }, // PO_VAT_AMT: 발주 부가세
-   { header: "비고", name: "remark", editor: "text", width: 250 }, // REMARK: 비고
+   { header: "비고", name: "remark", width: 250 }, // REMARK: 비고
  ];
  
    const grid = () => (
@@ -774,7 +802,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
       { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
       { header: "발주번호", name: "soNo", width: 120, align: "center", rowSpan: true,   }, // SO_NO: 발주 번호
       { header: "구분번호", name: "soSeq", width: 120, align: "center", hidden: true }, // SO_NO: 발주 번호
-      { header: "사업장", name: "bpNm", width: 250, rowSpan: true }, 
+      { header: "사업장", name: "bpNm", width: 250}, 
       { header: "사업장", name: "bpCd", width: 300,   hidden: true }, 
       { header: "작업명", name: "workCd", width: 250,  hidden: true }, 
       { header: "작업명", name: "workNm", width: 150 }, 
@@ -793,11 +821,11 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
       { header: "수량", name: "qty", width: 70, align: "center"}, // 
    
       {
-         header: "단가", name: "poPrice", width: 80, align: "right", editor: "text",
+         header: "단가", name: "poPrice", width: 80, align: "right", 
          formatter: function (e: any) {  return commas(e.value); },
       }, // PO_PRICE: 발주 가격
       {
-         header: "금액", name: "poAmt", width: 90, align: "right", 
+         header: "금액", name: "poAmt", width: 120, align: "right", 
          formatter: function (e: any) {  return commas(e.value); },
       }, // PO_AMT: 발주 금액
       {
@@ -1085,6 +1113,7 @@ const Sp0104 = ({ item, activeComp, userInfo }: Props) => {
                   onChange={(label, value) => {
                      onInputChange("searchWorkNm", value);
                   }}
+                
                   addData={"999"}
                   stringify={true}
                   param={{ coCd: "200" }}
