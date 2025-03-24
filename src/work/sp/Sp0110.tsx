@@ -677,7 +677,14 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
    
          // itemCd가 중복되지 않을 때만 행을 추가
          if (!existingItemCds.has(rowData.itemCd)) {
-            const qty = rowData.qty ?? 1; // 기본 수량
+            // 도색일경우 qty 0으로 처리
+            let qty = 0;
+            if (rowData.workNm === "도색") {
+               qty = 0;
+            } else {
+               qty = rowData.qty ?? 1; // 기본 수량
+            }
+
             const soPrice = rowData.salePrice ?? 0; // 판매 가격
             const poPrice = rowData.costPrice ?? 0; // 원가
             const soAmt = qty * soPrice; // 수주 금액 (판매 금액 * 수량)
