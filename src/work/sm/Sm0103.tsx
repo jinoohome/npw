@@ -284,6 +284,36 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       search();
    };
 
+   const handleClick = (ev: any) => {
+      const { rowKey, columnName } = ev;
+      const grid1 = GridRef1.current.getInstance();
+   
+      // 주문번호 컬럼 클릭일 때만 동작
+      if (columnName !== "soNo") return;
+   
+      // 클릭된 행의 주문번호 가져오기
+      const clickedSoNo = grid1.getValue(rowKey, "soNo");
+   
+      // 같은 주문번호를 가진 모든 행 찾기
+      const allRows = grid1.getData();
+      const sameSoNoRows = allRows
+         .map((row: any, index: number) => ({ rowKey: index, soNo: row.soNo }))
+         .filter((row: any) => row.soNo === clickedSoNo);
+   
+      // 현재 체크 상태 확인 (첫 번째 행 기준)
+      const isChecked = grid1.getCheckedRows().some((row: any) => row.soNo === clickedSoNo);
+   
+      // 같은 주문번호를 가진 모든 행 체크/해제
+      sameSoNoRows.forEach((row: any) => {
+         if (isChecked) {
+            grid1.uncheck(row.rowKey);
+         } else {
+            grid1.check(row.rowKey);
+         }
+      });
+   };
+   
+
    //-------------------div--------------------------
 
    //상단 버튼 div
@@ -467,7 +497,7 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                </div>
             </div>
    
-            <TuiGrid01 columns={grid1Columns} handleAfterChange={handleAfterChange} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} height={window.innerHeight - 590} summary={summary}/>
+            <TuiGrid01 columns={grid1Columns} handleClick={handleClick} handleAfterChange={handleAfterChange} rowHeaders={['checkbox','rowNum']} gridRef={GridRef1} height={window.innerHeight - 590} summary={summary}/>
          </div>
       );
    };
