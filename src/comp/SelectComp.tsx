@@ -34,6 +34,7 @@ const customStyles = {
    //     backgroundColor: 'rgba(234, 88, 12, 0.3)', // Hover 시 배경색
    //   },
    // }),
+   
  };
 
 interface Props1 {
@@ -499,9 +500,20 @@ interface SelectSearchProps {
            onMenuOpen={handleClick}
            options={options}
            classNamePrefix="react-select"
-           className=" focus:outline-orange-300"
+           className="focus:outline-orange-300"
            placeholder=""
-           styles={customStyles}
+         //   styles={customStyles}
+         styles={{
+            control: (provided) => ({
+              ...provided,
+              backgroundColor: required ? 'rgb(255 247 237 / 1)' : undefined,
+              '--tw-bg-opacity': 1
+            }),
+            option: (provided, state) => ({
+              ...provided,
+              backgroundColor: state.isSelected ? 'rgb(255 247 237 / 1)' : undefined
+            })
+         }}
            isDisabled={readonly}
          />
        </div>

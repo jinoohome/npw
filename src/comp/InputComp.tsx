@@ -319,6 +319,7 @@ interface InputSearchCompProps {
              ref={inputRef}
              className={`border rounded-md h-8 p-2 w-full focus:outline-orange-300 
                        ${readOnly ? "bg-gray-100 text-[#999]" : ""}
+                       ${required ? "bg-orange-50" : ""}
                   
              `}
              value={value}
