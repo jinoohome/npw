@@ -671,6 +671,8 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
       let rowKey = grid4Instance.getFocusedCell() ? grid4Instance.getFocusedCell().rowKey : 0;
       let rowData2 = grid4Instance.getRow(rowKey);
    
+      
+
       if (rowData) {
          // 현재 그리드에 있는 데이터에서 itemCd를 확인
          const existingItemCds = new Set(grid.getData().map((row: any) => row.itemCd));
@@ -748,7 +750,15 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
       // 체크된 각 행을 확인하고, 중복이 없는 경우에만 추가
       checkedRows.forEach((rowData: any) => {
          if (!existingItemCds.has(rowData.itemCd)) {
-            const qty = rowData.qty ?? 1; // 기본 수량
+            console.log(rowData.workNm);
+            let qty = 0;
+            if (rowData.workNm === "도색") {
+               qty = 0;
+            } else {
+               qty = rowData.qty ?? 1; // 기본 수량
+            }
+
+            // const qty = rowData.qty ?? 1; // 기본 수량
             const soPrice = rowData.salePrice ?? 0; // 판매 가격
             const poPrice = rowData.costPrice ?? 0; // 원가
             const soAmt = qty * soPrice; // 수주 금액 (판매 금액 * 수량)

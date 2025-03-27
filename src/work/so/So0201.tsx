@@ -80,6 +80,7 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
    const [gridDatasP6, setGridDatasP6] = useState<any[]>();      // 발주지점팝업정보
    
    const [isInputReadonly, setIsInputReadonly] = useState(false);
+   const [poStatus, setPoStatus] = useState<string>("");
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
 
    
@@ -364,23 +365,48 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
       if (gridRef2.current && gridRef3.current && gridRef8.current) {
    
     
-        if (isInputReadonly) {
 
-         setTimeout(() => {
-          // Disable columns
-          disableColumns(gridInstance2, ['soQty', 'soPrice', 'payDiv', 'reason', 'condType']);
-          disableColumns(gridInstance3, ['soQty', 'poPrice']);
-          disableColumns(gridInstance8, ['payDiv', 'reason']);
-          hideColumns(gridInstance2, ['itemBtn', 'poBpBtn']);
-          hideColumns(gridInstance7, ['tsBpBtn']);
-    
-          // Disable row checks
-          if (gridDatas1 && gridDatas1.length > 0) {
-            disableAllRowChecks(gridInstance2, gridDatas2 || []);
-            disableAllRowChecks(gridInstance3, gridDatas3 || []);
-            disableAllRowChecks(gridInstance8, gridDatas8 || []);
-          }
-         }, 500); 
+
+        if (isInputReadonly) {
+         if(poStatus === "마감완료"){
+            setTimeout(() => {
+               // Disable columns
+               disableColumns(gridInstance2, ['soQty', 'soPrice', 'payDiv', 'reason', 'condType']);
+               disableColumns(gridInstance3, ['soQty', 'poPrice']);
+               disableColumns(gridInstance8, ['payDiv', 'reason']);
+               hideColumns(gridInstance2, ['itemBtn', 'poBpBtn']);
+               hideColumns(gridInstance7, ['tsBpBtn']);
+         
+               // Disable row checks
+               if (gridDatas1 && gridDatas1.length > 0) {
+                 disableAllRowChecks(gridInstance2, gridDatas2 || []);
+                 disableAllRowChecks(gridInstance3, gridDatas3 || []);
+                 disableAllRowChecks(gridInstance8, gridDatas8 || []);
+               }
+              }, 500); 
+         
+
+         }else{
+
+            setTimeout(() => {
+             // Disable columns
+             disableColumns(gridInstance2, ['soQty', 'soPrice', 'condType']);
+             disableColumns(gridInstance3, ['soQty', 'poPrice']);
+             disableColumns(gridInstance8, [ ]);
+             hideColumns(gridInstance2, ['itemBtn', 'poBpBtn']);
+             hideColumns(gridInstance7, ['tsBpBtn']);
+       
+             // Disable row checks
+             if (gridDatas1 && gridDatas1.length > 0) {
+               disableAllRowChecks(gridInstance2, gridDatas2 || []);
+               disableAllRowChecks(gridInstance3, gridDatas3 || []);
+               disableAllRowChecks(gridInstance8, gridDatas8 || []);
+             }
+            }, 500); 
+
+
+         }
+
         }else{
          setTimeout(() => {
             showColumns(gridInstance2, ['itemBtn', 'poBpBtn']);
@@ -932,6 +958,8 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
 
             setIsInputReadonly(false);
          }
+
+         setPoStatus(result[0].poStatus);
 
          handleTabIndex(0);
 
