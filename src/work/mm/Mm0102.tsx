@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef,  initChoice, updateChoices,  fetchPost, SelectSearch, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid,  InputComp1, SelectComp1 } from "../../comp/Import";
+import { useEffect, useState, useRef, commas, initChoice, updateChoices,  fetchPost, SelectSearch, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid,  InputComp1, SelectComp1 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MagnifyingGlassIcon} from "@heroicons/react/24/outline";
 import { useLoading } from '../../context/LoadingContext';
@@ -207,6 +207,13 @@ const Mm0102 = ({ item, activeComp, userInfo }: Props) => {
       { header: "그룹사코드", name: "paCoCd", hidden: true },
       { header: "회사명", name: "bpFullNm", width: 200 },
       { header: "회사약명", name: "bpNm", width: 200 },
+      { header: "수수료비율", name: "bpRate", width: 80, align: "right" },
+      { header: "패키지금액 매장형", name: "cremAmt", width: 160, align: "right",
+         formatter: function(e: any) {if(e.value){return commas(e.value);}}
+      },
+      { header: "패키지금액 화장형", name: "buriAmt", width: 160, align: "right",
+         formatter: function(e: any) {if(e.value){return commas(e.value);}}
+      },
       { header: "회사구분", name: "bpType", align: "center", width: 120 },
       { header: "회사종류", name: "bpDiv", align: "center", width: 120 },
       { header: "대표자", name: "repreNm", width: 120 },

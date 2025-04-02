@@ -11,6 +11,7 @@ import { error } from "console";
 import { useLoading } from '../../context/LoadingContext';
 import { useLoadingFetch } from '../../hooks/useLoadingFetch';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import Swal from 'sweetalert2';
 
 interface Props {
    item: any;
@@ -1302,17 +1303,42 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
             return;
          }
    
-         alertSwal(
-                  "주문취소", 
-                  "주문 취소하시겠습니까?", 
-                  "warning", 
-                  true,
-                  "checkbox", // 입력 필드 유형
-                  "알림톡을 전송합니다.", // 체크박스에 표시될 설명
-                  1, // 체크박스 기본 값 (0: 체크 해제, 1: 체크됨)
-                  ).then(async (result) => {
-            if (result.isConfirmed) {
-               const alimYn = result.value === 1;
+         // Swal을 직접 사용해 복수의 체크박스를 표시
+         Swal.fire({
+           title: "주문취소",
+           text: "주문 취소하시겠습니까?",
+           icon: "warning",
+           showCancelButton: true,
+           confirmButtonText: "확인",
+           cancelButtonText: "취소",
+           html: `
+            <div class="flex flex-col items-center justify-center">
+             <div class="flex flex-col items-start mt-4 text-left">
+               <div class="flex items-center mb-2">
+                 <input type="checkbox" id="orderer-alim" class="mr-2" checked>
+                 <label for="orderer-alim" class="text-base">대상자, 주문자 알림톡 전송</label>
+               </div>
+               <div class="flex items-center mb-2">
+                 <input type="checkbox" id="partner-alim" class="mr-2" checked>
+                 <label for="partner-alim" class="text-base">협력업체 알림톡 전송</label>
+               </div>
+               <div class="flex items-center">
+                 <input type="checkbox" id="customer-alim" class="mr-2" checked>
+                 <label for="customer-alim" class="text-base">고객사 담당자 알림톡 전송</label>
+               </div>
+             </div>
+            </div>
+           `,
+           preConfirm: () => {
+             return {
+               ordererAlimYn: (document.getElementById('orderer-alim') as HTMLInputElement)?.checked ? 'Y' : 'N',
+               partnerAlimYn: (document.getElementById('partner-alim') as HTMLInputElement)?.checked ? 'Y' : 'N',
+               customerAlimYn: (document.getElementById('customer-alim') as HTMLInputElement)?.checked ? 'Y' : 'N'
+             };
+           }
+         }).then(async (result) => {
+            if (result.isConfirmed && result.value) {
+               const { ordererAlimYn, partnerAlimYn, customerAlimYn } = result.value;
                let soNo = inputValues.soNo;
    
                let data = {
@@ -1320,7 +1346,9 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
                   insrtUserId: userInfo.usrId,
                   soNo: soNo,
                   div: "CANCEL",
-                  alimYn,
+                  ordererAlimYn: ordererAlimYn, // 대상자, 주문자 알림톡 전송 여부 (Y/N)
+                  partnerAlimYn: partnerAlimYn, // 협력업체 알림톡 전송 여부 (Y/N)
+                  customerAlimYn: customerAlimYn, // 고객사 담당자 알림톡 전송 여부 (Y/N)
                };
    
                if (data) {
@@ -1332,7 +1360,7 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
             } else if (result.isDismissed) {
                return;
             }
-         });      
+         });
       
    }; 
 
@@ -1381,29 +1409,55 @@ const fnConfirm = async () => {
       return;
   }
 
-   alertSwal(
-     "주문확정",
-     "주문 확정하시겠습니까?",
-     "warning",
-     true,
-     "checkbox", // 입력 필드 유형
-     "알림톡을 전송합니다.", // 체크박스에 표시될 설명
-     1, // 체크박스 기본 값 (0: 체크 해제, 1: 체크됨)
-   ).then(async (result) => {
-     if (result.isConfirmed) {
-      const alimYn = result.value === 1;
-      const soNo = inputValues.soNo;
+   // Swal을 직접 사용해 복수의 체크박스를 표시
+   Swal.fire({
+     title: "주문확정",
+     text: "주문 확정하시겠습니까?",
+     icon: "warning",
+     showCancelButton: true,
+     confirmButtonText: "확인",
+     cancelButtonText: "취소",
+     html: `
+      <div class="flex flex-col items-center justify-center">
+         <div class="flex flex-col items-start mt-4 text-left">
+            <div class="flex items-center mb-2 ">
+               <input type="checkbox" id="orderer-alim" class="mr-2" checked>
+               <label for="orderer-alim" class="text-base">대상자, 주문자 알림톡</label>
+            </div>
+            <div class="flex items-center mb-2">
+               <input type="checkbox" id="partner-alim" class="mr-2" checked>
+               <label for="partner-alim" class="text-base">협력업체 알림톡</label>
+            </div>
+            <div class="flex items-center">
+               <input type="checkbox" id="customer-alim" class="mr-2" checked>
+               <label for="customer-alim" class="text-base">고객사담당자 알림톡</label>
+            </div>
+         </div>
+      </div>
+     `,
+     preConfirm: () => {
+       return {
+         ordererAlim: (document.getElementById('orderer-alim') as HTMLInputElement)?.checked ? 'Y' : 'N',
+         partnerAlim: (document.getElementById('partner-alim') as HTMLInputElement)?.checked ? 'Y' : 'N',
+         customerAlim: (document.getElementById('customer-alim') as HTMLInputElement)?.checked ? 'Y' : 'N'
+       };
+     }
+   }).then(async (result) => {
+     if (result.isConfirmed && result.value) {
+       const { ordererAlim, partnerAlim, customerAlim } = result.value;
+       const soNo = inputValues.soNo;
  
-       
        const data = {
          menuId: activeComp.menuId,
          insrtUserId: userInfo.usrId,
          soNo: soNo,
          div: "CONFIRM",
-         alimYn, // 알림톡 전송 여부 포함
+         ordererAlimYn: ordererAlim, // 대상자, 주문자 알림톡 전송 여부 (Y/N)
+         partnerAlimYn: partnerAlim, // 협력업체 알림톡 전송 여부 (Y/N)
+         customerAlimYn: customerAlim, // 고객사 담당자 알림톡 전송 여부 (Y/N)
        };
- 
-       
+       console.log(data);
+
        if (data) {
          const result = await SO0201_U07(data);
          if (result) {
