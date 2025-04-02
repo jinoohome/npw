@@ -500,7 +500,7 @@ interface SelectSearchProps {
            onMenuOpen={handleClick}
            options={options}
            classNamePrefix="react-select"
-           className="focus:outline-orange-300"
+           className="focus:outline-orange-300 bg-white"
            placeholder=""
          //   styles={customStyles}
          styles={{

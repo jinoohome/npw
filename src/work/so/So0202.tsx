@@ -31,7 +31,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
    const searchRef4 = useRef<any>(null);
    const searchRef5 = useRef<any>(null);
    const searchRef6 = useRef<any>(null);
-
+   const searchRef7 = useRef<any>(null);
    const [gridDatas1, setGridDatas] = useState<any[]>();
 
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
@@ -110,6 +110,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
          soNo: searchRef4.current?.value || '999',
          status: inputValues.status || '999',
          dlvyNm: searchRef6.current?.value || '999',
+         itemNm: searchRef7.current?.value || '999',
       };
 
       const data = JSON.stringify(param);
@@ -236,10 +237,15 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
                               param={{ coCd: "999", majorCode: "FU0009", div: "999" }}
                               procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
                />
-               <InputComp title="배송지" ref={searchRef6} value={inputValues.dlvyNmS} handleCallSearch={handleCallSearch} 
-                          onChange={(e)=>{
-                          onInputChange('dlvyNmS', e);
-                     }} />
+            <InputComp title="배송지" ref={searchRef6} value={inputValues.dlvyNmS} handleCallSearch={handleCallSearch} 
+                        onChange={(e)=>{
+                        onInputChange('dlvyNmS', e);
+                  }} />
+                  
+            <InputComp title="품목" ref={searchRef7} value={inputValues.itemNmS} handleCallSearch={handleCallSearch} 
+                        onChange={(e)=>{
+                        onInputChange('itemNmS', e);
+                  }} />
          </div>
       </div>
    );
@@ -300,6 +306,8 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       { header: "결제금액", name: "payAmt", align: "right", width: 100, formatter: function(e: any) {if(e.value){return commas(e.value);}} },
       { header: "패키지", name: "pkgYn", align: "center", width: 100 },
       { header: "표준/예외", name: "dealType", align: "center", width: 100 },
+      { header: "MOU여부", name: "mouYn", align: "center", width: 100 },
+      { header: "회원여부", name: "memberYn", align: "center", width: 100 },
    ];
 
    const Grid1 = () => (

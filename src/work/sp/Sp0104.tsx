@@ -500,7 +500,7 @@ const Sp0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       const rowData = grid.getRow(e.rowKey);
 
       setSoNo(rowData.soNo);
-      handleAddMenuClick(menu);
+      // handleAddMenuClick(menu);
     
       
 
