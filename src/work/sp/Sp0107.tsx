@@ -525,6 +525,35 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo, soSeq }: Props) => {
 
    }
 
+   const cfmSave2 = async (cfmYn3:string) => {      
+      inputValues.cfmFlag3 = cfmYn3;
+
+      if(cfmYn3 === "Y"){
+         alertSwal("관리역확인", "확인처리 하시겠습니까?", "warning", true).then(async (result) => {
+            if (result.isConfirmed) {
+               save();
+            } else if (result.isDismissed) {
+               return;
+            }
+         });  
+
+      }else{
+         alertSwal("관리역취소", "관리역확인 취소하시겠습니까?", "warning", true).then(async (result) => {
+            if (result.isConfirmed) {
+               save();
+            } else if (result.isDismissed) {
+               return;
+            }
+         });  
+
+
+      }
+
+
+    
+
+   }
+
    const del = async () => {
       if (!inputValues.soNo) {
          alertSwal("발주번호를 입력해주세요.", "", "warning");
@@ -945,6 +974,7 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo, soSeq }: Props) => {
       { header: "비고", name: "remark2", width: 100, align: "center", hidden: true }, //
       { header: "확정여부", name: "cfmFlag", width: 100, align: "center", hidden: true }, //
       { header: "확정여부", name: "cfmFlag2", width: 100, align: "center", hidden: true }, //
+      { header: "확정여부", name: "cfmFlag3", width: 100, align: "center", hidden: true }, //
    ];
 
    const grid2 = () => (
@@ -1167,6 +1197,28 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo, soSeq }: Props) => {
                <div className="min-w-[100px]">완료정보등록</div>
             </div>
             <div className="flex items-center justify-end w-full">
+               {inputValues.cfmFlag3 === 'N' && userInfo.bpCd == '999' && (
+                  <button
+                     type="button"
+                     onClick={() => cfmSave2('Y')}
+                     className="bg-blue-500  text-white rounded-3xl mr-4 px-2 py-1 flex items-center shadow"
+                  >
+                     <CheckIcon className="w-5 h-5 mr-1" />
+                     관리역확인
+                  </button>
+               )}
+
+               {inputValues.cfmFlag3 === 'Y'  && userInfo.bpCd == '999' && (
+                  <button
+                     type="button"
+                     onClick={() => cfmSave2('N')}
+                     className="bg-orange-500  text-white rounded-3xl mr-4 px-2 py-1 flex items-center shadow"
+                  >
+                     <XMarkIcon className="w-5 h-5 mr-1" />
+                     관리역취소
+                  </button>
+               )}
+
                {inputValues.cfmFlag2 === 'N' && userInfo.bpCd == '999' && (
                   <button
                      type="button"
@@ -1231,10 +1283,18 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo, soSeq }: Props) => {
                   <div className="w-full">
                      <TextArea title="비고" value={inputValues.remarkDtl2} onChange={(e) => onInputChange("remarkDtl2", e)} layout="flex" minWidth="90px" />
                   </div>
+                  <div className="w-full">
+                     <TextArea title="현장비고" value={inputValues.remarkDtl3} onChange={(e) => onInputChange("remarkDtl3", e)} layout="flex" minWidth="90px" />
+                  </div>
                </div>
             </div>
             <div>
                <Checkbox title="최종완료확인" value={inputValues.cfmFlag2} 
+               readOnly={true}
+               />
+            </div> 
+            <div>
+               <Checkbox title="관리역확인" value={inputValues.cfmFlag3} 
                readOnly={true}
                />
             </div> 

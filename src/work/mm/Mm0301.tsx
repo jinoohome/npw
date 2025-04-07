@@ -25,12 +25,14 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
       workCd: useRef<any>(null),
       workNm: useRef<any>(null),
       useYn: useRef<any>(null),    
+      billBpCd: useRef<any>(null),    
    };
 
    const [gridDatas, setGridDatas] = useState<any[]>();
 
    const [choice1, setChoice1] = useState<any>();
    const [choice2, setChoice2] = useState<any>();   
+   const [choice3, setChoice3] = useState<any>();   
 
    const [focusRow, setFocusRow] = useState<any>(0);
 
@@ -60,6 +62,12 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
          { value: "999", label: "전체", selected: true },
          { value: "Y", label: "사용" },
          { value: "N", label: "미사용" },
+      ]);
+
+      initChoice(refs.billBpCd, setChoice3, [
+         { value: "", label: "", selected: true },
+         { value: "A1001", label: "농협경제지주(주) 에너지사업부" },
+         { value: "A3969", label: "농협은행" },
       ]);
    };
 
@@ -238,6 +246,12 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
                         choice2?.setChoiceByValue(value);
                      }, 100);
                
+                  } else if (key === "billBpCd") {
+                    
+                     setTimeout(function () {
+                        choice3?.setChoiceByValue(value);
+                     }, 100);
+               
                   } else {
                      ref.current.value = value;
                   }
@@ -302,6 +316,7 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
             <div className="grid grid-cols-4  gap-6  justify-around items-center ">
                <InputComp2 ref={refs.workCd} title="작업코드" target="workCd" setChangeGridData={setChangeGridData} readOnly = {true}/>
                <InputComp2 ref={refs.workNm} title="작업명" target="workNm" setChangeGridData={setChangeGridData} />
+               <SelectComp2 ref={refs.billBpCd} title="정산처" target="billBpCd" setChangeGridData={setChangeGridData} />
                <SelectComp2 ref={refs.useYn} title="사용여부" target="useYn" setChangeGridData={setChangeGridData} />
               
             </div>   
@@ -313,6 +328,7 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
    const columns = [
       { header: "작업코드", name: "workCd", width: 100, align: "center"},
       { header: "작업명", name: "workNm", width: 250},
+      { header: "정산처", name: "billBpCd", align: 'center', hidden:true},
       { header: "사용여부", name: "useYn", align: 'center'},
      
    ];

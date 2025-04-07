@@ -780,19 +780,19 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
       { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
       { header: "발주번호", name: "soNo", width: 130, align: "center", rowSpan: false,  hidden: true  }, // SO_NO: 수주 번호
       { header: "구분번호", name: "soSeq", width: 120, align: "center", hidden: true }, // SO_NO: 수주 번호
+      { header: "지본", name: "jiBonNm", width: 60  }, // 
+      { header: "시군지부", name: "siGunNm", width: 80  }, // 
       { header: "사업장", name: "bpNm", width: 150, rowSpan: false }, 
       { header: "사업장", name: "bpCd", width: 320,   hidden: true }, 
       { header: "작업명", name: "workCd", width: 250,  hidden: true }, 
       { header: "작업명", name: "workNm", width: 130 }, 
+      { header: "요청일자", name: "reqDt", width: 80, align: "center" }, // REQ_DT: 요청 일자
       { header: "협력업체", name: "poBpCd", width: 300,  hidden: true }, 
       { header: "협력업체", name: "poBpNm", width: 130 }, 
       { header: "신청일자", name: "orderDt", width: 120, align: "center",  hidden: true }, // ORDER_DT: 수주 일자
-      { header: "요청일자", name: "reqDt", width: 80, align: "center" }, // REQ_DT: 요청 일자
       { header: "수주상태", name: "orderStatus", width: 100, align: "center", hidden: true }, // 
       { header: "진행상태", name: "workStatus", width: 100, align: "center", hidden: true }, // 
       { header: "진행상태", name: "workStatusNm", width: 100, align: "center",  }, // 
-      { header: "지본", name: "jiBonNm", width: 100  }, // 
-      { header: "시군지부", name: "siGunNm", width: 100  }, // 
       { header: "작업희망일", name: "hopeDt", width: 100, align: "center",  hidden: true }, // 
       { header: "작업요청일", name: "workReqDt", width: 100, align: "center",  hidden: true }, // 
       { header: "작업예정일", name: "expectDt", width: 100, align: "center",  hidden: true }, //
@@ -818,7 +818,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
          </div>
 
          <TuiGrid01 gridRef={gridRef2} columns={columns2} headerHeight={30} handleFocusChange={handleFocusChange} 
-         handleDblClick={handleDblClick} perPageYn={false} height={window.innerHeight - 410} />
+         handleDblClick={handleDblClick} perPageYn={false} height={window.innerHeight - 330} />
       </div>
    );
 
@@ -966,6 +966,14 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
                   dataKey={{ label: "codeName", value: "code" }}
                   readonly={true}
                />
+
+               <InputComp title="ERP 코드" value={inputValues.erpCode} 
+                          readOnly={true}
+               onChange={(e) => onInputChange("erpCode", e)} />
+
+               <InputComp title="연락처" value={inputValues.telNo} 
+                          readOnly={true}
+               onChange={(e) => onInputChange("telNo", e)} />
 
           
             </div>

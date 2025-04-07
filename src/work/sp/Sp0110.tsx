@@ -1168,7 +1168,7 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
       <div className="flex justify-end space-x-2">
          <button type="button" onClick={create} className="bg-green-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
             <PencilIcon className="w-5 h-5 mr-1" />
-            신규
+            초기화
          </button>
          <button type="button" onClick={del} className="bg-rose-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
             <TrashIcon className="w-5 h-5 mr-1" />

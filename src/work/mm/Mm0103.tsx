@@ -459,6 +459,16 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
                    />
                <InputComp2 ref={refs.erpCode} title="ERP코드(업로드용)" target="erpCode" setChangeGridData={setChangeGridData} /> 
+               <SelectSearch title="정산처" 
+                        value={inputValues.billBpCd}
+                        onChange={(label, value) => {
+                              setChangeGridData("billBpCd", value);
+                              onInputChange('billBpCd', value);
+                           }}
+                        layout="vertical"                           
+                        //초기값 세팅시
+                        datas={[{value : '', label : ''},{value : 'A1001', label : '농협경제지주(주) 에너지사업부'},{value : 'A3969', label : '농협은행'}]}
+                     />  
             </div>
 
             <div className="grid grid-cols-3  gap-12  justify-around items-center">
@@ -510,6 +520,7 @@ const Mm0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "회사명", name: "bpFullNm", hidden: true },
       { header: "회사약명", name: "bpNm" },
       { header: "회사구분", name: "bpType", hidden: true },
+      { header: "정산처", name: "billBpCd", hidden: true },
       { header: "회사종류", name: "bpDiv", hidden: true },
       { header: "", name: "repreNm", hidden: true },
       { header: "", name: "bpRgstNo", hidden: true },

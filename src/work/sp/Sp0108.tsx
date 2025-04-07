@@ -62,6 +62,8 @@ const Sp0108 = ({ item, activeComp, userInfo }: Props) => {
 
             const data = JSON.stringify(param);
             const result = await fetchPost("SP0108_S01", { data });
+            const result2 = await fetchPost("SP0108_S02", { data });
+            console.log("result2", result2);
 
             const formattedResult = result.map((event: any) => ({
                ...event,
@@ -70,6 +72,7 @@ const Sp0108 = ({ item, activeComp, userInfo }: Props) => {
             }));
 
             onInputChange("calendarList", formattedResult);
+            onInputChange("txt", result2.map((item: any) => item.txt));
          } catch (error) {
             console.error("fetchEventsForMonth Error:", error);
          }
@@ -189,6 +192,9 @@ const Sp0108 = ({ item, activeComp, userInfo }: Props) => {
                   { value: "F", label: "작업완료일" },
                ]}
             />
+            <div className="col-span-4 whitespace-pre pl-12 text-sm text-blue-500 ">
+               {inputValues.txt}
+            </div>
          </div>
          <div className="flex space-x-4">
             {/* <div className="flex items-center space-x-2">
