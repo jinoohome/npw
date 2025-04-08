@@ -1068,7 +1068,8 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
       { header: "진행상태", name: "orderStatusNm", width: 100, align: "center",  hidden: true }, // 
       { header: "확정여부", name: "cfmFlag", align: "center",  hidden: true }, // 
       { header: "요청자", name: "reqUserId", width: 100, align: "center" }, // REQ_USER_ID: 요청자 ID
-      { header: "연락처", name: "reqTelNo", align: "center" }, // REQ_TEL_NO: 요청자 연락처
+      { header: "ERP코드", name: "erpCode", width: 100, align: "center" }, // REQ_USER_ID: 요청자 ID
+      { header: "연락처", name: "reqTelNo", width: 100, align: "center" }, // REQ_TEL_NO: 요청자 연락처
       { header: "주소코드1", name: "addrCd1",  hidden: true }, // ADDR_CD1: 주소 코드 1
       { header: "주소코드2", name: "addrCd2",  hidden: true }, // ADDR_CD2: 주소 코드 2      
    
@@ -1207,8 +1208,8 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
 
    const div1 = () => (
       <div className="bg-gray-100 rounded-lg p-3 search text-sm search h-full">
-         <div className="space-y-2 w-[70%]">
-            <div className="grid grid-cols-4 gap-y-2 justify-start ">
+         <div className="space-y-2 w-[80%]">
+            <div className="grid grid-cols-5 gap-y-2 justify-start ">
                <InputSearchComp title="수주번호" value={inputValues.soNo} readOnly={true} onChange={(e) => onInputChange("soNo", e)} onKeyDown={handleSoNoOnKeyDown} onIconClick={handleSoNoOnIconClick} />
 
                
@@ -1245,11 +1246,17 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
                      onInputChange("reqTelNo", valueData?.telNo);
                      onInputChange("addrCd1", valueData?.jiBon);
                      onInputChange("addrCd2", valueData?.siGun);
+                     onInputChange("erpCode", valueData?.erpCode);
                   }}
                   stringify={true}
                   param={{ coCd: "200", bpType: "ZZ0002", bpNm: "999", bpDiv: "999" }}
                   procedure="ZZ_B_PO_BP"
                   dataKey={{ label: "bpNm", value: "bpCd" }}
+               />
+
+               <InputComp title="ERP코드"
+                  value={inputValues.erpCode}
+                  onChange={(e) => onInputChange("erpCode", e)}
                />
 
                <InputComp title="신청담당자"

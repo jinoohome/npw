@@ -245,6 +245,11 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       { header: "근조도착시간", name: "dDt4", align: "left", width: 150 },
       { header: "근조기 설치시간", name: "dDt5", align: "left", width: 150 },
       { header: "지원대상&MOU", name: "supportDiv", align: "center", width: 120 },
+      { header: "매출금액", name: "soAmt", align: "right", width: 100, formatter: function(e: any) {if(e.value){return commas(e.value);}} },
+       { header: "발주금액", name: "purchaseAmt", align: "right", width: 100, formatter: function(e: any) {if(e.value){return commas(e.value);}} },
+      { header: "계산서입금일", name: "chkReceiptDt", align: "center", width: 120 },
+      { header: "카드입금일", name: "chkCardtDt", align: "center", width: 120 },
+      { header: "현금입금일", name: "chkCashDt", align: "center", width: 120 },
    ];
 
    const Grid1 = () => (

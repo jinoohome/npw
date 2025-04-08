@@ -133,7 +133,7 @@ const So0102 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       };
   
       handleSearch();
-  }, [inputValues.yyyyMmS, inputValues.receiptYnS, inputValues.cardYnS, inputValues.cashYnS]);
+  }, [inputValues.yyyyMmS, inputValues.receiptYnS, inputValues.cardYnS, inputValues.cashYnS, inputValues.startDate, inputValues.endDate]);
 
  
    //---------------------- api -----------------------------
@@ -147,6 +147,7 @@ const So0102 = ({ item, activeComp, leftMode, userInfo }: Props) => {
           endDt: inputValues.endDate,
           yyyyMm: yyyyMm,
           bpNm: searchRef2.current?.value || '999',
+          ownNm: searchRef1.current?.value || '999',
           receiptYn: inputValues.receiptYnS || '999',
           cardYn: inputValues.cardYnS || '999',
           cashYn: inputValues.cashYnS || '999',
@@ -184,8 +185,7 @@ const So0102 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const search = async () => {
       await fetchWithLoading(async () => {
          try {
-            const result = await SM0102_S01();
-            setGridDatas(result);
+            await SM0102_S01();
          } catch (error) {
             console.error("Search Error:", error);
          }
@@ -280,7 +280,7 @@ const So0102 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    //검색창 div
    const searchDiv = () => (
       <div className="bg-gray-100 rounded-lg p-5 search text-sm">
-         <div className="grid gap-y-3  justify-start w-[80%]  2xl:w-[60%]  xl:grid-cols-3 md:grid-cols-2">
+         <div className="grid gap-y-3  justify-start w-[80%]  2xl:w-[80%]  xl:grid-cols-4 md:grid-cols-2">
             <DateRangePickerComp 
                   title="주문일시"
                   startValue= {inputValues.startDate}
@@ -301,10 +301,15 @@ const So0102 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                   onInputChange('yyyyMmS', e);  
                   }} 
                format="yyyy-MM"
+               type="month"
             />
             <InputComp title="고객사" ref={searchRef2} value={inputValues.bpNmS} handleCallSearch={handleCallSearch} 
                           onChange={(e)=>{
                           onInputChange('bpNmS', e);
+                     }} />    
+            <InputComp title="대상자" ref={searchRef1} value={inputValues.ownNmS} handleCallSearch={handleCallSearch} 
+                          onChange={(e)=>{
+                          onInputChange('ownNmS', e);
                      }} />    
             <SelectSearchComp title="계산서 확인여부" 
                               ref={searchRef4}
@@ -347,8 +352,8 @@ const So0102 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "마감년월", name: "yyyyMm", align: "center", width: 80},
       { header: "주문번호", name: "soNo", align: "center", width: 100},
       { header: "고객사", name: "bpNm", width: 230 },
+      { header: "대상자", name: "ownNm", width: 90, align: "center" },
       { header: "품목", name: "itemNm", width: 280 },
-      { header: "패키지", name: "pkgItemNm", width: 120 },
       { header: "카드", name: "cardYn", align: "center", hidden: true},
       { header: "현금", name: "cashYn", align: "center", hidden: true},
       { header: "매출금액", name: "soAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },

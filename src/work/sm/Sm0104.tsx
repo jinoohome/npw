@@ -125,7 +125,14 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
    useEffect(() => {
       // inputValues 중 결제여부 또는 마감여부가 변경되면 검색을 실행
       const handleSearch = async () => {
-          await SM0104_S01();
+         await fetchWithLoading(async () => {
+            try {
+               const result = await SM0104_S01();
+               setGridDatas(result);
+            } catch (error) {
+               console.error("Search Error:", error);
+            }
+         });          
       };
   
       handleSearch();
@@ -469,22 +476,22 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       { header: "고객사", name: "bpNm", width: 200 },
       { header: "대상자", name: "ownNm", width: 80, align: "center" },
       { header: "배송지", name: "dlvyNm", width: 200},
-      { header: "관할구역", name: "poBpNm", width: 120},
+      { header: "관할구역", name: "poBpNm", width: 120, hidden: true},
       { header: "주문일", name: "orderDt", align: "center", width: 80, hidden: true},
       { header: "직원명", name: "empNm", width: 80, hidden: true },
       { header: "품목", name: "itemNm", width: 160 },
       { header: "수량", name: "soQty", width: 40, align: "center", hidden: true },
-      { header: "비율", name: "bpRate", align: "center", width: 50},
-      { header: "공급금액", name: "netAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "부가세", name: "vatAmt", align: "right", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "매출금액", name: "soAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "비율", name: "bpRate", align: "center", width: 50, hidden: true},
+      { header: "공급금액", name: "netAmt", align: "right", hidden: true, width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "부가세", name: "vatAmt", align: "right", hidden: true, width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "매출금액", name: "soAmt", align: "right", hidden: true, width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "청구금액", name: "purchaseAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "공급금액", name: "purchaseNetAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "부가세", name: "purchaseVatAmt", align: "right", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "청구금액", name: "purchaseAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "MOU여부", name: "mouYn", width: 80, align: "center" },
       { header: "본부조정금액", name: "poAdjAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "본부비고", name: "poRemark", width: 120 },
       { header: "본사조정금액", name: "adjAmt", editor: "text", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "본부비고", name: "poRemark", width: 120 },
       { header: "본사비고", name: "remark", editor:"text", width: 120 },
    ];
 

@@ -124,7 +124,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       };
   
       handleSearch();
-  }, [inputValues.payYnS, inputValues.closeYnS, inputValues.status]);
+  }, [inputValues.payYnS, inputValues.closeYnS, inputValues.status, inputValues.startDate, inputValues.endDate]);
 
  
    //---------------------- api -----------------------------
@@ -189,8 +189,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
    const search = async () => {
       await fetchWithLoading(async () => {
          try {
-            const result = await SM0101_S01();
-            setGridDatas(result);
+            await SM0101_S01();
          } catch (error) {
             console.error("Search Error:", error);
          }
@@ -421,12 +420,13 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       { header: "품목", name: "itemNm", width: 280 },      
       { header: "매출금액", name: "soAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "미결제금액", name: "noPay", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "계산서발행", name: "receiptAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "카드결제", name: "cardAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "현금결제", name: "cashAmt", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "입금일", name: "chkCashDt", align: "center", width: 120, editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },
+      { header: "계산서발행", name: "receiptAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "카드결제", name: "cardAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "현금결제", name: "cashAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "입금일", name: "chkCashDt", align: "center", hidden: true, width: 120, editor: { type: 'datePicker', options: { language: 'ko', format: 'yyyy-MM-dd', timepicker: false } } },
       { header: "패키지", name: "pkgItemNm", width: 120 },
       { header: "주문상태", name: "poStatusNm", width: 120 },
+      { header: "상품구분", name: "exDivNm", width: 120 },
    ];
 
    const summary = {
@@ -522,10 +522,10 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
                         마감취소
                      </button>
                   )}
-                  <button type="button" onClick={saveClose} className="bg-blue-500 text-white rounded-3xl px-3 py-1 flex items-center shadow">
+                  {/* <button type="button" onClick={saveClose} className="bg-blue-500 text-white rounded-3xl px-3 py-1 flex items-center shadow">
                         <CalendarDateRangeIcon className="w-5 h-5" />
                         입금일 저장
-                  </button>
+                  </button> */}
                </div>
             </div>
    

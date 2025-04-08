@@ -89,7 +89,7 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       };
   
       handleSearch();
-  }, [inputValues.closeYnPoBpS, inputValues.poBpS]);
+  }, [inputValues.closeYnPoBpS, inputValues.poBpS, inputValues.startDate, inputValues.endDate]);
 
  
    //---------------------- api -----------------------------
@@ -153,8 +153,8 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const search = async () => {
       await fetchWithLoading(async () => {
          try {
-            const result = await SM0103_S01();
-            setGridDatas(result);
+            await SM0103_S01();
+
          } catch (error) {
             console.error("Search Error:", error);
          }
