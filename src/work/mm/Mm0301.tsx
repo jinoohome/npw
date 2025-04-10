@@ -72,6 +72,7 @@ const MM0301 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const setGridData = async () => {
+      
       await fetchWithLoading(async () => {
          try {
             const result = await MM0301_S01();

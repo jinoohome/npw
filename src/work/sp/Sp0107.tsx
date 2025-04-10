@@ -19,7 +19,7 @@ interface Props {
 
 const Sp0101 = ({ item, activeComp, userInfo, soNo, soSeq }: Props) => {
    const { fetchWithLoading } = useLoadingFetch();
-   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발관리" }, { name: "완료 보고 등록" }];
+   const breadcrumbItem = [{ name: "수발주관리" }, { name: "수발주관리" }, { name: "완료 보고 등록" }];
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
       gridDatas2: [],
