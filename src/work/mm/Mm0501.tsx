@@ -348,8 +348,8 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          let inItemCd = grid3.getValue(grid3.getFocusedCell().rowKey, "itemCd");
 
          const param = {
-            startDt: inputValues.startDate || "999",
-            endDt: inputValues.endDate || "999",
+            startDt: inputValues.startDate2 || "999",
+            endDt: inputValues.endDate2 || "999",
             bpCd: inBpCd || "999",
             whCd: inWhCd || "999",
             itemCd: inItemCd || "999",
