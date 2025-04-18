@@ -8,6 +8,8 @@ import "../css/scroll.css";
 import { ArrowDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { FaFilePdf, FaFileExcel, FaFileImage, FaFileWord, FaFileAlt } from 'react-icons/fa';
 import { PiFilePptFill } from 'react-icons/pi';
+import { useLoadingFetch } from '../hooks/useLoadingFetch';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 interface UploadedFile {
   fileName: string;
@@ -46,6 +48,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   textAlign = "right",
   onFilesChange,
 }) => {
+  const { fetchWithLoading } = useLoadingFetch();
   const [compressedFiles, setCompressedFiles] = useState<File[]>(value);
   const [uploadedFilesState, setUploadedFilesState] = useState<UploadedFile[]>(uploadedFiles);
   const [deletedFiles, setDeletedFiles] = useState<UploadedFile[]>([]);
@@ -108,10 +111,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
   });
 
   const handleDownloadFile = async (mgNo: string, fileUrl: string, fileName: string, saveFileName: string) => {
-    try {
-      const param = { mgNo: mgNo };
-      const data = JSON.stringify(param);
-      const baseURL = process.env.REACT_APP_API_URL;
+    await fetchWithLoading(async () => {
+      try {
+        const param = { mgNo: mgNo };
+        const data = JSON.stringify(param);
+        const baseURL = process.env.REACT_APP_API_URL;
        
   
       const response = await fetch(`${baseURL}/ZZ_FILE`, {
@@ -131,9 +135,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("파일 다운로드 오류:", error);
-    }
+      } catch (error) {
+        console.error("파일 다운로드 오류:", error);
+      }
+    });
   };
 
 
@@ -156,8 +161,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
     // 전체 다운로드 기능 (Zip)
     const handleDownloadAll = async () => {
-      const zip = new JSZip();
-      const folder = zip.folder("files");
+      await fetchWithLoading(async () => {
+        const zip = new JSZip();
+        const folder = zip.folder("files");
   
       for (const file of uploadedFilesState) {
         const param = { mgNo: file.mgNo };
@@ -187,7 +193,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       });
-    };
+    });
+  };
 
     const handleDelete = (index: number) => {
       const newFiles = compressedFiles.filter((_, i) => i !== index);
@@ -210,6 +217,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
  
   return (
     <div>
+    
       <div className={` ${layout === "horizontal" ? "grid grid-cols-3 gap-3 items-center" : ""} 
                         ${layout === "flex" ? "flex  space-x-2" : ""}`}>
         <label

@@ -1038,6 +1038,7 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
          onInputChange('dealType', result[0].dealType);
          onInputChange('payAmt', result[0].payAmt);      
          onInputChange('poStatus', result[0].poStatus);      
+         onInputChange('poStatus2', result[0].poStatus2);      
          onInputChange('giQty', result[0].giQty);      
 
          setPayAmt();
@@ -1290,6 +1291,28 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
          const data = JSON.stringify(param);
          const result = await fetchPost("SO0201_S01", {data});
 
+         console.log(result);
+
+         if(result[0].saleCloseSoNo) {
+            alertSwal("", `매출마감 처리된 주문입니다.`, "warning");
+            search(inputValues.soNo);
+            return;
+         }
+         
+         if(result[0].purchaseCloseSoNo) {
+            alertSwal("", `본부마감 처리된 주문입니다.`, "warning");
+            search(inputValues.soNo);
+            return;
+         }
+
+         
+
+
+         if( result[0].poStatus !== "발주확정" ) {
+            alertSwal("", `발주확정 상태만 취소 가능합니다.<br> 현재 진행상태는 <strong style="color: #ff6b6b; font-size: 1em;">${result[0].poStatus2}</strong> 상태 입니다.`, "warning");
+            search(inputValues.soNo);
+            return;
+         }
 
 
          if (result[0].giQty !== 0) {
@@ -1302,6 +1325,9 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
             search(inputValues.soNo);
             return;
          }
+
+
+
    
          // Swal을 직접 사용해 복수의 체크박스를 표시
          Swal.fire({
@@ -2687,7 +2713,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
             </div>
             {/* poSatus 상태 벌로 색상다르게 보여주고 세련되게 수정 */}
             <div className="flex items-center space-x-1 p-2">
-               <div className="text-sm text-gray-500">{inputValues.poStatus}</div>
+               <div className="text-sm text-gray-500">{inputValues.poStatus2}</div>
             </div>
          </div>
 
@@ -3102,7 +3128,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                                  }}
                               // readonly={true}
                               // 테스트 계정은 수정 가능
-                              readonly={userInfo.usrId !== "alstj" && userInfo.usrId !== "u1"}
+                              readonly={userInfo.usrId !== "alstj" && userInfo.usrId !== "u1" && userInfo.usrId !== "tjsgk"}
                               //초기값 세팅시
                               param={{ coCd: "999", majorCode: "FU0008", div: "-999" }}
                               procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 

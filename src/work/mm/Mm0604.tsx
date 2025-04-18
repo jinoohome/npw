@@ -13,8 +13,8 @@ interface Props {
    activeComp: any;
    userInfo: any;
 }
-const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
-   const breadcrumbItem = [{ name: "기준정보" }, { name: "계약관리" }, { name: "품목별 계약조회" }];
+const Mm0604 = ({ item, activeComp, userInfo }: Props) => {
+   const breadcrumbItem = [{ name: "기준정보" }, { name: "계약관리" }, { name: "계약조회" }];
 
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
@@ -110,14 +110,14 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    
-   const MM0603_S01 = async (contNo: string) => {
+   const MM0604_S01 = async (contNo: string) => {
       const param = {
          contNo: contNo,
          contDt: inputValues.contDt || '',
       };
 
       const data = JSON.stringify(param);
-      const result = await fetchPost("MM0603_S01", { data });
+      const result = await fetchPost("MM0604_S01", { data });
       console.log(param);
 
       onInputChange("gridDatas1", result);
@@ -130,6 +130,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
    
       reSizeGrid({ ref: gridRef, containerRef: gridContainerRef, sec: 200 });
       reSizeGrid({ ref: gridRef2, containerRef: gridContainerRef2, sec: 200 });
+      search();
    
    }, []);
 
@@ -201,7 +202,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const setCoCdChange = async (e: any) => {
-      MM0603_S01(e);
+      MM0604_S01(e);
       ZZ_CONT_INFO(e, "SUB");
       ZZ_CONT_INFO(e, "BP_HS");
       ZZ_CONT_INFO(e, "ITEM_TYPE");
@@ -248,7 +249,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
    const setGridData = async () => {
       await fetchWithLoading(async () => {
          try {
-            const result = await MM0603_S01(inputValues.contNo);
+            const result = await MM0604_S01(inputValues.contNo);
             if (gridRef.current) {
                const grid = gridRef.current.getInstance();
                grid.resetData(result || []);
@@ -262,7 +263,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
    const search = async () => {
       await fetchWithLoading(async () => {
          try {
-            const result = await MM0603_S01(inputValues.contNo);
+            const result = await MM0604_S01(inputValues.contNo);
             if (gridRef.current) {
                const grid = gridRef.current.getInstance();
                grid.resetData(result || []);
@@ -274,20 +275,20 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const columns = [
-      { header: "회사코드", name: "coCd", hidden: true }, // 회사 코드
-      { header: "계약번호", name: "contNo", width: 120, align: "center" }, // 계약 번호
+      // { header: "회사코드", name: "coCd", hidden: true }, // 회사 코드
+      {header: "계약번호", name: "contNo", width: 120, align: "center" }, // 계약 번호
       { header: "고객사명", name: "bpNm", width: 200 }, // 고객사 명
-      { header: "재직구분명", name: "subCodeNm", width: 150 }, // 재직 구분 명
-      { header: "경조구분명", name: "hsTypeNm", width: 150 }, // 경조 구분 명
-      { header: "지원타입명", name: "itemTypeNm", width: 150 }, // 경조 구분 명
-      { header: "품목명", name: "itemNm", width: 200 }, // 품목 명
-      { header: "수량", name: "qty", width: 80, align: "center", formatter: (e: any) => commas(e.value) }, // 수량
-      { header: "복리단가", name: "priceCom", width: 100, align: "right", formatter: (e: any) => commas(e.value) }, // 복리 단가
-      { header: "개별단가", name: "pricePer", width: 100, align: "right", formatter: (e: any) => commas(e.value) }, // 개별 단가
-      { header: "필수여부", name: "mandatoryYn", width: 80, align: "center" }, // 필수 여부
-      { header: "발주그룹코드", name: "branchGroup", hidden: true }, // 발주 그룹 코드
-      { header: "발주그룹명", name: "branchGroupNm", width: 100, align: "center" }, // 발주 그룹 명
-      { header: "비고", name: "dtlRemark", width: 300 }, // 비고 (DTL)
+      // { header: "재직구분명", name: "subCodeNm", width: 150 }, // 재직 구분 명
+      // { header: "경조구분명", name: "hsTypeNm", width: 150 }, // 경조 구분 명
+      // { header: "지원타입명", name: "itemTypeNm", width: 150 }, // 경조 구분 명
+      // { header: "품목명", name: "itemNm", width: 200 }, // 품목 명
+      // { header: "수량", name: "qty", width: 80, align: "center", formatter: (e: any) => commas(e.value) }, // 수량
+      // { header: "복리단가", name: "priceCom", width: 100, align: "right", formatter: (e: any) => commas(e.value) }, // 복리 단가
+      // { header: "개별단가", name: "pricePer", width: 100, align: "right", formatter: (e: any) => commas(e.value) }, // 개별 단가
+      // { header: "필수여부", name: "mandatoryYn", width: 80, align: "center" }, // 필수 여부
+      // { header: "발주그룹코드", name: "branchGroup", hidden: true }, // 발주 그룹 코드
+      // { header: "발주그룹명", name: "branchGroupNm", width: 100, align: "center" }, // 발주 그룹 명
+      // { header: "비고", name: "dtlRemark", width: 300 }, // 비고 (DTL)
       { header: "계약명", name: "contNm", width: 200 }, // 계약 명
       { header: "고객사코드", name: "bpCd", hidden: true }, // 고객사 코드
       { header: "계약일자", name: "contDt", width: 120, align: "center" }, // 계약 일자
@@ -407,7 +408,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
                //format="yyyy-MM-dd HH:mm A"
                //timePicker={true}
             />
-            <SelectSearch
+            {/* <SelectSearch
                title="재직구분"
                value={inputValues.subCode}
                onChange={(label, value) => {
@@ -434,7 +435,7 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
                      handleFilterChange();
                      }}
                      datas={inputValues.itemTypeDatas}
-               />       
+               />        */}
          </div>
         
       </div>
@@ -497,4 +498,4 @@ const Mm0603 = ({ item, activeComp, userInfo }: Props) => {
    );
 };
 
-export default Mm0603;
+export default Mm0604;

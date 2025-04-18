@@ -17,9 +17,10 @@ interface TopProps {
    onTopMode: (mode: string) => void;
    onUserChange: (value: string) => void;
    onSearchMenuClick: (menuItem: ZZ_MENU_RES ) => void;
+   handleAddMenuClick: (menuItem: ZZ_MENU_RES ) => void;
 }
 
-const Top = ({loginInfo, userInfo, topMenus, searchMenus, onTopMenuClick, activeMenu, topMode, onLeftMode, onTopMode, onUserChange, onSearchMenuClick }: TopProps) => {
+const Top = ({loginInfo, userInfo, topMenus, searchMenus, onTopMenuClick, activeMenu, topMode, onLeftMode, onTopMode, onUserChange, onSearchMenuClick, handleAddMenuClick }: TopProps) => {
    const searchRef1 = useRef<any>(null);
    const searchRef2 = useRef<any>(null);
    const dragRef = useRef<any>(null);
@@ -222,6 +223,7 @@ const Top = ({loginInfo, userInfo, topMenus, searchMenus, onTopMenuClick, active
    };
 
 
+
    const renderMenuSearch = () => {
       return(
          <div className="relative left-24 md:left-20 z-20">
@@ -243,9 +245,32 @@ const Top = ({loginInfo, userInfo, topMenus, searchMenus, onTopMenuClick, active
 
    
    const renderMyMenu = () => {
-
       return(
-         <div className=" relative z-30 h-full cursor-pointer px-3 flex items-center space-x-2 hover:text-gray-500">
+         <div 
+            className="relative z-30 h-full cursor-pointer px-3 flex items-center space-x-2 hover:text-gray-500"
+            onClick={() => {
+               // Navigate to MyPage using the proper menu structure
+               const myPageMenu: ZZ_MENU_RES = {
+                  menuId: "MyPage",
+                  menuName: "마이페이지",
+                  menuDiv: "999",
+                  paMenuId: null,
+                  description: "마이페이지",
+                  prgmId: "MyPage",
+                  prgmFullPath: "work/MyPage",
+                  prgmPath: "work",
+                  prgmFileName: "MyPage",
+                  menuOrdr: "999",
+                  remark: null,
+                  icon: "",
+                  useYn: "Y",
+                  lev: 1,
+                  zMenuOrdr: "999",
+                  status: "Y"
+               };
+               handleAddMenuClick(myPageMenu);
+            }}
+         >
             <div className="text-white rounded-full p-2 bg-blue-400">
                <UserIcon className={`w-6 h-6 cursor-pointer`}></UserIcon>
             </div>
@@ -254,7 +279,7 @@ const Top = ({loginInfo, userInfo, topMenus, searchMenus, onTopMenuClick, active
                <div className="text-xs">{loginInfo.usrId}</div>
             </div>
          </div>
-         )
+      )
    };
 
 

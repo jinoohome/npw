@@ -162,7 +162,7 @@ function Main() {
 
    
    const handleAddMenuClick = (menuItem: ZZ_MENU_RES) => {
-    
+      
       addComponent(menuItem);
       if (tabRef.current) {
          setTimeout(() => {
@@ -195,7 +195,6 @@ function Main() {
    //-------------util-------------------------
    
    const addComponent = (menuItem: ZZ_MENU_RES) => {
-
       console.log( menuItem.menuId);
       const allowMultiple = menuItem.menuId === "3021";
       const existingComponent = components.find(
@@ -205,13 +204,20 @@ function Main() {
       if (existingComponent && !allowMultiple) {
          // If it exists, set it as the active component
          setActiveComp(existingComponent);
-
-      }else{
-         const [folder, fileName] = (menuItem.prgmFullPath ?? "").split('/');
-         const componentName = capitalizeFirstLetter(fileName ?? "");
-         const Component = loadable(() => import(`../work/${folder}/${componentName}`), {
-            fallback: <div>Loading...</div>,
-         });
+      } else {
+         let Component;
+         if (menuItem.menuId === "MyPage") {
+            // Special case for MyPage component
+            Component = loadable(() => import(`../work/MyPage`), {
+               fallback: <div>Loading...</div>,
+            });
+         } else {
+            const [folder, fileName] = (menuItem.prgmFullPath ?? "").split('/');
+            const componentName = capitalizeFirstLetter(fileName ?? "");
+            Component = loadable(() => import(`../work/${folder}/${componentName}`), {
+               fallback: <div>Loading...</div>,
+            });
+         }
          
          setCount(count + 1);
          const newComponent = {
@@ -224,10 +230,7 @@ function Main() {
          setComponents((prev) => [...prev, newComponent]);
          setPrevComps((prev) => [...prev, newComponent]);
          setActiveComp(newComponent);
-
-
       }
-
    };
 
    const removeComponent = (componentId: string) => {
@@ -294,7 +297,7 @@ function Main() {
             </motion.div>
 
             <motion.div animate={{ width: '100%'}} style={{ minWidth: leftMode === "large" || leftMode === "over" ? '794px' : '360px' }} transition={{ duration: 0.1, ease: "easeInOut" }} className="w-full h-full">
-               <Top loginInfo={loginInfo} userInfo={userInfo} topMenus={topMenus}  searchMenus={searchMenus} onTopMenuClick={handleTopMenuClick} activeMenu={activeMenu} topMode={topMode} onLeftMode={handleLefMode} onTopMode={handleTopMode} onUserChange={handleUserChange} onSearchMenuClick={handleLeftMenuClick} ></Top>
+               <Top loginInfo={loginInfo} userInfo={userInfo} topMenus={topMenus}  searchMenus={searchMenus} onTopMenuClick={handleTopMenuClick} activeMenu={activeMenu} topMode={topMode} onLeftMode={handleLefMode} onTopMode={handleTopMode} onUserChange={handleUserChange} onSearchMenuClick={handleLeftMenuClick} handleAddMenuClick={handleAddMenuClick}></Top>
                <Tab components={components} onTabMenuClick={handleTabClick} onTabCloseClick={handleTabCloseClick} activeComp={activeComp} onAllTabCloseClick={handleAllTabCloseClick} topMode={topMode}  tabRef={tabRef}></Tab>
                <Work components={components} activeComp={activeComp} leftMode={leftMode} userInfo={userInfo}  
                      handleAddMenuClick={handleAddMenuClick} soNo={soNo} soSeq={soSeq} setSoNo={setSoNo} setSoSeq={setSoSeq}></Work>

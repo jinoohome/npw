@@ -1,7 +1,7 @@
 import {
    React, useEffect, useState,commas, useRef,SelectSearch, getGridCheckedDatas2, date, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
 } from "../../comp/Import";
-import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
+import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
 import { hi } from "date-fns/locale";
 import "tui-date-picker/dist/tui-date-picker.css";
 import { useLoading } from '../../context/LoadingContext';
@@ -525,6 +525,36 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
          
             const result = await fetchPost(`MM0602_U03`, data);
             returnResult(result);
+           
+         } catch (error) {
+            console.error("Save Error:", error);
+         }
+      });
+   };
+
+   const copy = async() => {  
+      await fetchWithLoading(async () => {
+         try {
+            let datas = await getGridCheckedDatas2(gridRef4);
+            inputValues.contNo = '';
+            datas.forEach((item: any) => {
+               item.contNo = '';
+            });
+            inputValues.gridDatas4 = datas;
+            inputValues.status = 'I';
+
+     // if (!validateData("save", datas)) return false;
+
+            let data = {
+               contHdr: JSON.stringify(inputValues),
+               contDtl: JSON.stringify(inputValues.gridDatas4),
+               menuId: activeComp.menuId,
+               insrtUserId: userInfo.usrId,
+            };
+
+         
+           const result = await fetchPost(`MM0602_U03`, data);
+           returnResult(result);
            
          } catch (error) {
             console.error("Save Error:", error);
@@ -1234,6 +1264,10 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
 
    const buttonDiv = () => (
       <div className="flex justify-end space-x-2">
+         <button type="button" onClick={copy} className="bg-orange-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
+            <DocumentDuplicateIcon className="w-5 h-5 mr-1" />
+            복사
+         </button>
          <button type="button" onClick={del} className="bg-rose-500 text-white rounded-lg px-2 py-1 flex items-center shadow ">
             <TrashIcon className="w-5 h-5 mr-1" />
             삭제
