@@ -30,6 +30,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
    const searchRef4 = useRef<any>(null);
    const searchRef5 = useRef<any>(null);
    const searchRef6 = useRef<any>(null);
+   const searchRef7 = useRef<any>(null);
 
    const [gridDatas1, setGridDatas] = useState<any[]>();
 
@@ -39,6 +40,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       payYnS: '999',
       closeYnS: 'N',
       status: '999',
+      payDiv: '999',
    });
 
    const onInputChange = (name: string, value: any) => {
@@ -124,7 +126,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       };
   
       handleSearch();
-  }, [inputValues.payYnS, inputValues.closeYnS, inputValues.status, inputValues.startDate, inputValues.endDate]);
+  }, [inputValues.payYnS, inputValues.closeYnS, inputValues.status, inputValues.startDate, inputValues.endDate, inputValues.payDiv]);
 
  
    //---------------------- api -----------------------------
@@ -142,6 +144,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
           payYn: inputValues.payYnS || '999',
           yyyyMm: '999',
           closeYn: inputValues.closeYnS || '999',
+          payDiv: inputValues.payDiv || '999',
           status: inputValues.status || '999',
         };
     
@@ -401,6 +404,16 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
                               //초기값 세팅시
                               param={{ coCd: "999", majorCode: "FU0009", div: "999" }}
                               procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
+               />
+            <SelectSearchComp title="결제구분" 
+                              ref={searchRef7}
+                              value={inputValues.payDiv}
+                              onChange={(label, value) => {
+                                    onInputChange('payDiv', value);
+                                 }}                           
+
+                              //초기값 세팅시
+                              datas={[{value : '999', label : '전체'},{value : 'receipt', label : '계산서'},{value : 'card', label : '카드'},{value : 'cash', label : '현금'}]}
                />
          </div>
       </div>
