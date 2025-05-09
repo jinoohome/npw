@@ -289,7 +289,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       { header: "", name: "coCd", hidden: true },
       { header: "진행상태", name: "poStatusNm", align: "center", width: 100},
       { header: "주문번호", name: "soNo", align: "center", width: 120},
-      { header: "주문일시", name: "orderDt", align: "center", width: 100},
+      { header: "주문일시", name: "orderDt", align: "center", width: 140},
       { header: "구분", name: "rcptMeth", align: "center", width: 80 },
       { header: "접수자", name: "rcptUserNm", align: "center", width: 80 },
       { header: "고객사", name: "bpNm", width: 200 },
