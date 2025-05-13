@@ -205,6 +205,7 @@ const Mm0104 = ({ item, activeComp, userInfo }: Props) => {
       { header: "그룹사코드", name: "paCoCd", hidden: true },
       { header: "회사전명", name: "bpFullNm", width: 200 },
       { header: "회사약명", name: "bpNm", width: 200 },
+      { header: "ERP코드", name: "erpCode", width: 120 },
       { header: "지본", name: "jiBon", align: "center", width: 120, hidden: true },
       { header: "지본", name: "jiBonNm", align: "center", width: 120 },
       { header: "시군지부", name: "siGun", width: 120, hidden: true },

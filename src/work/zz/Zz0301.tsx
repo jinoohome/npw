@@ -1,6 +1,6 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, SelectSearchComp, SelectSearch, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
-import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useLoading } from '../../context/LoadingContext';
 import { useLoadingFetch } from '../../hooks/useLoadingFetch';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -51,6 +51,7 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
    const [bpCdsIn, setBpCdsIn] = useState<any>([]);
 
    const [focusRow, setFocusRow] = useState<any>(0);
+   const [isOpen, setIsOpen] = useState(false);
 
    const [isUsrIdReadOnly, setUsrIdReadOnly] = useState<boolean>(false);
    const [isCoCdReadOnly, setCoCdReadOnly] = useState<boolean>(false);
@@ -61,7 +62,7 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
 
    // 첫 페이지 시작시 실행
    useEffect(() => {
-      setGridData();
+      // setGridData();
       reSizeGrid({ ref: gridRef, containerRef: gridContainerRef, sec: 200 });
    }, []);
 
@@ -251,10 +252,10 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
                   alertSwal("입력확인", "사번을 입력해주세요.", "warning"); // 사용자에게 알림
                   result = false;
                }
-               if (!item.pwd) {
-                  alertSwal("입력확인", "비밀번호를 입력해주세요.", "warning"); // 사용자에게 알림
-                  result = false;
-               }
+               // if (!item.pwd) {
+               //    alertSwal("입력확인", "비밀번호를 입력해주세요.", "warning"); // 사용자에게 알림
+               //    result = false;
+               // }
             }
          }
       }
@@ -466,7 +467,14 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
                    />
                <InputComp2 ref={refs.usrId} title="사번" target="usrId" setChangeGridData={setChangeGridData}  readOnly={isUsrIdReadOnly} />
                <InputComp2 ref={refs.usrNm} title="이름" target="usrNm" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.pwd} title="비밀번호" target="pwd" setChangeGridData={setChangeGridData} type="password"/>
+               <button
+                  type="button"
+                  onClick={handleSensitiveInfoClick}
+                  className="bg-purple-500 text-white rounded-lg px-3 py-2 flex items-center justify-center shadow h-10 mt-6"
+               >
+                  <ServerIcon className="w-5 h-5 mr-1" />
+                  민감정보
+               </button>
                <SelectSearch
                        title="사용자구분"
                        value={inputValues.usrDiv}
@@ -498,7 +506,6 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
                        dataKey={{ label: "bpNm", value: "bpCd" }}
                    />
                <InputComp2 ref={refs.email} title="이메일" target="email" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.hp} title="연락처" target="hp" setChangeGridData={setChangeGridData} />
                <SelectSearch title="사용여부" 
                               value={inputValues.useYn}
                               layout="vertical"
@@ -594,9 +601,156 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
       }
    }, [inputValues.searchBpNm, inputValues.searchUseYn]);
 
+   // 민감정보 관련 상태 추가
+   const [sensitiveData, setSensitiveData] = useState({
+      pwd: '',
+      hp: ''
+   });
+
+   // 민감정보 버튼 클릭 핸들러
+   const handleSensitiveInfoClick = async () => {
+      const grid = gridRef.current.getInstance();
+      const { rowKey } = grid.getFocusedCell();
+      if (rowKey !== null) {
+         const rowData = grid.getRow(rowKey);
+         
+         if (rowData && rowData.usrId) {
+            await fetchWithLoading(async () => {
+               try {
+                  // ZZ0301_S02 API 호출
+                  const result = await ZZ0301_S02(rowData.usrId, rowData.coCd || userInfo.coCd);
+                  console.log("result", result);
+                  
+                  if (result && result.length > 0) {
+                     // API 결과로 민감정보 상태 업데이트
+                     const data = result[0];
+                     setSensitiveData({
+                        pwd: data.pwd || '',
+                        hp: data.hp || ''
+                     });
+                  }
+                  
+                  // 모달 열기
+                  setIsOpen(true);
+               } catch (error) {
+                  console.error("민감정보 조회 중 오류:", error);
+                  alertSwal("오류", "민감정보 조회 중 오류가 발생했습니다.", "error");
+               }
+            });
+         } else {
+            alertSwal("알림", "선택된 사용자가 없습니다.", "warning");
+         }
+      } else {
+         alertSwal("알림", "선택된 사용자가 없습니다.", "warning");
+      }
+   };
+
+   // 민감정보 입력 변경 핸들러
+   const handleSensitiveInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      setSensitiveData({
+         ...sensitiveData,
+         [name]: value
+      });
+   };
+
+   // 민감정보 저장 함수
+   const saveSensitiveInfo = () => {
+      const grid = gridRef.current.getInstance();
+      const { rowKey } = grid.getFocusedCell();
+      
+      if (rowKey !== null) {
+         // 비밀번호와 연락처 값 그리드에 업데이트
+         if (sensitiveData.pwd) {
+            setChangeGridData("pwd", sensitiveData.pwd);
+         }
+         
+         // 연락처 값은 빈 값이어도 항상 업데이트
+         setChangeGridData("hp", sensitiveData.hp);
+         
+         setIsOpen(false);
+         alertSwal("알림", "민감정보가 수정되었습니다. 저장 버튼을 눌러 변경사항을 저장하세요.", "success");
+      }
+   };
+
+   // Add a modal component for sensitive information
+   const sensitiveInfoModal = () => (
+      isOpen && (
+         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-1/3 space-y-4">
+               <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-medium">민감정보 변경</h3>
+                  <button 
+                     onClick={() => setIsOpen(false)}
+                     className="text-gray-500 hover:text-gray-700"
+                  >
+                     <XMarkIcon className="w-5 h-5" />
+                  </button>
+               </div>
+               <div className="space-y-4">
+                  <div className="flex flex-col space-y-2">
+                     <label className="font-medium">비밀번호</label>
+                     <input 
+                        name="pwd"
+                        type="password"
+                        className="border rounded-md p-2"
+                        value={sensitiveData.pwd}
+                        onChange={handleSensitiveInputChange}
+                     />
+                  </div>
+                  <div className="flex flex-col space-y-2">
+                     <label className="font-medium">연락처</label>
+                     <input 
+                        name="hp"
+                        type="text"
+                        className="border rounded-md p-2"
+                        value={sensitiveData.hp}
+                        onChange={handleSensitiveInputChange}
+                     />
+                  </div>
+               </div>
+               <div className="flex justify-end space-x-2">
+                  <button
+                     type="button"
+                     onClick={() => setIsOpen(false)}
+                     className="bg-gray-400 text-white rounded-lg px-3 py-2"
+                  >
+                     취소
+                  </button>
+                  <button
+                     type="button"
+                     onClick={saveSensitiveInfo}
+                     className="bg-blue-500 text-white rounded-lg px-3 py-2"
+                  >
+                     저장
+                  </button>
+               </div>
+            </div>
+         </div>
+      )
+   );
+
+   // 민감정보 조회 API
+   const ZZ0301_S02 = async (usrId: string, coCd: string) => {
+      try {
+         const param = {
+            coCd: coCd,
+            usrId: usrId
+         };
+
+         const data = JSON.stringify(param);
+         const result = await fetchPost(`ZZ0301_S02`, { data });
+         return result;
+      } catch (error) {
+         console.error("ZZ0301_S02 Error:", error);
+         throw error;
+      }
+   };
+
    return (
       <div className={`space-y-5 overflow-y-auto`}>
          <LoadingSpinner />
+         {sensitiveInfoModal()}
          <div className="space-y-2">
             <div className="flex justify-between">
                <Breadcrumb items={breadcrumbItem} />

@@ -1,6 +1,6 @@
 import { React, useEffect, useState, useRef, useCallback, initChoice, commas, CommonModal, updateChoices, SelectSearch, alertSwal, fetchPost, Breadcrumb, TuiGrid01, getGridDatas, refreshGrid, reSizeGrid, InputComp1, InputComp2, SelectComp1, SelectComp2 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
-import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
+import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, XMarkIcon } from "@heroicons/react/24/outline";
 // import ChoicesEditor from "../../util/ChoicesEditor";
 import ChoicesEditor from "../../util/ReactSelectEditor";
 import { useLoading } from '../../context/LoadingContext';
@@ -68,7 +68,8 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    
    const [isOpen, setIsOpen] = useState(false);
    const [isOpen2, setIsOpen2] = useState(false);
-
+   const [isOpenSensitive, setIsOpenSensitive] = useState(false); // 민감정보 모달 상태
+   
    const [bpCds, setBpCds] = useState<any>([]);
    const [subCode, setSubCode] = useState<any>([]);
   
@@ -78,6 +79,11 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    
    const { fetchWithLoading } = useLoadingFetch();
 
+   // 민감정보 관련 상태 추가
+   const [sensitiveData, setSensitiveData] = useState({
+      hp: ''
+   });
+   
    useEffect(() => {
       setChoiceUI();
       setGridData();
@@ -574,6 +580,133 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
          throw error;
       }
    };
+
+   // 민감정보 조회 API
+   const MM0601_S09 = async (bpCd: string, prsnCd: string) => {
+      try {
+         const param = {
+            bpCd: bpCd,
+            prsnCd: prsnCd
+         };
+
+         const data = JSON.stringify(param);
+         const result = await fetchPost(`MM0601_S09`, { data });
+         return result;
+      } catch (error) {
+         console.error("MM0601_S09 Error:", error);
+         throw error;
+      }
+   };
+   
+   // 민감정보 버튼 클릭 핸들러
+   const handleSensitiveInfoClick = async () => {
+      const grid = gridRef6.current.getInstance();
+      const { rowKey } = grid.getFocusedCell();
+      if (rowKey !== null) {
+         const rowData = grid.getRow(rowKey);
+         
+         if (rowData && rowData.prsnCd) {
+            await fetchWithLoading(async () => {
+               try {
+
+                  console.log("rowData.bpCd", rowData.bpCd);
+                  console.log("rowData.prsnCd", rowData.prsnCd);                  // MM0601_S09 API 호출
+                  const result = await MM0601_S09(rowData.bpCd || searchRef1.current?.value, rowData.prsnCd);
+                  console.log("result", result);
+                  
+                  if (result && result.length > 0) {
+                     // API 결과로 민감정보 상태 업데이트
+                     const data = result[0];
+                     setSensitiveData({
+                        hp: data.hp || ''
+                     });
+               
+   }
+                  
+                  // 모달 열기
+                  setIsOpenSensitive(true);
+               } catch (error) {
+                  console.error("민감정보 조회 중 오류:", error);
+                  alertSwal("오류", "민감정보 조회 중 오류가 발생했습니다.", "error");
+               }
+            });
+         } else {
+            alertSwal("알림", "선택된 담당자가 없습니다.", "warning");
+         }
+      } else {
+         alertSwal("알림", "선택된 담당자가 없습니다.", "warning");
+      }
+   };
+
+   // 민감정보 입력 변경 핸들러
+   const handleSensitiveInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      setSensitiveData({
+         ...sensitiveData,
+         [name]: value
+      });
+   };
+
+   // 민감정보 저장 함수
+   const saveSensitiveInfo = () => {
+      const grid = gridRef6.current.getInstance();
+      const { rowKey } = grid.getFocusedCell();
+      
+      if (rowKey !== null) {
+         // 연락처 값 그리드에 업데이트 - 빈 값이어도 항상 업데이트
+         setChangeGridData("hp", sensitiveData.hp);
+         
+         setIsOpenSensitive(false);
+         alertSwal("알림", "민감정보가 수정되었습니다. 저장 버튼을 눌러 변경사항을 저장하세요.", "success");
+      }
+   };
+
+   // 민감정보 모달 컴포넌트
+   const sensitiveInfoModal = () => (
+      isOpenSensitive && (
+         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-1/3 space-y-4">
+               <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-medium">민감정보 변경</h3>
+                  <button 
+                     onClick={() => setIsOpenSensitive(false)}
+                     className="text-gray-500 hover:text-gray-700"
+                  >
+                     <XMarkIcon className="w-5 h-5" />
+                  </button>
+               </div>
+               <div className="space-y-4">
+                  <div className="flex flex-col space-y-2">
+                     <label className="font-medium">연락처</label>
+                     <input 
+                        name="hp"
+                        type="text"
+                        className="border rounded-md p-2"
+                        value={sensitiveData.hp}
+                        onChange={handleSensitiveInputChange}
+                     />
+                  </div>
+               </div>
+               <div className="flex justify-end space-x-2">
+                  <button
+                     type="button"
+                     onClick={() => setIsOpenSensitive(false)}
+                     className="bg-gray-400 text-white rounded-lg px-3 py-2"
+                  >
+                     취소
+                  </button>
+                  <button
+                     type="button"
+                     onClick={saveSensitiveInfo}
+                     className="bg-blue-500 text-white rounded-lg px-3 py-2"
+                  >
+                     저장
+                  </button>
+               </div>
+            </div>
+         </div>
+      )
+   );
 
    //---------------------- div -----------------------------
    //검색창 div
@@ -1283,7 +1416,14 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
                <InputComp2 ref={refs.prsnCd} title="담당자코드" target="prsnCd" setChangeGridData={setChangeGridData} readOnly={true}/>
                <InputComp2 ref={refs.prsnType} title="구분" target="prsnType" setChangeGridData={setChangeGridData} />
                <InputComp2 ref={refs.prsnNm} title="담당자명" target="prsnNm" setChangeGridData={setChangeGridData} />
-               <InputComp2 ref={refs.hp} title="연락처" target="hp" setChangeGridData={setChangeGridData} />
+               <button
+                  type="button"
+                  onClick={handleSensitiveInfoClick}
+                  className="bg-purple-500 text-white rounded-lg px-3 py-2 flex items-center justify-center shadow h-10 mt-6"
+               >
+                  <ServerIcon className="w-5 h-5 mr-1" />
+                  민감정보
+               </button>
                <SelectSearch
                        title="재직구분"
                        value={inputValues.subCode}
@@ -1705,6 +1845,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    return (
       <div className={`space-y-5 overflow-y-auto`}>
          <LoadingSpinner />
+         {sensitiveInfoModal()}
          <div className="space-y-2">
                <div className="flex justify-between">
                   <Breadcrumb items={breadcrumbItem} />

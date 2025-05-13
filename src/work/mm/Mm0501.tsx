@@ -904,6 +904,9 @@ const Mm0501 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                <button type="button" onClick={handleCallSearch2} className="bg-gray-400 text-white rounded-lg px-2 py-1 flex items-center shadow ">
                   <MagnifyingGlassIcon className="w-5 h-5 mr-1" />
                   조회
+
+
+                  .
                </button>
                <button type="button" onClick={invSave} className="bg-blue-500 text-white  rounded-lg px-2 ml-4 py-1 flex items-center shadow">
                   <ServerIcon className="w-5 h-5 mr-1" />
