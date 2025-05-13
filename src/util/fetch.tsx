@@ -3,7 +3,7 @@ const fetchPost = async (url: string, data: any): Promise<any> => {
       const baseURL = process.env.REACT_APP_API_URL;
       const endpoint = `${baseURL}/${url}`;
 
-      //console.log("endpoint", endpoint);
+      console.log("endpoint", endpoint);
 
       // 특정 요청은 accessToken 없이 처리
       const isAuthRequired = url !== "ZZ_LOGIN_TOKEN"; // 인증이 필요 없는 API 분기
