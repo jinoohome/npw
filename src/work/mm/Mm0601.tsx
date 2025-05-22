@@ -548,7 +548,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
    const MM0601_U07 = async () => {
       try {
          const data = await getGridValues();
-         const result = await fetchPost(`MM0601_U07`, data);
+         const result = await fetchPost(`MM0601_U07_V2`, data);
          return result as any;
       } catch (error) {
          console.error("MM0601_U07 Error:", error);
@@ -590,7 +590,7 @@ const Mm0601 = ({ item, activeComp, userInfo }: Props) => {
          };
 
          const data = JSON.stringify(param);
-         const result = await fetchPost(`MM0601_S09`, { data });
+         const result = await fetchPost(`MM0601_S09_V2`, { data });
          return result;
       } catch (error) {
          console.error("MM0601_S09 Error:", error);

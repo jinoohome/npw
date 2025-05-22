@@ -3,10 +3,10 @@ const fetchPost = async (url: string, data: any): Promise<any> => {
       const baseURL = process.env.REACT_APP_API_URL;
       const endpoint = `${baseURL}/${url}`;
 
-      console.log("endpoint", endpoint);
+      // console.log("endpoint", endpoint);
 
       // 특정 요청은 accessToken 없이 처리
-      const isAuthRequired = !["ZZ_LOGIN_TOKEN", "ZZ_SURVEY", "ZZ_SURVEY_U01"].includes(url); // 인증이 필요 없는 API 분기
+      const isAuthRequired = !["ZZ_LOGIN_TOKEN_V2", "ZZ_SURVEY", "ZZ_SURVEY_U01"].includes(url); // 인증이 필요 없는 API 분기
       const accessToken = isAuthRequired ? sessionStorage.getItem('accessToken') : null;
 
       // console.log(sessionStorage.getItem('refreshToken') );
