@@ -727,6 +727,18 @@ const Sp0104 = ({ item, activeComp, userInfo,  handleAddMenuClick, setSoNo, setS
        formatter: function (e: any) { return commas(e.value);},
     }, // QTY: 수량
     {
+      header: "천장형", name: "itemQty1", width: 60, align: "right", editor: "text",
+      formatter: function (e: any) { return commas(e.value);},
+   }, // QTY: 수량
+   {
+      header: "스탠드형", name: "itemQty2", width: 60, align: "right", editor: "text",
+      formatter: function (e: any) { return commas(e.value);},
+   }, // QTY: 수량
+   {
+      header: "벽걸이형", name: "itemQty3", width: 60, align: "right", editor: "text",
+      formatter: function (e: any) { return commas(e.value);},
+   }, // QTY: 수량
+    {
        header: "판매단가", name: "soPrice", width: 100, align: "right", editor: "text", hidden: true,
        formatter: function (e: any) { return commas(e.value); },
     }, // SO_PRICE: 발주 가격
@@ -811,6 +823,9 @@ const Sp0104 = ({ item, activeComp, userInfo,  handleAddMenuClick, setSoNo, setS
       { header: "작업예정일", name: "expectDt", width: 90, align: "center" }, //
       { header: "작업완료일", name: "finishDt", width: 90, align: "center" }, // 
       { header: "수량", name: "qty", width: 60, align: "center"}, // 
+      { header: "천장형", name: "itemQty1", width: 60, align: "center"}, // 
+      { header: "스탠드형", name: "itemQty2", width: 60, align: "center"}, // 
+      { header: "벽걸이형", name: "itemQty3", width: 60, align: "center"}, // 
       { header: "구분", name: "workDiv", width: 80, align: "center" }, // 
       { header: "비고", name: "remark", align: "center"}, // 
    
