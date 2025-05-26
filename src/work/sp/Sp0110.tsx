@@ -512,7 +512,7 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
                oilSoDtlItem: JSON.stringify(datas),
          };
 
-            const result = await fetchPost(`SP0110_U04`, data);
+            const result = await fetchPost(`SP0110_U04_ALIMTALK`, data);
             returnResult(result);
          } else if (result.isDismissed) {
             return;
@@ -549,7 +549,7 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
                oilSoDtlItem: JSON.stringify(datas),
          };
 
-            const result = await fetchPost(`SP0110_U04`, data);
+            const result = await fetchPost(`SP0110_U04_ALIMTALK`, data);
             returnResult(result);
          } else if (result.isDismissed) {
             return;

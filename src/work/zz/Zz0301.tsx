@@ -174,7 +174,7 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
 
    const ZZ0301_U01 = async (data: any) => {
       try {
-         const result = await fetchPost(`ZZ0301_U01`, data);
+         const result = await fetchPost(`ZZ0301_U01_V2`, data);
          return result;
       } catch (error) {
          console.error("ZZ0301_U01 Error:", error);
@@ -271,6 +271,7 @@ const Zz0301 = ({ item, activeComp, userInfo }: Props) => {
        
          const data = await getGridValues();
          if (data) {
+            console.log("data", data);
             let result = await ZZ0301_U01(data);
             if (result) {
                await returnResult(result);

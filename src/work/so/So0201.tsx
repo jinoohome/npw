@@ -861,7 +861,7 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
    // 주문저장
    const SO0201_U05 = async (data: any) => {
       try {
-         const result = await fetchPost(`SO0201_U05`, data);
+         const result = await fetchPost(`SO0201_U05_V2`, data);
          return result;
       } catch (error) {
          console.error("SO0201_U05 Error:", error);
@@ -870,23 +870,24 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
    };
 
    // 주문확정, 취소, 삭제
-   const SO0201_U06 = async (data: any) => {
-      try {
-         const result = await fetchPost(`SO0201_U06`, data);
-         return result;
-      } catch (error) {
-         console.error("SO0201_U06 Error:", error);
-         throw error;
-      }
-   };
-
-    // 주문확정, 취소, 삭제
-    const SO0201_U07 = async (data: any) => {
+   const SO0201_U07 = async (data: any) => {
       try {
          const result = await fetchPost(`SO0201_U07`, data);
          return result;
       } catch (error) {
          console.error("SO0201_U07 Error:", error);
+         throw error;
+      }
+   };
+
+    // 주문확정, 취소, 삭제
+    
+    const SO0201_U08 = async (data: any) => {
+      try {
+         const result = await fetchPost(`SO0201_U08`, data);
+         return result;
+      } catch (error) {
+         console.error("SO0201_U08 Error:", error);
          throw error;
       }
    };
@@ -944,7 +945,7 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
             soNo: soNo,
          };
          const data = JSON.stringify(param);
-         const result = await fetchPost("SO0201_S01", {data});
+         const result = await fetchPost("SO0201_S01_V2", {data});
 
          
 
@@ -1289,17 +1290,16 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
             soNo: inputValues.soNo,
          };
          const data = JSON.stringify(param);
-         const result = await fetchPost("SO0201_S01", {data});
+         const soItem = await fetchPost("SO0201_S01_V2", {data});
 
-         console.log(result);
 
-         if(result[0].saleCloseSoNo) {
+         if(soItem[0].saleCloseSoNo) {
             alertSwal("", `매출마감 처리된 주문입니다.`, "warning");
             search(inputValues.soNo);
             return;
          }
          
-         if(result[0].purchaseCloseSoNo) {
+         if(soItem[0].purchaseCloseSoNo) {
             alertSwal("", `본부마감 처리된 주문입니다.`, "warning");
             search(inputValues.soNo);
             return;
@@ -1308,19 +1308,19 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
          
 
 
-         if( result[0].poStatus !== "발주확정" ) {
-            alertSwal("", `발주확정 상태만 취소 가능합니다.<br> 현재 진행상태는 <strong style="color: #ff6b6b; font-size: 1em;">${result[0].poStatus2}</strong> 상태 입니다.`, "warning");
+         if( soItem[0].poStatus !== "발주확정" ) {
+            alertSwal("", `발주확정 상태만 취소 가능합니다.<br> 현재 진행상태는 <strong style="color: #ff6b6b; font-size: 1em;">${soItem[0].poStatus2}</strong> 상태 입니다.`, "warning");
             search(inputValues.soNo);
             return;
          }
 
 
-         if (result[0].giQty !== 0) {
+         if (soItem[0].giQty !== 0) {
             alertSwal("", "이미 출고되었습니다. 담당자에게 문의하세요.", "warning");
             return;
          }
    
-         if (result[0].poStatus === "고객서명" || result[0].poStatus === "고객결제") {  
+         if (soItem[0].poStatus === "고객서명" || soItem[0].poStatus === "고객결제") {  
             alertSwal("", "고객확인 단계입니다. 담당자에게 문의하세요.", "warning");
             search(inputValues.soNo);
             return;
@@ -1366,6 +1366,8 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
             if (result.isConfirmed && result.value) {
                const { ordererAlimYn, partnerAlimYn, customerAlimYn } = result.value;
                let soNo = inputValues.soNo;
+               const callback = `${ordererAlimYn === 'Y' ? '1' : '0'}/${ordererAlimYn === 'Y' ? '1' : '0'}/0/${partnerAlimYn === 'Y' ? '1' : '0'}/1/1/${customerAlimYn === 'Y' ? '1' : '0'}`;
+
    
                let data = {
                   menuId: activeComp.menuId,
@@ -1375,10 +1377,15 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
                   ordererAlimYn: ordererAlimYn, // 대상자, 주문자 알림톡 전송 여부 (Y/N)
                   partnerAlimYn: partnerAlimYn, // 협력업체 알림톡 전송 여부 (Y/N)
                   customerAlimYn: customerAlimYn, // 고객사 담당자 알림톡 전송 여부 (Y/N)
+                  tmpCd: inputValues.hsDiv !== '경사' ? 'SJR_061449' : 'SJR_061450',
+                  callback: callback,
+                  soItem: soItem,
                };
+
+               // console.log(data);
    
                if (data) {
-                  let result = await SO0201_U07(data);
+                  let result = await SO0201_U08(data);
                   if (result) {
                      await returnResult(result, data.div);
                   }
@@ -1396,7 +1403,7 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
          soNo: inputValues.soNo,
       };
       const data = JSON.stringify(param);
-      const result = await fetchPost("SO0201_S01", {data});
+      const result = await fetchPost("SO0201_S01_V2", {data});
 
       if(result[0].poStatus !== "발주대기" ) {
          alertSwal("", "발주대기 상태만 삭제 가능합니다.", "warning");
@@ -1430,10 +1437,19 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
 
 // 주문확정
 const fnConfirm = async () => {
+
+   const param = {    
+      soNo: inputValues.soNo,
+   };
+   const data = JSON.stringify(param);
+   console.log(data);
+   const soItem = await fetchPost("SO0201_S01_V2", {data});
+
    if (!inputValues.soNo) {
       alertSwal("", "주문 저장 후 확정 바랍니다.", "warning");
       return;
   }
+  
 
    // Swal을 직접 사용해 복수의 체크박스를 표시
    Swal.fire({
@@ -1472,7 +1488,11 @@ const fnConfirm = async () => {
      if (result.isConfirmed && result.value) {
        const { ordererAlim, partnerAlim, customerAlim } = result.value;
        const soNo = inputValues.soNo;
- 
+       
+       // 알림톡 수신자 설정 (ordererAlim/partnerAlim/customerAlim 값에 따라 설정)
+       // callback 형식: '주문자/대상자/팀장/본부장/관리자/담당자/고객사담당자'
+       const callback = `${ordererAlim === 'Y' ? '1' : '0'}/${ordererAlim === 'Y' ? '1' : '0'}/0/${partnerAlim === 'Y' ? '1' : '0'}/1/1/${customerAlim === 'Y' ? '1' : '0'}`;
+
        const data = {
          menuId: activeComp.menuId,
          insrtUserId: userInfo.usrId,
@@ -1481,11 +1501,15 @@ const fnConfirm = async () => {
          ordererAlimYn: ordererAlim, // 대상자, 주문자 알림톡 전송 여부 (Y/N)
          partnerAlimYn: partnerAlim, // 협력업체 알림톡 전송 여부 (Y/N)
          customerAlimYn: customerAlim, // 고객사 담당자 알림톡 전송 여부 (Y/N)
+         tmpCd: inputValues.hsDiv !== '경사' ? 'SJR_061447' : 'SJR_061448',
+         callback: callback,
+         soItem: soItem,
        };
-       console.log(data);
 
+      // console.log(data);
+    
        if (data) {
-         const result = await SO0201_U07(data);
+         const result = await SO0201_U08(data);
          if (result) {
            await returnResult(result, data.div);
          }
@@ -1811,7 +1835,7 @@ const fnConfirm = async () => {
             ownTelNo: searchRef9.current?.value || '999',
          };
          const data = JSON.stringify(param);
-         const result = await fetchPost("SO0201_P01", { data });
+         const result = await fetchPost("SO0201_P01_V2", { data });
          setGridDatasP1(result);
       });
    };
@@ -1838,7 +1862,7 @@ const fnConfirm = async () => {
             ownTelNo: inputValues.ownTelNo,
          };
          const data = JSON.stringify(param);
-         const result = await fetchPost("SO0201_P02", { data });
+         const result = await fetchPost("SO0201_P02_V2", { data });
 
          if (result.length > 0) {
             onInputChange('preRcptNo', result[0].preRcptNo);
@@ -2108,9 +2132,10 @@ const fnConfirm = async () => {
             endDt: inputValues.endDate,     
             soNo: '999',
             ownNm: searchRef1.current?.value || '999',
+            ownTelNo: searchRef9.current?.value || '999',
             };
             const data = JSON.stringify(param);
-            const result = await fetchPost("SO0201_P01", { data });
+            const result = await fetchPost("SO0201_P01_V2", { data });
             setGridDatasP1(result);
 
             await setIsOpen(true);
@@ -3221,7 +3246,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                <div className="pb-2">현금결제</div>
             </div>
             <div className="flex space-x-2">
-               {!isInputReadonly &&
+              
                <>
                <button type="button" onClick={cashPay} className="bg-green-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
                   <PlusIcon className="w-5 h-5" />
@@ -3237,7 +3262,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                </button>
                
                </>
-               }
+               
             </div>
          </div>
 
@@ -3787,17 +3812,19 @@ const changeSoPrice = async (price: number, rowKey: any) => {
             </div>                 
             <div className="flex p-2 space-x-2">
                {isInputReadonly &&
-               <button type="button" onClick={fnCancel} className="bg-orange-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
-                  <XMarkIcon className="w-5 h-5" />
-                  주문취소
-               </button>
+          
+                <button type="button" onClick={fnCancel} className="bg-orange-400 text-white rounded-3xl px-2 py-1 flex items-center shadow">
+                <XMarkIcon className="w-5 h-5" />
+                주문취소
+             </button>
                }
                {!isInputReadonly && 
                <>
                <button type="button" onClick={fnDel} className="bg-rose-400 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
-                  <TrashIcon className="w-5 h-5" />
+                   <TrashIcon className="w-5 h-5" />
                   주문삭제
                </button>
+              
                <button type="button" onClick={fnConfirm} className="bg-green-400 text-white  rounded-3xl px-2 py-1 flex items-center shadow">
                   <CheckIcon className="w-5 h-5" />
                   주문확정

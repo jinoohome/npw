@@ -147,7 +147,7 @@ const MyPage = ({ item, activeComp, leftMode, userInfo }: Props) => {
             })
          };
 
-         const result = await fetchPost(`ZZ_PW_U01`, param);
+         const result = await fetchPost(`ZZ_PW_U01_V2`, param);
 
          if (result && result.msgCd === '1') {
             alertSwal('비밀번호가 성공적으로 변경되었습니다.', result.msgCd, result.msgStatus);
@@ -250,13 +250,13 @@ const MyPage = ({ item, activeComp, leftMode, userInfo }: Props) => {
                         </div>
                      </div>
                      
-                     <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                     {/* <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
                         <PhoneIcon className="w-5 h-5 text-green-500" />
                         <div>
                            <p className="text-xs text-gray-500">연락처</p>
                            <p className="font-medium text-gray-800">{inputValues.hp || '정보 없음'}</p>
                         </div>
-                     </div>
+                     </div> */}
                   </div>
                </div>
                
@@ -311,10 +311,10 @@ const MyPage = ({ item, activeComp, leftMode, userInfo }: Props) => {
                            <EnvelopeIcon className="w-5 h-5 text-indigo-500" />
                            <span className="text-gray-700">{inputValues.email || '정보 없음'}</span>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        {/* <div className="flex items-center space-x-2">
                            <PhoneIcon className="w-5 h-5 text-green-500" />
                            <span className="text-gray-700">{inputValues.hp || '정보 없음'}</span>
-                        </div>
+                        </div> */}
                         <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm ${inputValues.useYn === 'Y' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                            <BellIcon className="w-4 h-4" />
                            <span>{inputValues.useYn === 'Y' ? '활성' : '비활성'}</span>

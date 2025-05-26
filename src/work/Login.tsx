@@ -47,7 +47,7 @@ const Login = () => {
 
    const ZZ_LOGIN_TOKEN = async (data: any) => {
       try {
-         const result = await fetchPost(`ZZ_LOGIN_TOKEN`, data);
+         const result = await fetchPost(`ZZ_LOGIN_TOKEN_V2`, data);
          return result as any;
       } catch (error) {
          console.error("ZZ_USER_LOGIN Error:", error);

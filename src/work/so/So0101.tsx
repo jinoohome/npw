@@ -168,7 +168,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
 
    const SO0101_U03 = async (data: any) => {
       try {
-         const result = await fetchPost(`SO0101_U03`, data);
+         const result = await fetchPost(`SO0101_U03_V2`, data);
          return result;
       } catch (error) {
          console.error("SO0101_U03 Error:", error);
@@ -198,13 +198,16 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const search = async (preRcptNo:any) => {
+
       await fetchWithLoading(async () => {
          const param = {    
             preRcptNo: preRcptNo,
          };
          const data = JSON.stringify(param);
-         const result = await fetchPost("SO0101_S01", {data});
+         const result = await fetchPost("SO0101_S01_V2", {data});
 
+         console.log(result);
+       
          if (result.length === 0) {
             return;
          }
@@ -390,7 +393,7 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
             reqTelNo: inputValues.reqTelNo,
          };
          const data = JSON.stringify(param);
-         const result = await fetchPost("SO0101_P02", { data });
+         const result = await fetchPost("SO0101_P02_V2", { data });
 
          if (result.length > 0) {
             search(result[0].preRcptNo);
