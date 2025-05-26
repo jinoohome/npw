@@ -59,6 +59,8 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
    const searchBpNmRef = useRef<HTMLInputElement>(null);
    const searchSoNoRef = useRef<HTMLInputElement>(null);
 
+   const [soItem, setSoItem] = useState<any>([]);
+
 
    const setGridData = async () => {
       try {
@@ -414,8 +416,34 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
 
 
 
-      const result = await fetchPost(`SP0105_U03`, data);
-      returnResult(result);
+     const result = await fetchPost(`SP0105_U03`, data);
+
+     if (inputValues.expectDt) {
+      let newSoItem = [{
+        ...soItem,
+        expectDt: inputValues.expectDt,
+        soNo: inputValues.soNo,
+        reqDt: date(),
+        bpNm: inputValues.bpNm,
+        reqUserId: inputValues.reqUserId,
+        reqTelNo: inputValues.reqTelNo,
+      }];
+
+      setSoItem(newSoItem[0]);
+  
+      let data2 = {
+          soNo: inputValues.soNo,
+          tmpCd: "SJR_062666",
+          callback: "1/0",
+          soItem: newSoItem, // 배열로 전달!
+      }
+  
+      await fetchPost(`SP0105_U03_ALIMTALK`, { data: JSON.stringify(data2) });
+  }
+
+
+
+     returnResult(result);
    };
 
    const del = async () => {
@@ -466,6 +494,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
    const handleFocusChange = async (e: any) => {
       const gridInstance = gridRef2.current.getInstance();
       const rowData = gridInstance.getRow(e.rowKey);
+      setSoItem(rowData);  
       onInputChange("soSeq", rowData.soSeq);
       SP0103_S02(rowData.soNo, rowData.soSeq);
 
@@ -695,11 +724,11 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
     { header: "퓸목구분", name: "itemDiv", width: 120, align: "center", hidden: true },
     { header: "작업코드", name: "workCd", width: 250, align: "center", hidden: true  }, 
     {
-       header: "수량", name: "qty", width: 60, align: "right", editor: "text",
+       header: "수량", name: "qty", width: 60, align: "right",
        formatter: function (e: any) { return commas(e.value);},
     }, // QTY: 수량    
     {
-       header: "단가", name: "poPrice", width: 80, align: "right", editor: "text",
+       header: "단가", name: "poPrice", width: 80, align: "right", 
        formatter: function (e: any) {  return commas(e.value); },
     }, // PO_PRICE: 발주 가격
     {

@@ -108,7 +108,7 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo, soSeq }: Props) => {
       const data = JSON.stringify(param);
       const result = await fetchPost("SP0103_S01", { data });
 
-      //console.log(result);
+      console.log(result);
 
       return result;
    };
@@ -489,6 +489,26 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo, soSeq }: Props) => {
       } catch (error) {
          console.error("파일 저장 중 오류 발생:", error);
       }
+
+
+      //작업완료일 데이터가 있을때만 알림톡 발송
+      if(inputValues.finishDt){  
+         try {
+
+            let data2 = {
+               soNo: inputValues.soNo,
+               tmpCd: "SJR_062667",
+               callback: "1/0",
+               soItem: [inputValues], //배열로 감싸서 전달
+            }
+
+            // console.log(data2);
+            await fetchPost(`SP0107_U03_ALIMTALK`, {data: JSON.stringify(data2)});
+
+         } catch (error) {
+            console.error("파일 저장 중 오류 발생:", error);
+         }
+      }
    };
 
    const cfmSave = async (cfmYn2:string) => {
@@ -792,6 +812,20 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo, soSeq }: Props) => {
       { header: "품목그룹", name: "itemGrp", width: 120, align: "center", hidden: true },
       { header: "퓸목구분", name: "itemDiv", width: 120, align: "center", hidden: true },
       { header: "작업코드", name: "workCd", width: 250, align: "center", hidden: true },
+      ...(userInfo.bpCd === "999"
+         ? [
+         {
+            header: "변경전수량",
+            name: "orgQty",
+            width: 100,
+            align: "right",
+            //hidden: true,
+            formatter: function (e: any) {
+               return commas(e.value);
+            },
+         }, 
+         ]
+         : []),
       {
          header: "수량",
          name: "qty",
@@ -799,7 +833,14 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo, soSeq }: Props) => {
          align: "right",
          editor: "text",
          formatter: function (e: any) {
-            return commas(e.value);
+
+            console.log(e.value, e.row.orgQty);
+            if(userInfo.bpCd == "999" && e.value != e.row.orgQty){ // 변경전수량과 다르면 배경색 변경 0도 비교가능하게
+               return `<div style="background-color:#f9d5d58f; border-radius:5px;">${commas(e.value)}</div>`;
+            }else{
+               return `<div>${commas(e.value)}</div>`;
+
+            }
          },
       }, // QTY: 수량
       ...(userInfo.bpCd === "999"
@@ -816,6 +857,7 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo, soSeq }: Props) => {
       }, // SO_PRICE: 수주 가격
       ]
       : []),
+    
       {
          header: "금액",
          name: "soAmt",
@@ -853,14 +895,11 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo, soSeq }: Props) => {
          align: "right",
          editor: "text",
          formatter: function (e: any) {
-            if(userInfo.bpCd == "999"){
+            if (userInfo.bpCd == "999" && e.value != e.row.orgPoPrice) {
                return `<div style="background-color:#f9d5d58f; border-radius:5px;">${commas(e.value)}</div>`;
-            }else{
+            } else {
                return `<div>${commas(e.value)}</div>`;
-
             }
-
-
          },
       }, // PO_PRICE: 발주 가격
       {

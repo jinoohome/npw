@@ -43,6 +43,7 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
       reqDt: date(),
    });
 
+   const [soItem, setSoItem] = useState<any>([]);
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
    const [loading, setLoading] = useState(false);
 
@@ -438,6 +439,8 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
       }
 
       const result = await SP0110_S01(soNo);
+  
+      
       SP0110_S02(soNo);
 
       if (result) {
@@ -495,6 +498,9 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
             let datas = await getGridDatas(gridRef);
             let datas2 = await getGridDatas(gridRef4);
 
+        
+           
+
             inputValues.gridDatas = datas;
             inputValues.status = "confirm";
             inputValues.workStatus = "MA0016"
@@ -510,10 +516,36 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
                oilSoHdr: JSON.stringify(oilSoHdr),
                oilSoDtl: JSON.stringify(datas2),
                oilSoDtlItem: JSON.stringify(datas),
+           
+
          };
 
-            const result = await fetchPost(`SP0110_U04_ALIMTALK`, data);
-            returnResult(result);
+
+             const result = await fetchPost(`SP0110_U04`, data);
+
+
+                 //soItem 배열에  for문으로 데이터 추가
+            soItem.forEach((item: any) => {
+               item.soNo = inputValues.soNo;
+               item.reqDt = date();
+               item.bpNm = inputValues.bpNm; //사업장
+               item.reqUserId = inputValues.reqUserId; //담당자
+               item.reqTelNo = inputValues.reqTelNo; //담당자 연락처
+    
+            });
+
+            let data2 = {
+               soNo : inputValues.soNo,
+               tmpCd : "SJR_062665",
+               callback : "0/1",
+               soItem : soItem,
+            }
+
+           const result2 = await fetchPost(`SP0110_U04_ALIMTALK`, { data: data2 });
+
+
+
+             returnResult(result);
          } else if (result.isDismissed) {
             return;
          }
@@ -532,6 +564,8 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
             let datas = await getGridDatas(gridRef);
             let datas2 = await getGridDatas(gridRef4);
 
+          
+
             inputValues.gridDatas = datas;
             inputValues.status = "cancel";
             inputValues.workStatus = "MA0015"      
@@ -547,13 +581,40 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
                oilSoHdr: JSON.stringify(oilSoHdr),
                oilSoDtl: JSON.stringify(datas2),
                oilSoDtlItem: JSON.stringify(datas),
+             
+
          };
 
-            const result = await fetchPost(`SP0110_U04_ALIMTALK`, data);
+            const result = await fetchPost(`SP0110_U04`, data);
+
+
+            soItem.forEach((item: any) => {
+               item.soNo = inputValues.soNo;
+               item.reqDt = date();
+               item.bpNm = inputValues.bpNm; //사업장
+               item.reqUserId = inputValues.reqUserId; //담당자
+               item.reqTelNo = inputValues.reqTelNo; //담당자 연락처
+    
+            });
+
+
+            
+
+            let data2 = {
+               soNo : inputValues.soNo,
+               tmpCd : "SJR_062756",
+               callback : "0/1",
+               soItem : soItem,
+            }
+
+            await fetchPost(`SP0110_U04_ALIMTALK`, { data: data2 });
+
+
             returnResult(result);
          } else if (result.isDismissed) {
             return;
          }
+         
       });    
    };
 
@@ -589,7 +650,6 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
 
       let oilSoHdr = [inputValues];
 
-      console.log(oilSoHdr);
       let data = {
          menuId: activeComp.menuId,
          insrtUserId: userInfo.usrId,
@@ -652,7 +712,9 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
       const rowData = gridInstance.getRow(e.rowKey);
 
       if (rowData) {
-         SP0110_S02(rowData.soNo);
+         
+         let result = await SP0110_S02(rowData.soNo);
+         setSoItem(result);
 
          Object.entries(rowData).forEach(([key, value]) => {            
             onInputChange(key, value);
