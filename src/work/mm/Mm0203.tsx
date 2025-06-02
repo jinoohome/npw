@@ -38,6 +38,7 @@ const Mm0203 = ({ item, activeComp, userInfo }: Props) => {
       itemDiv: useRef<any>(null),
       salePrice: useRef<any>(null),
       costPrice: useRef<any>(null),
+      ordr: useRef<any>(null),
       taxYn: useRef<any>(null),
       pkgItemYn: useRef<any>(null),
       subsYn: useRef<any>(null),
@@ -512,6 +513,7 @@ const Mm0203 = ({ item, activeComp, userInfo }: Props) => {
             </div>     
             <div className="grid grid-cols-4  gap-12  justify-around items-center">
                <InputComp ref={refs.costPrice} value={inputValues.costPrice} layout="vertical" title="발주단가" target="costPrice" setChangeGridData={setChangeGridData} type="number"/>
+               <InputComp ref={refs.ordr} value={inputValues.ordr} layout="vertical" title="정렬순서" target="ordr" setChangeGridData={setChangeGridData} type="number"/>
                <SelectSearch title="사용유무" 
                                     value={inputValues.useYn}
                                     layout="vertical"
@@ -532,13 +534,14 @@ const Mm0203 = ({ item, activeComp, userInfo }: Props) => {
    const columns = [
       { header: "회사코드", name: "coCd", hidden: true },
       { header: "품목코드", name: "itemCd", width: 100, align: "center" },
-      { header: "품목명", name: "itemNm"},
+      { header: "품목명", name: "itemNm", width: 300},
       { header: "규격", name: "spec", hidden: true },
       { header: "작업그룹", name: "workCd", hidden: true },
       { header: "품목그룹", name: "itemGrp", hidden: true },
       { header: "품목구분", name: "itemDiv", hidden: true },
       { header: "판매단가", name: "salePrice", hidden: true },
       { header: "발주단가", name: "costPrice", hidden: true },
+      { header: "정렬순서", name: "ordr", align: "center" },
       { header: "과세여부", name: "taxYn", hidden: true },
       { header: "패키지품목추가", name: "pkgItemYn", hidden: true },
       { header: "대체유무", name: "subsYn", hidden: true },
