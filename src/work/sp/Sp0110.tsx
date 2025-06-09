@@ -85,6 +85,7 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
 
       const data = JSON.stringify(param);
       const result = await fetchPost("SP0110_S01", { data });
+      inputValues.bpNm = result[0].bpNm;
 
       return result;
    };
@@ -96,7 +97,7 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
 
       const data = JSON.stringify(param);
       const result = await fetchPost("SP0110_S02", { data });
-
+      setSoItem(result);
       
       onInputChange("gridDatas4", result);
 
@@ -441,6 +442,7 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
       const result = await SP0110_S01(soNo);
   
       
+      
       SP0110_S02(soNo);
 
       if (result) {
@@ -533,6 +535,7 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
                item.reqTelNo = inputValues.reqTelNo; //담당자 연락처
     
             });
+          
 
             let data2 = {
                soNo : inputValues.soNo,
@@ -541,6 +544,7 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
                soItem : soItem,
             }
 
+            // console.log(data2);
            const result2 = await fetchPost(`SP0110_U04_ALIMTALK`, { data: data2 });
 
 
@@ -714,7 +718,7 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo }: Props) => {
       if (rowData) {
          
          let result = await SP0110_S02(rowData.soNo);
-         setSoItem(result);
+        
 
          Object.entries(rowData).forEach(([key, value]) => {            
             onInputChange(key, value);

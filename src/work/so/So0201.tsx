@@ -1437,87 +1437,116 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
 
 // 주문확정
 const fnConfirm = async () => {
-
-   const param = {    
-      soNo: inputValues.soNo,
-   };
-   const data = JSON.stringify(param);
-   console.log(data);
-   const soItem = await fetchPost("SO0201_S01_V2", {data});
-
-   if (!inputValues.soNo) {
-      alertSwal("", "주문 저장 후 확정 바랍니다.", "warning");
-      return;
-  }
   
+   setErrorMsgs({});
+   const gridInstance = gridRef3.current.getInstance();
+   gridInstance.blur();
+   const gridInstance2 = gridRef7.current.getInstance();
+   gridInstance2.blur();
+   
+   const saveData = await getGridValues();
 
-   // Swal을 직접 사용해 복수의 체크박스를 표시
-   Swal.fire({
-     title: "주문확정",
-     text: "주문 확정하시겠습니까?",
-     icon: "warning",
-     showCancelButton: true,
-     confirmButtonText: "확인",
-     cancelButtonText: "취소",
-     html: `
-      <div class="flex flex-col items-center justify-center">
-         <div class="flex flex-col items-start mt-4 text-left">
-            <div class="flex items-center mb-2 ">
-               <input type="checkbox" id="orderer-alim" class="mr-2" checked>
-               <label for="orderer-alim" class="text-base">대상자, 주문자 알림톡</label>
-            </div>
-            <div class="flex items-center mb-2">
-               <input type="checkbox" id="partner-alim" class="mr-2" checked>
-               <label for="partner-alim" class="text-base">협력업체 알림톡</label>
-            </div>
-            <div class="flex items-center">
-               <input type="checkbox" id="customer-alim" class="mr-2" checked>
-               <label for="customer-alim" class="text-base">고객사담당자 알림톡</label>
+   const sSoDtlArray = JSON.parse(saveData.sSoDtl);
+   
+   
+   if(sSoDtlArray.length === 0) {
+      alertSwal("", "주문상품을 추가해주세요.", "warning");
+      return;
+   }
+
+   if (!validateData("save", saveData)) return false;
+
+   let result = null;
+   if (saveData) {
+       result = await SO0201_U05(saveData);
+   }
+
+
+   if(result.msgCd === '1'){
+
+      const param = {    
+         soNo: inputValues.soNo,
+      };
+      const data = JSON.stringify(param);
+    
+   
+      const soItem = await fetchPost("SO0201_S01_V2", {data});
+   
+      if (!inputValues.soNo) {
+         alertSwal("", "주문 저장 후 확정 바랍니다.", "warning");
+         return;
+     }
+     
+   
+      // Swal을 직접 사용해 복수의 체크박스를 표시
+      Swal.fire({
+        title: "주문확정",
+        text: "주문 확정하시겠습니까?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "확인",
+        cancelButtonText: "취소",
+        html: `
+         <div class="flex flex-col items-center justify-center">
+            <div class="flex flex-col items-start mt-4 text-left">
+               <div class="flex items-center mb-2 ">
+                  <input type="checkbox" id="orderer-alim" class="mr-2" checked>
+                  <label for="orderer-alim" class="text-base">대상자, 주문자 알림톡</label>
+               </div>
+               <div class="flex items-center mb-2">
+                  <input type="checkbox" id="partner-alim" class="mr-2" checked>
+                  <label for="partner-alim" class="text-base">협력업체 알림톡</label>
+               </div>
+               <div class="flex items-center">
+                  <input type="checkbox" id="customer-alim" class="mr-2" checked>
+                  <label for="customer-alim" class="text-base">고객사담당자 알림톡</label>
+               </div>
             </div>
          </div>
-      </div>
-     `,
-     preConfirm: () => {
-       return {
-         ordererAlim: (document.getElementById('orderer-alim') as HTMLInputElement)?.checked ? 'Y' : 'N',
-         partnerAlim: (document.getElementById('partner-alim') as HTMLInputElement)?.checked ? 'Y' : 'N',
-         customerAlim: (document.getElementById('customer-alim') as HTMLInputElement)?.checked ? 'Y' : 'N'
-       };
-     }
-   }).then(async (result) => {
-     if (result.isConfirmed && result.value) {
-       const { ordererAlim, partnerAlim, customerAlim } = result.value;
-       const soNo = inputValues.soNo;
+        `,
+        preConfirm: () => {
+          return {
+            ordererAlim: (document.getElementById('orderer-alim') as HTMLInputElement)?.checked ? 'Y' : 'N',
+            partnerAlim: (document.getElementById('partner-alim') as HTMLInputElement)?.checked ? 'Y' : 'N',
+            customerAlim: (document.getElementById('customer-alim') as HTMLInputElement)?.checked ? 'Y' : 'N'
+          };
+        }
+      }).then(async (result) => {
+        if (result.isConfirmed && result.value) {
+          const { ordererAlim, partnerAlim, customerAlim } = result.value;
+          const soNo = inputValues.soNo;
+          
+          // 알림톡 수신자 설정 (ordererAlim/partnerAlim/customerAlim 값에 따라 설정)
+          // callback 형식: '주문자/대상자/팀장/본부장/관리자/담당자/고객사담당자'
+          const callback = `${ordererAlim === 'Y' ? '1' : '0'}/${ordererAlim === 'Y' ? '1' : '0'}/0/${partnerAlim === 'Y' ? '1' : '0'}/1/1/${customerAlim === 'Y' ? '1' : '0'}`;
+   
+          const data = {
+            menuId: activeComp.menuId,
+            insrtUserId: userInfo.usrId,
+            soNo: soNo,
+            div: "CONFIRM",
+            ordererAlimYn: ordererAlim, // 대상자, 주문자 알림톡 전송 여부 (Y/N)
+            partnerAlimYn: partnerAlim, // 협력업체 알림톡 전송 여부 (Y/N)
+            customerAlimYn: customerAlim, // 고객사 담당자 알림톡 전송 여부 (Y/N)
+            tmpCd: inputValues.hsDiv !== '경사' ? 'SJR_061447' : 'SJR_061448',
+            callback: callback,
+            soItem: soItem,
+          };
+   
+         // console.log(data);
        
-       // 알림톡 수신자 설정 (ordererAlim/partnerAlim/customerAlim 값에 따라 설정)
-       // callback 형식: '주문자/대상자/팀장/본부장/관리자/담당자/고객사담당자'
-       const callback = `${ordererAlim === 'Y' ? '1' : '0'}/${ordererAlim === 'Y' ? '1' : '0'}/0/${partnerAlim === 'Y' ? '1' : '0'}/1/1/${customerAlim === 'Y' ? '1' : '0'}`;
-
-       const data = {
-         menuId: activeComp.menuId,
-         insrtUserId: userInfo.usrId,
-         soNo: soNo,
-         div: "CONFIRM",
-         ordererAlimYn: ordererAlim, // 대상자, 주문자 알림톡 전송 여부 (Y/N)
-         partnerAlimYn: partnerAlim, // 협력업체 알림톡 전송 여부 (Y/N)
-         customerAlimYn: customerAlim, // 고객사 담당자 알림톡 전송 여부 (Y/N)
-         tmpCd: inputValues.hsDiv !== '경사' ? 'SJR_061447' : 'SJR_061448',
-         callback: callback,
-         soItem: soItem,
-       };
-
-      // console.log(data);
-    
-       if (data) {
-         const result = await SO0201_U08(data);
-         if (result) {
-           await returnResult(result, data.div);
-         }
-       }
-     } else if (result.isDismissed) {
-       return;
-     }
-   });
+          if (data) {
+            const result = await SO0201_U08(data);
+            if (result) {
+              await returnResult(result, data.div);
+            }
+          }
+        } else if (result.isDismissed) {
+          return;
+        }
+      });
+   }
+   
  };
  
 
