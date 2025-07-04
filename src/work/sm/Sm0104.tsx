@@ -127,8 +127,8 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       const handleSearch = async () => {
          await fetchWithLoading(async () => {
             try {
-               const result = await SM0104_S01();
-               setGridDatas(result);
+               await SM0104_S01();
+               
             } catch (error) {
                console.error("Search Error:", error);
             }
@@ -136,12 +136,14 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       };
   
       handleSearch();
-  }, [inputValues.closeYnPoBpS, inputValues.poBpS]);
+  }, [inputValues.yyyyMmS, inputValues.closeYnPoBpS, inputValues.poBpS, inputValues.startDate, inputValues.endDate]);
 
  
    //---------------------- api -----------------------------
 
    const SM0104_S01 = async () => {
+      const yyyyMm = inputValues.yyyyMmS ? inputValues.yyyyMmS.slice(0, 7).replace('-','') : '999';
+
       try {
         const param = {
           startDt: inputValues.startDate,
@@ -151,7 +153,7 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
           bpNm: searchRef3.current?.value || '999',
           poBpNm: inputValues.poBpS || '999',
           ownNm: searchRef4.current?.value || '999',
-          yyyyMm: '999',
+          yyyyMm: yyyyMm,
           closeYn: inputValues.closeYnPoBpS || '999',
         };
     
@@ -189,8 +191,8 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
    const search = async () => {
       await fetchWithLoading(async () => {
          try {
-            const result = await SM0104_S01();
-            setGridDatas(result);
+            await SM0104_S01();
+
          } catch (error) {
             console.error("Search Error:", error);
          }
@@ -461,6 +463,18 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
                               procedure="ZZ_B_PO_BP"
                               dataKey={{ label: "bpNm", value: "bpCd" }}
                />
+            <DatePickerComp 
+               title="마감년월"
+               value = {inputValues.yyyyMmS}
+               layout="flex"
+               textAlign="right"
+               minWidth="100px"
+               onChange={(e) => { 
+                  onInputChange('yyyyMmS', e);  
+                  }} 
+               format="yyyy-MM"
+               type="month"
+            />
          </div>
       </div>
    );

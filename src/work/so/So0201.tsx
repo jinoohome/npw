@@ -1559,6 +1559,7 @@ const fnConfirm = async () => {
       const payYn = gridData[rowIndex].payYn;
       const cardNo = gridData[rowIndex].cardNo;
       const cardExpDate = gridData[rowIndex].cardExpDate;
+      const cancelTid = gridData[rowIndex].cancelTid;
 
       if (!cardNo) {
           alertSwal("", "카드번호를 입력해주세요.", "warning");
@@ -1569,6 +1570,11 @@ const fnConfirm = async () => {
           alertSwal("", "카드유효기간을 입력해주세요.", "warning");
           return;
       }
+      
+      if (cancelTid) {
+         alertSwal("", "취소된 건 입니다. 행추가하여 다시 결제해주세요.", "warning");
+         return;
+     }
   
       if (payYn === 'FU0022') {
           alertSwal("", "결제완료된 건입니다.", "warning");
@@ -1711,6 +1717,7 @@ const fnConfirm = async () => {
       const payYn = gridData[rowKey].payYn;
       const reqType = gridData[rowKey].reqType;
       const pids = gridData[rowKey].pids;
+      const cancelTid = gridData[rowKey].cancelTid;
 
       if (!reqType) {
           alertSwal("", "발행구분을 선택해주세요.", "warning");
@@ -1725,6 +1732,11 @@ const fnConfirm = async () => {
       if (payYn === 'FU0022') {
           alertSwal("", "발행완료된 건입니다.", "warning");
           return;
+      }
+
+      if (cancelTid) {
+         alertSwal("", "취소된 건 입니다. 행추가하여 다시 발행해주세요.", "warning");
+         return;
       }
   
       if (saveYn === 'Y') {

@@ -126,12 +126,14 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       };
   
       handleSearch();
-  }, [inputValues.payYnS, inputValues.closeYnS, inputValues.status, inputValues.startDate, inputValues.endDate, inputValues.payDiv]);
+  }, [inputValues.yyyyMmS, inputValues.payYnS, inputValues.closeYnS, inputValues.status, inputValues.startDate, inputValues.endDate, inputValues.payDiv]);
 
  
    //---------------------- api -----------------------------
 
    const SM0101_S01 = async () => {
+      const yyyyMm = inputValues.yyyyMmS ? inputValues.yyyyMmS.slice(0, 7).replace('-','') : '999';
+      
       try {
         const param = {
           coCd: userInfo.coCd,
@@ -142,7 +144,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
           ownNm: '999',
           dlvyNm: searchRef3.current?.value || '999',
           payYn: inputValues.payYnS || '999',
-          yyyyMm: '999',
+          yyyyMm: yyyyMm,
           closeYn: inputValues.closeYnS || '999',
           payDiv: inputValues.payDiv || '999',
           status: inputValues.status || '999',
@@ -415,6 +417,18 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
                               //초기값 세팅시
                               datas={[{value : '999', label : '전체'},{value : 'receipt', label : '계산서'},{value : 'card', label : '카드'},{value : 'cash', label : '현금'}]}
                />
+            <DatePickerComp 
+               title="마감년월"
+               value = {inputValues.yyyyMmS}
+               layout="flex"
+               textAlign="right"
+               minWidth="100px"
+               onChange={(e) => { 
+                  onInputChange('yyyyMmS', e);  
+                  }} 
+               format="yyyy-MM"
+               type="month"
+            />
          </div>
       </div>
    );
@@ -440,6 +454,10 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       { header: "패키지", name: "pkgItemNm", width: 120 },
       { header: "주문상태", name: "poStatusNm", width: 120 },
       { header: "상품구분", name: "exDivNm", width: 120 },
+      { header: "부서", name: "deptNm", width: 120 },
+      { header: "직급", name: "roleNm", width: 120 },
+      { header: "경조사유", name: "hsNm", width: 120 },
+      { header: "배송지", name: "dlvyNm", width: 250 },
    ];
 
    const summary = {

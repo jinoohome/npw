@@ -1,4 +1,4 @@
-import { React, useEffect, useState, useRef, useCallback, initChoice, updateChoices, alertSwal, DatePickerComp, RadioGroup, getGridCheckedDatas2, fetchPost, Breadcrumb, TuiGrid01, commas, reSizeGrid, InputComp, SelectSearchComp, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, DateRangePickerComp, date } from "../../comp/Import";
+import { React, useEffect, useState, useRef, SelectSearch, useCallback, initChoice, updateChoices, alertSwal, DatePickerComp, RadioGroup, getGridCheckedDatas2, fetchPost, Breadcrumb, TuiGrid01, commas, reSizeGrid, InputComp, SelectSearchComp, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, DateRangePickerComp, date } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, PencilIcon } from "@heroicons/react/24/outline";
@@ -29,6 +29,7 @@ const So0102 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       startDate: date(-1, 'month'),
       // endDate: date(),
+      poBpS: userInfo.usrDiv !== '999' ? userInfo.bpCd : '999',
    });
 
    const onInputChange = (name: string, value: any) => {
@@ -67,7 +68,7 @@ const So0102 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       };
   
       handleSearch();
-  }, [inputValues.startDate, inputValues.endDate]);
+  }, [inputValues.startDate, inputValues.endDate, , inputValues.poBpS]);
 
  
    //---------------------- api -----------------------------
@@ -77,6 +78,7 @@ const So0102 = ({ item, activeComp, leftMode, userInfo }: Props) => {
         const param = {
           startDt: inputValues.startDate,
           endDt: inputValues.endDate,
+          poBpS: inputValues.poBpS || '999',
         };
     
         const data = JSON.stringify(param);
@@ -141,7 +143,22 @@ const So0102 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                      onInputChange('endDate', endDate);   
             }
             
-            } />            
+            } />  
+            <SelectSearch  title="관할구역" 
+                           value={inputValues.poBpS}
+                           onChange={(label, value) => {
+                                 onInputChange('poBpS', value);
+                              }}
+
+                           readonly={userInfo.usrDiv !== '999' ? true : false}
+                           addData={"999"}
+
+                           //초기값 세팅시
+                           stringify={true}
+                           param={{ coCd: "100",bpType : "ZZ0003", bpNm : '999', bpDiv: '999' }}
+                           procedure="ZZ_B_PO_BP"
+                           dataKey={{ label: "bpNm", value: "bpCd" }}
+               />          
          </div>
       </div>
    );

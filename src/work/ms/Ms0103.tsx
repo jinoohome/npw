@@ -198,6 +198,7 @@ const Ms0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "수량", name: "soQty", align: "center", width: 120, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "단가", name: "cost", align: "right", width: 120, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "수수료", name: "purchaseAmt", align: "right", width: 120, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "매출금액", name: "soAmt", align: "right", width: 120, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
    ];
 
    const summary = {
@@ -216,6 +217,12 @@ const Ms0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             }
          },
          purchaseAmt: {
+            template: (e:any) => {                  
+               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
+               return `${commas(data)}`; // 합계 표시
+               }
+         },   
+         soAmt: {
             template: (e:any) => {                  
                const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
                return `${commas(data)}`; // 합계 표시

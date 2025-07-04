@@ -1,4 +1,4 @@
-import { React, useEffect, useState, useRef, CommonModal, TextArea2, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, commas, reSizeGrid, InputComp, SelectSearchComp, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, DateRangePickerComp, date } from "../../comp/Import";
+import { React, useEffect, useState, useRef, SelectSearch, CommonModal, TextArea2, useCallback, initChoice, updateChoices, alertSwal, fetchPost, Breadcrumb, TuiGrid01, commas, reSizeGrid, InputComp, SelectSearchComp, refreshGrid, getGridDatas, InputComp1, InputComp2, SelectComp1, SelectComp2, DateRangePickerComp, date } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { OptColumn } from "tui-grid/types/options";
 import { ChevronRightIcon, SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon } from "@heroicons/react/24/outline";
@@ -31,6 +31,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
    const searchRef4 = useRef<any>(null);
    const searchRef5 = useRef<any>(null);
    const searchRef6 = useRef<any>(null);
+   const searchRef7 = useRef<any>(null);
 
    const [gridDatas1, setGridDatas] = useState<any[]>();
 
@@ -38,6 +39,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       startDate: date(-1, 'month'),
       endDate: date(),
       status: '999',
+      mouYn: '999',
    });
 
    const onInputChange = (name: string, value: any) => {
@@ -89,7 +91,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       };
   
       handleSearch();
-  }, [inputValues.status, inputValues.startDate, inputValues.endDate]);
+  }, [inputValues.status, inputValues.startDate, inputValues.endDate, inputValues.mouYn]);
 
  
    //---------------------- api -----------------------------
@@ -105,6 +107,8 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
          soNo: searchRef4.current?.value || '999',
          status: inputValues.status || '999',
          dlvyNm: searchRef6.current?.value || '999',
+         mouYn: inputValues.mouYn || '999',
+         itemNm: searchRef7.current?.value || '999',
       };
 
       const data = JSON.stringify(param);
@@ -195,6 +199,19 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
                           onChange={(e)=>{
                           onInputChange('dlvyNmS', e);
                      }} />
+               <SelectSearch  title="지원대상&MOU" 
+                  value={inputValues.mouYn}
+                  onChange={(label, value) => {
+                        onInputChange('mouYn', value);
+                     }}                           
+
+                  //초기값 세팅시
+                  datas={[{value : '999', label : '전체'},{value : '1', label : 'Y'},{value : '0', label : 'N'}]}
+            />
+            <InputComp title="품목" ref={searchRef7} value={inputValues.itemNm} handleCallSearch={handleCallSearch} 
+                          onChange={(e)=>{
+                          onInputChange('itemNm', e);
+                     }} />
          </div>
       </div>
    );
@@ -250,6 +267,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       { header: "계산서입금일", name: "chkReceiptDt", align: "center", width: 120 },
       { header: "카드입금일", name: "chkCardtDt", align: "center", width: 120 },
       { header: "현금입금일", name: "chkCashDt", align: "center", width: 120 },
+      { header: "무상사유", name: "reason", width: 200 },
    ];
 
    const Grid1 = () => (

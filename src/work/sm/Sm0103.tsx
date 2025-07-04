@@ -89,12 +89,14 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       };
   
       handleSearch();
-  }, [inputValues.closeYnPoBpS, inputValues.poBpS, inputValues.startDate, inputValues.endDate]);
+  }, [inputValues.yyyyMmS, inputValues.closeYnPoBpS, inputValues.poBpS, inputValues.startDate, inputValues.endDate]);
 
  
    //---------------------- api -----------------------------
 
    const SM0103_S01 = async () => {
+      const yyyyMm = inputValues.yyyyMmS ? inputValues.yyyyMmS.slice(0, 7).replace('-','') : '999';
+
       try {
         const param = {
           startDt: inputValues.startDate,
@@ -105,7 +107,7 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
           poBpNm: inputValues.poBpS || '999',
           empNm: inputValues.empNmS || '999',
           ownNm: inputValues.ownNmS || '999',
-          yyyyMm: '999',
+          yyyyMm: yyyyMm,
           closeYn: inputValues.closeYnPoBpS || '999',
         };
     
@@ -384,6 +386,18 @@ const So0103 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                           onChange={(e)=>{
                           onInputChange('ownNmS', e);
                      }} />
+            <DatePickerComp 
+               title="마감년월"
+               value = {inputValues.yyyyMmS}
+               layout="flex"
+               textAlign="right"
+               minWidth="100px"
+               onChange={(e) => { 
+                  onInputChange('yyyyMmS', e);  
+                  }} 
+               format="yyyy-MM"
+               type="month"
+            />
          </div>
       </div>
    );
