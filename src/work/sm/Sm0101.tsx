@@ -31,6 +31,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
    const searchRef5 = useRef<any>(null);
    const searchRef6 = useRef<any>(null);
    const searchRef7 = useRef<any>(null);
+   const searchRef8 = useRef<any>(null);
 
    const [gridDatas1, setGridDatas] = useState<any[]>();
 
@@ -141,7 +142,7 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
           endDt: inputValues.endDate,
           soNo: searchRef1.current?.value || '999',
           bpNm: searchRef2.current?.value || '999',
-          ownNm: '999',
+          ownNm: searchRef8.current?.value || '999',
           dlvyNm: searchRef3.current?.value || '999',
           payYn: inputValues.payYnS || '999',
           yyyyMm: yyyyMm,
@@ -429,6 +430,10 @@ const So0101 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
                format="yyyy-MM"
                type="month"
             />
+            <InputComp title="대상자" ref={searchRef8} value={inputValues.ownNmS} handleCallSearch={handleCallSearch} 
+                          onChange={(e)=>{
+                          onInputChange('ownNmS', e);
+                     }} />  
          </div>
       </div>
    );

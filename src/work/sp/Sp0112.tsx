@@ -181,6 +181,9 @@ const Sp0108 = ({ item, activeComp, userInfo }: Props) => {
                   { value: "F", label: "작업완료일" },
                ]}
             />
+            <div className="col-span-4 whitespace-pre pl-12 text-sm text-blue-500 ">
+               {inputValues.txt}
+            </div>
          </div>
          <div className="flex space-x-4">
             {/* <div className="flex items-center space-x-2">

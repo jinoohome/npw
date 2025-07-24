@@ -190,8 +190,7 @@ const So0201 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const search = async () => {
       await fetchWithLoading(async () => {
          try {
-            const result = await SM0201_S01();
-            setGridDatas(result);
+            await SM0201_S01();
          } catch (error) {
             console.error("Search Error:", error);
          }
