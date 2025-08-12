@@ -46,21 +46,28 @@ const Sp0101 = ({ item, activeComp, userInfo, soNo, soSeq }: Props) => {
    const [files1, setFiles1] = useState<File[]>([]);
    const [files2, setFiles2] = useState<File[]>([]);
 
-   const handleFilesChange = (newFile: File[], uploadedFiles: any, deletedFiles: any) => {
+      const handleFilesChange = (newFile: File[], uploadedFiles: any, deletedFiles: any) => {
       setFiles1(newFile); // 업데이트된 파일 리스트를 저장
       onInputChange("reportFiles", uploadedFiles);
      
-      const currentDeletedFiles = inputValues.deleteFiles || [];
-  
-      onInputChange("deleteFiles", [...currentDeletedFiles, ...deletedFiles]);
+      // photoFiles의 삭제된 파일들과 합쳐서 저장
+      const photoDeletedFiles = inputValues.deleteFiles?.filter((file: any) => 
+         inputValues.photoFiles?.some((photo: any) => photo.saveFileName === file.saveFileName)
+      ) || [];
+      
+      onInputChange("deleteFiles", [...deletedFiles, ...photoDeletedFiles]);
    };
 
-   const handleFilesChange2 = (newFiles: File[], uploadedFiles: any, deletedFiles: any) => {
+      const handleFilesChange2 = (newFiles: File[], uploadedFiles: any, deletedFiles: any) => {
       setFiles2(newFiles); // 업데이트된 파일 리스트를 저장
       onInputChange("photoFiles", uploadedFiles);
-     const currentDeletedFiles = inputValues.deleteFiles || [];
-  
-      onInputChange("deleteFiles", [...currentDeletedFiles, ...deletedFiles]);
+      
+      // reportFiles의 삭제된 파일들과 합쳐서 저장
+      const reportDeletedFiles = inputValues.deleteFiles?.filter((file: any) => 
+         inputValues.reportFiles?.some((report: any) => report.saveFileName === file.saveFileName)
+      ) || [];
+      
+      onInputChange("deleteFiles", [...deletedFiles, ...reportDeletedFiles]);
    };
 
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
