@@ -965,6 +965,24 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
 
          handleTabIndex(0);
 
+
+         // 결제처리 탭 관련 필드들 초기화
+         // setInputDivVisible(0);
+         onInputChange('payYn', '');
+         onInputChange('amt', '');
+         onInputChange('netAmt', '');
+         onInputChange('vatAmt', '');
+         onInputChange('cardNo', '');
+         onInputChange('cardExpDate', '');
+         onInputChange('authNo', '');
+         onInputChange('cancelTid', '');
+         onInputChange('installment', '00');
+         onInputChange('remark', '');
+         onInputChange('dpsNm', '');
+         onInputChange('reqType', '0');
+         onInputChange('pids', '');
+         onInputChange('remark2', '');
+
          // 고객사별 참고사항
          let tip = await SO0201_P05({ bpCd: result[0].soldToParty });
          setGridDatas1(tip);
