@@ -255,6 +255,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       { header: "장지", name: "jangji", align: "left", width: 200 },
       { header: "장지 수기입력", name: "jangjiEtc", align: "left", width: 150 },
       { header: "상조추천인", name: "referrer", align: "left", width: 100 },
+      { header: "상조추천경로", name: "referrerCd", align: "left", width: 100 },
       { header: "품목 기타", name: "mouEtc", align: "left", width: 100 },
       { header: "이미지 기타", name: "imageEtc", align: "left", width: 100 },
       { header: "별세일시", name: "dDt1", align: "left", width: 150 },

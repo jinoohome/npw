@@ -2576,7 +2576,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
 
 
       const totalPaidAmt = paidAmt.reduce((sum: number, row: any) => {
-         return row.payYn === 'FU0022' ? sum + (row.amt || 0) : sum;
+         return row.payYn === 'FU0022' && row.sysDiv === 'WEB' ? sum + (row.amt || 0) : sum;
       }, 0);
 
 
