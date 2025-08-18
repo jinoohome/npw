@@ -972,7 +972,7 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
          // 상품정보
          let itemInfo = await SO0201_S02({ soNo: result[0].soNo });
 
-         console.log(itemInfo);
+         // console.log(itemInfo);
          // 'MANDATORY_YN' 값이 'Y'인 것만 체크된 상태로 설정
       
          setGridDatas(itemInfo);
