@@ -128,12 +128,14 @@ const So0201 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       };
   
       handleSearch();
-  }, [inputValues.workCd, inputValues.closeYnS]);
+  }, [inputValues.yyyyMmS, inputValues.workCd, inputValues.closeYnS]);
 
  
    //---------------------- api -----------------------------
 
    const SM0201_S01 = async () => {
+      const yyyyMm = inputValues.yyyyMmS ? inputValues.yyyyMmS.slice(0, 7).replace('-','') : '999';
+
       try {
         const param = {
           coCd: userInfo.coCd,
@@ -143,6 +145,7 @@ const So0201 = ({ item, activeComp, leftMode, userInfo }: Props) => {
           bpNm: searchRef2.current?.value || '999',
           poBpNm: searchRef3.current?.value || '999',
           workCd: inputValues.workCd || '999',
+          yyyyMm: yyyyMm,
           closeYn: inputValues.closeYnS || '999',
         };
     
@@ -328,6 +331,18 @@ const So0201 = ({ item, activeComp, leftMode, userInfo }: Props) => {
 
                               //초기값 세팅시
                               datas={[{value : '999', label : '전체'},{value : 'Y', label : '마감완료'},{value : 'N', label : '마감전'}]}
+            />
+            <DatePickerComp 
+               title="마감년월"
+               value = {inputValues.yyyyMmS}
+               layout="flex"
+               textAlign="right"
+               minWidth="100px"
+               onChange={(e) => { 
+                  onInputChange('yyyyMmS', e);  
+                  }} 
+               format="yyyy-MM"
+               type="month"
             />
          </div>
       </div>
