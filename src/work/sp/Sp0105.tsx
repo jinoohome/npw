@@ -1000,6 +1000,10 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
                           readOnly={true}
                onChange={(e) => onInputChange("erpCode", e)} />
 
+               <InputComp title="신청담당자" value={inputValues.reqUserId} 
+                          readOnly={true}
+               onChange={(e) => onInputChange("reqUserId", e)} />
+
                <InputComp title="연락처" value={inputValues.telNo} 
                           readOnly={true}
                onChange={(e) => onInputChange("telNo", e)} />
