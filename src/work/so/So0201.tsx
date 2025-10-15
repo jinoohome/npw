@@ -1395,19 +1395,36 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
                   ordererAlimYn: ordererAlimYn, // 대상자, 주문자 알림톡 전송 여부 (Y/N)
                   partnerAlimYn: partnerAlimYn, // 협력업체 알림톡 전송 여부 (Y/N)
                   customerAlimYn: customerAlimYn, // 고객사 담당자 알림톡 전송 여부 (Y/N)
-                  tmpCd: inputValues.hsDiv !== '경사' ? 'SJR_061449' : 'SJR_061450',
+                   tmpCd: (() => {
+                     const hsDiv = inputValues.hsDiv?.trim() || '';
+                     if (hsDiv === '경사') {
+                       return 'SJR_061450'; // 경사용 취소 템플릿
+                     } else if (hsDiv === '조사') {
+                       return 'SJR_061449'; // 조사용 취소 템플릿  
+                     } else {
+                       // 경사도 조사도 아닌 경우 알림톡 발송 중단
+                       console.warn(`알 수 없는 hsDiv 값: "${hsDiv}". 알림톡 발송을 중단합니다.`);
+                       return null; // null 반환으로 알림톡 발송 중단
+                     }
+                   })(),
                   callback: callback,
                   soItem: soItem,
                };
 
                // console.log(data);
    
-               if (data) {
-                  let result = await SO0201_U08(data);
-                  if (result) {
-                     await returnResult(result, data.div);
-                  }
-               }
+                // tmpCd가 null이면 알림톡 발송하지 않음
+                if (data && data.tmpCd) {
+                   let result = await SO0201_U08(data);
+                   if (result) {
+                      await returnResult(result, data.div);
+                   }
+                } else if (data && !data.tmpCd) {
+                   // 알림톡 발송 없이 주문취소만 처리
+                   console.log('hsDiv 구분이 불명확하여 알림톡 발송을 생략합니다.');
+                   // 주문취소 처리는 이미 완료된 상태이므로 성공 메시지만 표시
+                   await returnResult({msgCd: "1", msgText: "주문취소가 완료되었습니다. (알림톡 발송 생략)", msgStatus: "success"}, data.div);
+                }
             } else if (result.isDismissed) {
                return;
             }
@@ -1546,19 +1563,36 @@ const fnConfirm = async () => {
             ordererAlimYn: ordererAlim, // 대상자, 주문자 알림톡 전송 여부 (Y/N)
             partnerAlimYn: partnerAlim, // 협력업체 알림톡 전송 여부 (Y/N)
             customerAlimYn: customerAlim, // 고객사 담당자 알림톡 전송 여부 (Y/N)
-            tmpCd: inputValues.hsDiv !== '경사' ? 'SJR_061447' : 'SJR_061448',
+             tmpCd: (() => {
+               const hsDiv = inputValues.hsDiv?.trim() || '';
+               if (hsDiv === '경사') {
+                 return 'SJR_061448'; // 경사용 템플릿
+               } else if (hsDiv === '조사') {
+                 return 'SJR_061447'; // 조사용 템플릿  
+               } else {
+                 // 경사도 조사도 아닌 경우 알림톡 발송 중단
+                 console.warn(`알 수 없는 hsDiv 값: "${hsDiv}". 알림톡 발송을 중단합니다.`);
+                 return null; // null 반환으로 알림톡 발송 중단
+               }
+             })(),
             callback: callback,
             soItem: soItem,
           };
    
          // console.log(data);
        
-          if (data) {
-            const result = await SO0201_U08(data);
-            if (result) {
-              await returnResult(result, data.div);
-            }
-          }
+           // tmpCd가 null이면 알림톡 발송하지 않음
+           if (data && data.tmpCd) {
+             const result = await SO0201_U08(data);
+             if (result) {
+               await returnResult(result, data.div);
+             }
+           } else if (data && !data.tmpCd) {
+             // 알림톡 발송 없이 주문확정만 처리
+             console.log('hsDiv 구분이 불명확하여 알림톡 발송을 생략합니다.');
+             // 주문확정 처리는 이미 완료된 상태이므로 성공 메시지만 표시
+             await returnResult({msgCd: "1", msgText: "주문확정이 완료되었습니다. (알림톡 발송 생략)", msgStatus: "success"}, data.div);
+           }
         } else if (result.isDismissed) {
           return;
         }
@@ -2928,7 +2962,8 @@ const changeSoPrice = async (price: number, rowKey: any) => {
 
                                     onInputChange('itemType', '');  
                                     const [hsDiv] = label.split(':'); // ":" 기준으로 분리, 첫 번째 값 추출
-                                    onInputChange('hsDiv', hsDiv); // 추출한 값으로 hsDiv 업데이트
+                                     const cleanHsDiv = hsDiv?.trim() || ''; // 공백 제거 및 안전 처리
+                                     onInputChange('hsDiv', cleanHsDiv); // 정제된 값으로 hsDiv 업데이트
                                     onInputChange('hsNm', label); 
 
                                  
