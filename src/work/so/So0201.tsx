@@ -3369,7 +3369,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                                     setChangeGridData("payYn", value);
                                  }}
                               // readonly={true}
-                              readonly={userInfo.usrId !== "alstj"}
+                              readonly={userInfo.usrId !== "alstj" && userInfo.usrId !== "tjsgk"}
 
                               //초기값 세팅시
                               param={{ coCd: "999", majorCode: "FU0008", div: "-999" }}
