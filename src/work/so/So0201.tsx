@@ -1039,6 +1039,7 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
          if (result[0].hsNm) {
             const [hsDiv] = result[0].hsNm.split(':');
             const cleanHsDiv = hsDiv?.trim() || '';
+            console.log(cleanHsDiv);
             onInputChange('hsDiv', cleanHsDiv);
             // hsNm도 정제된 값으로 다시 세팅 (일관성 유지)
             onInputChange('hsNm', result[0].hsNm);
@@ -1407,7 +1408,7 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
                      const hsDiv = inputValues.hsDiv?.trim() || '';
                      if (hsDiv === '경사') {
                        return 'SJR_061450'; // 경사용 취소 템플릿
-                     } else if (hsDiv === '조사') {
+                     } else if (hsDiv === '애사') {
                        return 'SJR_061449'; // 조사용 취소 템플릿  
                      } else {
                        // 경사도 조사도 아닌 경우 알림톡 발송 중단
@@ -1480,6 +1481,7 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
 
 // 주문확정
 const fnConfirm = async () => {
+   console.log(inputValues.hsDiv);
   
    setErrorMsgs({});
    const gridInstance = gridRef3.current.getInstance();
@@ -1575,7 +1577,7 @@ const fnConfirm = async () => {
                const hsDiv = inputValues.hsDiv?.trim() || '';
                if (hsDiv === '경사') {
                  return 'SJR_061448'; // 경사용 템플릿
-               } else if (hsDiv === '조사') {
+               } else if (hsDiv === '애사') {
                  return 'SJR_061447'; // 조사용 템플릿  
                } else {
                  // 경사도 조사도 아닌 경우 알림톡 발송 중단
