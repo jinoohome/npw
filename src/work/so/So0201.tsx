@@ -1035,6 +1035,14 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
          onInputChange('subCode', result[0].subCode);
          onInputChange('hsCd', result[0].hsCd);
          onInputChange('hsNm', result[0].hsNm);
+         // hsNm에서 hsDiv 추출 (콜론 앞부분)
+         if (result[0].hsNm) {
+            const [hsDiv] = result[0].hsNm.split(':');
+            const cleanHsDiv = hsDiv?.trim() || '';
+            onInputChange('hsDiv', cleanHsDiv);
+            // hsNm도 정제된 값으로 다시 세팅 (일관성 유지)
+            onInputChange('hsNm', result[0].hsNm);
+         }
          onInputChange('itemType', result[0].itemType);
          onInputChange('deptNm', result[0].deptNm);
          onInputChange('roleNm', result[0].roleNm);
@@ -2962,9 +2970,12 @@ const changeSoPrice = async (price: number, rowKey: any) => {
 
                                     onInputChange('itemType', '');  
                                     const [hsDiv] = label.split(':'); // ":" 기준으로 분리, 첫 번째 값 추출
+                                  
                                      const cleanHsDiv = hsDiv?.trim() || ''; // 공백 제거 및 안전 처리
-                                     onInputChange('hsDiv', cleanHsDiv); // 정제된 값으로 hsDiv 업데이트
+                                    
+                                    onInputChange('hsDiv', cleanHsDiv); // 정제된 값으로 hsDiv 업데이트
                                     onInputChange('hsNm', label); 
+                                  
 
                                  
 
