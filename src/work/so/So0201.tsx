@@ -3160,7 +3160,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
             </div>
             <div className="grid grid-cols-2 gap-3  justify-around items-center">
                <InputComp value={inputValues.roomNo} title="호실" target="roomNo"  minWidth="100px" layout="flex"
-                           readOnly={isInputReadonly}
+                           // readOnly={false}
                           onChange={(e) => {
                            onInputChange('roomNo', e);                           
                         }}   />
