@@ -10,6 +10,7 @@ import DOMPurify from "dompurify";
 
 interface Props {
    columns: any[];
+   complexColumns?: any[];
    handleEditingStart?: (ev: any) => void;
    handleEditingFinish?: (ev: any) => void;
    handleFocusChange?: (rowKey: any) => void;
@@ -205,7 +206,7 @@ const getGridCheckedDatas2 = (gridRef: any) => {
    return updatedDatas;
 };
 
-const TuiGrid01 = ({ columns, handleEditingStart, handleEditingFinish, handleFocusChange, handleAfterChange, handleClick, handleDblClick, beforeChange, afterChange, check, uncheck, afterRender, headerHeight = 40,
+const TuiGrid01 = ({ columns, complexColumns, handleEditingStart, handleEditingFinish, handleFocusChange, handleAfterChange, handleClick, handleDblClick, beforeChange, afterChange, check, uncheck, afterRender, headerHeight = 40,
                      gridRef, treeColumnName, perPageYn = true, perPage = 50, height = window.innerHeight - 450, summary ,rowHeaders=["rowNum"] }: Props) => {
    // 고유한 key 생성을 위해 Math.random() 사용
    TuiGrid.applyTheme("default", {
@@ -237,7 +238,10 @@ const TuiGrid01 = ({ columns, handleEditingStart, handleEditingFinish, handleFoc
       ref: gridRef,
       editingEvent: "click", // EditingEvent 타입으로 캐스팅합니다.
       columns,
-      header : {height : headerHeight},
+      header : {
+         height : headerHeight,
+         ...(complexColumns && { complexColumns: complexColumns })
+      },
       bodyHeight: height,
       rowHeight: 'auto', 
       scrollX: true,

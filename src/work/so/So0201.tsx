@@ -1972,6 +1972,23 @@ const fnConfirm = async () => {
 
             // 사전상담
             let preRcpt = await SO0101_S02({ preRcptNo: result[0].preRcptNo });
+            
+            if (preRcpt && preRcpt.length > 0) {
+               // 기존 사전상담 정보가 있으면 알림 팝업 표시
+               await Swal.fire({
+                  title: '사전상담 정보 확인',
+                  html: `
+                     <div style="text-align: center; padding: 10px;">
+                        <p><strong>등록된 사전상담 정보가 있습니다.</strong></p>
+                        <p style="margin-top: 5px;"><span style="color: #f97316; font-weight: bold;">사전상담 탭</span>에서 확인해주세요.</p>
+                     </div>
+                  `,
+                  icon: 'info',
+                  confirmButtonText: '확인',
+                  confirmButtonColor: '#3085d6',
+               });
+            }
+            
             setGridDatas4(preRcpt);
          }
       });
