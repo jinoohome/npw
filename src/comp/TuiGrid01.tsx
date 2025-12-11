@@ -21,6 +21,7 @@ interface Props {
    afterChange?: (ev: any) => void; 
    check?: (ev: any) => void;
    uncheck?: (ev: any) => void;
+   handleCheck?: (ev: any) => void;
    afterRender?: (ev: any) => void;
    gridRef: RefObject<Grid>;
    treeColumnName?: string;
@@ -206,7 +207,7 @@ const getGridCheckedDatas2 = (gridRef: any) => {
    return updatedDatas;
 };
 
-const TuiGrid01 = ({ columns, complexColumns, handleEditingStart, handleEditingFinish, handleFocusChange, handleAfterChange, handleClick, handleDblClick, beforeChange, afterChange, check, uncheck, afterRender, headerHeight = 40,
+const TuiGrid01 = ({ columns, complexColumns, handleEditingStart, handleEditingFinish, handleFocusChange, handleAfterChange, handleClick, handleDblClick, beforeChange, afterChange, check, uncheck, handleCheck, afterRender, headerHeight = 40,
                      gridRef, treeColumnName, perPageYn = true, perPage = 50, height = window.innerHeight - 450, summary ,rowHeaders=["rowNum"] }: Props) => {
    // 고유한 key 생성을 위해 Math.random() 사용
    TuiGrid.applyTheme("default", {
@@ -301,6 +302,12 @@ const TuiGrid01 = ({ columns, complexColumns, handleEditingStart, handleEditingF
    if (uncheck) {
       // uncheck가 제공되었을 경우에만 설정합니다.
       gridProps.onUncheck = uncheck;
+   }
+
+   if (handleCheck) {
+      // handleCheck가 제공되었을 경우에만 설정합니다.
+      gridProps.onCheck = handleCheck;
+      gridProps.onUncheck = handleCheck;
    }
 
    if (afterRender) {
