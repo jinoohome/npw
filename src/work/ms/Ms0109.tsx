@@ -153,9 +153,10 @@ const Ms0109 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "업체명", name: "bpFullNm", align: "center", width: 200 },
       { header: "조사용품\n(일반)", name: "box", width: 120, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "조사용품\n(투자증권,남해화학)", name: "boxTuNam", width: 150, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "지급수수료", name: "dlvyAmt", width: 120, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "용역비", name: "dlvyAmtEtc", width: 120, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "패키지", name: "pkgAmt", width: 120, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "일반", name: "dlvyAmt", width: 120, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "투자증권/남해화학", name: "dlvyAmtEtc", width: 150, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "용역비", name: "pkgAmt", width: 120, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "총 지급수수료", name: "totalPkgAmt", width: 120, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "비고", name: "remark", align: "left" },
    ];
 
@@ -164,7 +165,12 @@ const Ms0109 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       {
          header: "세부내역",
          name: "detailGroup",
-         childNames: ["box", "boxTuNam", "dlvyAmt", "dlvyAmtEtc", "pkgAmt"]
+         childNames: ["box", "boxTuNam", "feeGroup", "pkgAmt"]
+      },
+      {
+         header: "지급수수료",
+         name: "feeGroup",
+         childNames: ["dlvyAmt", "dlvyAmtEtc"]
       }
    ];
 
@@ -197,6 +203,12 @@ const Ms0109 = ({ item, activeComp, leftMode, userInfo }: Props) => {
             }
          },
          dlvyAmtEtc: {
+            template: (e:any) => {                  
+               const data = e.sum;           
+               return `${commas(data)}`;
+            }
+         },
+         totalPkgAmt: {
             template: (e:any) => {                  
                const data = e.sum;           
                return `${commas(data)}`;
