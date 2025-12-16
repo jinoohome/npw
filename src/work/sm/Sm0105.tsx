@@ -29,8 +29,11 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
    const searchRef2 = useRef<any>(null);
    const searchRef3 = useRef<any>(null);
    const searchRef4 = useRef<any>(null);
+   const searchRef5 = useRef<any>(null);
 
    const [gridDatas1, setGridDatas] = useState<any[]>();
+   const [originalDatas, setOriginalDatas] = useState<any[]>([]);
+   const [pkgFilter, setPkgFilter] = useState<boolean>(false);
 
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       startDate: date(-1, 'month'),
@@ -100,6 +103,18 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       handleSearch();
   }, [inputValues.yyyyMmS, inputValues.closeYnPoBpS, inputValues.poBpS, inputValues.startDate, inputValues.endDate]);
 
+   // 패키지신청 필터 변경 시 적용
+   useEffect(() => {
+      if (originalDatas.length > 0) {
+         if (pkgFilter) {
+            const filteredData = originalDatas.filter((row: any) => row.itemNm === '패키지신청');
+            setGridDatas(filteredData);
+         } else {
+            setGridDatas(originalDatas);
+         }
+      }
+   }, [pkgFilter]);
+
  
    //---------------------- api -----------------------------
 
@@ -115,6 +130,7 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
           bpNm: searchRef3.current?.value || '999',
           poBpNm: inputValues.poBpS || '999',
           ownNm: searchRef4.current?.value || '999',
+          itemNm: searchRef5.current?.value || '999',
           yyyyMm: yyyyMm,
           closeYn: 'Y',
         };
@@ -124,12 +140,23 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
     
         if (!result || result.length === 0) {
           setGridDatas([]);
+          setOriginalDatas([]);
           return;
         }
 
-        setTimeout(() => {
-          setGridDatas(result);
-        }, 100);  // 100ms 딜레이 추가
+        setOriginalDatas(result);
+        
+        // 패키지신청 필터 적용
+        if (pkgFilter) {
+          const filteredData = result.filter((row: any) => row.itemNm === '패키지신청');
+          setTimeout(() => {
+            setGridDatas(filteredData);
+          }, 100);
+        } else {
+          setTimeout(() => {
+            setGridDatas(result);
+          }, 100);
+        }
     
         return result;
       } catch (error) {
@@ -200,7 +227,22 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
             <InputComp title="대상자" ref={searchRef4} value={inputValues.ownNmS} handleCallSearch={handleCallSearch} 
                           onChange={(e)=>{
                           onInputChange('ownNmS', e);
-                     }} />       
+                     }} />
+            <div className="flex items-center gap-2">
+               <InputComp title="품목명" ref={searchRef5} value={inputValues.itemNmS} handleCallSearch={handleCallSearch} 
+                             onChange={(e)=>{
+                             onInputChange('itemNmS', e);
+                        }} />
+               <label className="flex items-center cursor-pointer whitespace-nowrap">
+                  <input 
+                     type="checkbox" 
+                     checked={pkgFilter}
+                     onChange={(e) => setPkgFilter(e.target.checked)}
+                     className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                  />
+                  <span className="ml-1 text-gray-700">패키지</span>
+               </label>
+            </div>
             <SelectSearch title="관할구역" 
                               value={inputValues.poBpS}
                               onChange={(label, value) => {
@@ -243,8 +285,16 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       { header: "대상자", name: "ownNm", width: 80, align: "center" },
       { header: "배송지", name: "dlvyNm", width: 200},
       { header: "품목", name: "itemNm", width: 160 },
+      { header: "매출금액", name: "soAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "청구금액", name: "purchaseAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "공급금액", name: "purchaseNetAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "매출이익", name: "profitAmt", align: "right", width: 100, formatter: function(e: any) {
+         const soAmt = e.row.soAmt || 0;
+         const purchaseAmt = e.row.purchaseAmt || 0;
+         const profit = soAmt - purchaseAmt;
+         if (profit === 0) {return '0';} 
+         return commas(profit);
+      }},
       { header: "부가세", name: "purchaseVatAmt", align: "right", width: 80, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "MOU여부", name: "mouYn", width: 80, align: "center" },
       { header: "본부조정금액", name: "poAdjAmt", align: "right", width: 100, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
@@ -257,40 +307,53 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       height: 40,
       position: 'top', 
       columnContent: {
-         // bpNm: {
-         //      template: (e:any) => {
-         //          return  `총 ${e.cnt}개`;
-              
-         //      }
-         //  },     
          itemNm: {
             template: (e:any) => {
                 return `합계 : `;
             }
          },
+         soAmt: {
+            template: (e:any) => {                  
+               const data = e.sum;
+               return `${commas(data)}`;
+            }
+         },
          purchaseAmt: {
             template: (e:any) => {                  
-               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
-               return `${commas(data)}`; // 합계 표시
-               }
+               const data = e.sum;
+               return `${commas(data)}`;
+            }
          },   
          purchaseNetAmt: {
             template: (e:any) => {                  
-               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
-               return `${commas(data)}`; // 합계 표시
-               }
-         },  
+               const data = e.sum;
+               return `${commas(data)}`;
+            }
+         },
+         profitAmt: {
+            template: (valueMap:any) => {
+               const gridInstance = GridRef1.current?.getInstance();
+               if (!gridInstance) return '0';
+               const data = gridInstance.getData();
+               const totalProfit = data.reduce((sum: number, row: any) => {
+                  const soAmt = row.soAmt || 0;
+                  const purchaseAmt = row.purchaseAmt || 0;
+                  return sum + (soAmt - purchaseAmt);
+               }, 0);
+               return `${commas(totalProfit)}`;
+            }
+         },
          purchaseVatAmt: {
             template: (e:any) => {                  
-               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
-               return `${commas(data)}`; // 합계 표시
-               }
+               const data = e.sum;
+               return `${commas(data)}`;
+            }
          },
          poAdjAmt: {
             template: (e:any) => {                  
-               const data = e.sum; // e.data가 undefined일 경우 빈 배열로 대체            
-               return `${commas(data)}`; // 합계 표시
-               }
+               const data = e.sum;
+               return `${commas(data)}`;
+            }
          },
       }
    }
