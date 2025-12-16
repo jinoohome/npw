@@ -103,15 +103,10 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       handleSearch();
   }, [inputValues.yyyyMmS, inputValues.closeYnPoBpS, inputValues.poBpS, inputValues.startDate, inputValues.endDate]);
 
-   // 패키지신청 필터 변경 시 적용
+   // 패키지 필터 변경 시 재조회
    useEffect(() => {
       if (originalDatas.length > 0) {
-         if (pkgFilter) {
-            const filteredData = originalDatas.filter((row: any) => row.itemNm === '패키지신청');
-            setGridDatas(filteredData);
-         } else {
-            setGridDatas(originalDatas);
-         }
+         SM0104_S01();
       }
    }, [pkgFilter]);
 
@@ -131,6 +126,7 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
           poBpNm: inputValues.poBpS || '999',
           ownNm: searchRef4.current?.value || '999',
           itemNm: searchRef5.current?.value || '999',
+          pkgYn: pkgFilter ? 'Y' : 'N',
           yyyyMm: yyyyMm,
           closeYn: 'Y',
         };
@@ -146,17 +142,9 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
 
         setOriginalDatas(result);
         
-        // 패키지신청 필터 적용
-        if (pkgFilter) {
-          const filteredData = result.filter((row: any) => row.itemNm === '패키지신청');
-          setTimeout(() => {
-            setGridDatas(filteredData);
-          }, 100);
-        } else {
-          setTimeout(() => {
-            setGridDatas(result);
-          }, 100);
-        }
+        setTimeout(() => {
+          setGridDatas(result);
+        }, 100);
     
         return result;
       } catch (error) {
