@@ -152,34 +152,76 @@ const Ms0107 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    const grid1Columns = [
       { header: "", name: "poBpCd", hidden: true },
       { header: "업체명", name: "bpFullNm", align: "center", width: 200 },
-      { header: "조사용품", name: "box", width: 80, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      // 용품 (일반)
+      { header: "용품", name: "box", width: 80, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "편의용품", name: "boxPyun", width: 80, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "조사용품\n(남해화학)", name: "boxNam", width: 100, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "조사용품\n(NH투자증권)", name: "boxTu", width: 120, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "조사용품\n(진접농협)", name: "boxJin", width: 100, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "조사용품\n(별내농협)", name: "boxByul", width: 100, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "접객도우미\n(중앙회)", name: "dowme", width: 100, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "접객도우미\n(투자증권)", name: "dowmeTu", width: 120, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "매출", name: "soAmt", width: 120, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      // 남해화학
+      { header: "용품", name: "boxNam", width: 80, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "편의용품", name: "boxNamPyun", width: 80, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      // NH투자증권
+      { header: "용품", name: "boxTu", width: 80, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "편의용품", name: "boxTuPyun", width: 80, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      // 진접농협 (관내IN, 관외OUT, 편의용품)
+      { header: "관내(IN)", name: "boxJinIn", width: 80, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "관외(OUT)", name: "boxJinOut", width: 80, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "편의용품", name: "boxJinPyun", width: 80, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      // 별내농협 (관내IN, 관외OUT, 편의용품)
+      { header: "관내(IN)", name: "boxByulIn", width: 80, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "관외(OUT)", name: "boxByulOut", width: 80, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "편의용품", name: "boxByulPyun", width: 80, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      // 접객도우미 (중앙회)
+      { header: "도우미", name: "dowme", width: 80, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      // 접객도우미 (투자증권)
+      { header: "도우미", name: "dowmeTu", width: 80, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      // 매출, 원가, 이익
+      { header: "매출(A)", name: "soAmt", width: 120, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "업체위탁비\n(B1)", name: "purchaseAmt", width: 120, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "타부서원가배분\n(B2)", name: "purchaseAmtEtc", width: 150, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "물품구매비\n(B3)", name: "buyAmt", width: 120, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "매출이익\n(A-B1+B2-B3)", name: "benefit", width: 150, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
-      { header: "기타", name: "remark2", width: 100, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "물품구매비\n(B2)", name: "buyAmt", width: 120, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
+      { header: "매출이익\n(A-B1-B2)", name: "benefit", width: 150, align: "right", formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },
       { header: "권역", name: "poBpNm", width: 100, align: "center" },
    ];
 
-   // 컬럼 그룹 정의
+   // 컬럼 그룹 정의 (세부가 상위, 고객사별이 하위)
    const complexColumns = [
+      {
+         header: "일반",
+         name: "generalGroup",
+         childNames: ["box", "boxPyun"]
+      },
+      {
+         header: "남해화학",
+         name: "namGroup",
+         childNames: ["boxNam", "boxNamPyun"]
+      },
+      {
+         header: "NH투자증권",
+         name: "tuGroup",
+         childNames: ["boxTu", "boxTuPyun"]
+      },
+      {
+         header: "진접농협",
+         name: "jinGroup",
+         childNames: ["boxJinIn", "boxJinOut", "boxJinPyun"]
+      },
+      {
+         header: "별내농협",
+         name: "byulGroup",
+         childNames: ["boxByulIn", "boxByulOut", "boxByulPyun"]
+      },
+      {
+         header: "접객도우미\n(중앙회)",
+         name: "dowmeGroup",
+         childNames: ["dowme"]
+      },
+      {
+         header: "접객도우미\n(투자증권)",
+         name: "dowmeTuGroup",
+         childNames: ["dowmeTu"]
+      },
       {
          header: "세부",
          name: "detailGroup",
-         childNames: ["box", "boxPyun", "boxNam", "boxTu", "boxJin", "boxByul", "dowme", "dowmeTu"]
-      },
-      {
-         header: "",
-         name: "costGroup",
-         childNames: ["purchaseAmt", "purchaseAmtEtc", "buyAmt"]
+         childNames: ["generalGroup", "namGroup", "tuGroup", "jinGroup", "byulGroup", "dowmeGroup", "dowmeTuGroup"]
       }
    ];
 
@@ -189,94 +231,34 @@ const Ms0107 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       position: 'top', 
       columnContent: {
          bpFullNm: {
-            template: (e:any) => {
-                return `합계 : `;
-            }
+            template: (e:any) => { return `합계 : `; }
          },
-         box: {
-            template: (e:any) => {                  
-               const data = e.sum;           
-               return `${commas(data)}`;
-            }
-         },
-         boxPyun: {
-            template: (e:any) => {                  
-               const data = e.sum;           
-               return `${commas(data)}`;
-            }
-         },
-         boxNam: {
-            template: (e:any) => {                  
-               const data = e.sum;           
-               return `${commas(data)}`;
-            }
-         },
-         boxTu: {
-            template: (e:any) => {                  
-               const data = e.sum;           
-               return `${commas(data)}`;
-            }
-         },
-         boxJin: {
-            template: (e:any) => {                  
-               const data = e.sum;           
-               return `${commas(data)}`;
-            }
-         },
-         boxByul: {
-            template: (e:any) => {                  
-               const data = e.sum;           
-               return `${commas(data)}`;
-            }
-         },
-         dowme: {
-            template: (e:any) => {                  
-               const data = e.sum;           
-               return `${commas(data)}`;
-            }
-         },
-         dowmeTu: {
-            template: (e:any) => {                  
-               const data = e.sum;           
-               return `${commas(data)}`;
-            }
-         },
-         soAmt: {
-            template: (e:any) => {                  
-               const data = e.sum;           
-               return `${commas(data)}`;
-            }
-         },
-         purchaseAmt: {
-            template: (e:any) => {                  
-               const data = e.sum;           
-               return `${commas(data)}`;
-            }
-         },
-         purchaseAmtEtc: {
-            template: (e:any) => {                  
-               const data = e.sum;           
-               return `${commas(data)}`;
-            }
-         },
-         buyAmt: {
-            template: (e:any) => {                  
-               const data = e.sum;           
-               return `${commas(data)}`;
-            }
-         },
-         benefit: {
-            template: (e:any) => {                  
-               const data = e.sum;           
-               return `${commas(data)}`;
-            }
-         },
-         remark2: {
-            template: (e:any) => {                  
-               const data = e.sum;           
-               return `${commas(data)}`;
-            }
-         },
+         // 일반
+         box: { template: (e:any) => `${commas(e.sum)}` },
+         boxPyun: { template: (e:any) => `${commas(e.sum)}` },
+         // 남해화학
+         boxNam: { template: (e:any) => `${commas(e.sum)}` },
+         boxNamPyun: { template: (e:any) => `${commas(e.sum)}` },
+         // NH투자증권
+         boxTu: { template: (e:any) => `${commas(e.sum)}` },
+         boxTuPyun: { template: (e:any) => `${commas(e.sum)}` },
+         // 진접농협
+         boxJinIn: { template: (e:any) => `${commas(e.sum)}` },
+         boxJinOut: { template: (e:any) => `${commas(e.sum)}` },
+         boxJinPyun: { template: (e:any) => `${commas(e.sum)}` },
+         // 별내농협
+         boxByulIn: { template: (e:any) => `${commas(e.sum)}` },
+         boxByulOut: { template: (e:any) => `${commas(e.sum)}` },
+         boxByulPyun: { template: (e:any) => `${commas(e.sum)}` },
+         // 접객도우미 (중앙회)
+         dowme: { template: (e:any) => `${commas(e.sum)}` },
+         // 접객도우미 (투자증권)
+         dowmeTu: { template: (e:any) => `${commas(e.sum)}` },
+         // 매출, 원가, 이익
+         soAmt: { template: (e:any) => `${commas(e.sum)}` },
+         purchaseAmt: { template: (e:any) => `${commas(e.sum)}` },
+         buyAmt: { template: (e:any) => `${commas(e.sum)}` },
+         benefit: { template: (e:any) => `${commas(e.sum)}` },
       }
    };
 
@@ -297,7 +279,7 @@ const Ms0107 = ({ item, activeComp, leftMode, userInfo }: Props) => {
                gridRef={GridRef1} 
                height={window.innerHeight-495}
                complexColumns={complexColumns}
-               headerHeight={80}
+               headerHeight={120}
                summary={summary}
             />
          </div>
