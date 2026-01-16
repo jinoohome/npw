@@ -19,9 +19,9 @@ const Mm0604 = ({ item, activeComp, userInfo }: Props) => {
    const [inputValues, setInputValues] = useState<{ [key: string]: any }>({
       gridDatas1: [],
       contNo: "",
+      contNm: "",
       searchContNo: "",
       searchBpCd: "",
-    //  searchBpNm: "",
       contDt: "",
    });
    const gridRef = useRef<any>(null);
@@ -112,7 +112,8 @@ const Mm0604 = ({ item, activeComp, userInfo }: Props) => {
    
    const MM0604_S01 = async (contNo: string) => {
       const param = {
-         contNo: contNo,
+         contNo: contNo || '999',
+         contNm: inputValues.contNm || '999',
          contDt: inputValues.contDt || '',
       };
 
@@ -399,43 +400,21 @@ const Mm0604 = ({ item, activeComp, userInfo }: Props) => {
       <div className="bg-gray-100 rounded-lg p-3 search text-sm search h-full">
          <div className="grid grid-cols-4 gap-y-2 justify-start w-[70%]">
             <InputSearchComp title="계약번호" value={inputValues.contNo} onChange={(e) => onInputChange("contNo", e)} onKeyDown={handleContNoOnKeyDown} onIconClick={handleContNoOnIconClick} />
+            <InputComp 
+               title="계약명"
+               value={inputValues.contNm}
+               onChange={(e) => {
+                  onInputChange("contNm", e);
+               }}
+               handleCallSearch={search}
+            />
             <DatePickerComp
                title="계약기준일"
                value={inputValues.contDt}
                onChange={(e) => {
                   onInputChange("contDt", e);
                }}
-               //format="yyyy-MM-dd HH:mm A"
-               //timePicker={true}
             />
-            {/* <SelectSearch
-               title="재직구분"
-               value={inputValues.subCode}
-               onChange={(label, value) => {
-                  onInputChange("subCode", value);
-                  handleFilterChange();
-               }}
-               datas={inputValues.subCodeDatas}
-            />
-
-            <SelectSearch
-               title="경조구분"
-               value={inputValues.hsType}
-               onChange={(label, value) => {
-                  onInputChange("hsType", value);
-               }}
-               datas={inputValues.hsTypeDatas}
-            />     
-             <SelectSearch
-                  title="지원타입"
-                  value={inputValues.itemType}
-                  onChange={(label, value) => {
-                     
-                     onInputChange("itemType", value);
-                     handleFilterChange();
-                     }}
-                     datas={inputValues.itemTypeDatas}
-               />        */}
          </div>
         
       </div>

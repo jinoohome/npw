@@ -153,6 +153,8 @@ const So0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
           bpNm: searchRef3.current?.value || '999',
           poBpNm: inputValues.poBpS || '999',
           ownNm: searchRef4.current?.value || '999',
+          itemNm: '999',
+          pkgYn: 'N',
           yyyyMm: yyyyMm,
           closeYn: inputValues.closeYnPoBpS || '999',
         };

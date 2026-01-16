@@ -3277,7 +3277,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                                  }}
                               // readonly={true}
                               // 테스트 계정은 수정 가능
-                              readonly={userInfo.usrId !== "alstj" && userInfo.usrId !== "u1" && userInfo.usrId !== "tjsgk"}
+                              readonly={userInfo.usrId !== "alstj" && userInfo.usrId !== "u1" && userInfo.usrId !== "tjsgk" && userInfo.usrId !== "call10"}
                               //초기값 세팅시
                               param={{ coCd: "999", majorCode: "FU0008", div: "-999" }}
                               procedure="ZZ_CODE"  dataKey={{ label: 'codeName', value: 'code' }} 
@@ -3399,7 +3399,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                                     setChangeGridData("payYn", value);
                                  }}
                               // readonly={true}
-                              readonly={userInfo.usrId !== "alstj" && userInfo.usrId !== "tjsgk"}
+                              readonly={userInfo.usrId !== "alstj" && userInfo.usrId !== "tjsgk" && userInfo.usrId !== "call10"}
 
                               //초기값 세팅시
                               param={{ coCd: "999", majorCode: "FU0008", div: "-999" }}

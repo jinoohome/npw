@@ -180,7 +180,11 @@ const So0201 = ({ item, activeComp, leftMode, userInfo }: Props) => {
    // 마감 저장
    const SM0201_U01 = async (data: any) => {
       try {
+         const parsed = JSON.parse(data.sClose);
+         const insertData = parsed.filter((item: any) => item.status === "I");
+         console.log("마감 데이터 (status: I):", insertData);
          const result = await fetchPost(`SM0201_U01`, data);
+         console.log("SM0201_U01 결과:", result);
          return result;
       } catch (error) {
          console.error("SM0201_U01 Error:", error);
