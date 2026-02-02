@@ -1013,11 +1013,11 @@ const Sp0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
                   onChange={(label, value) => {
                      onInputChange("workCd", value);
                   }}
+                  addData={"999"}
                   stringify={true}
-                  param={{ coCd: "200" }}
-                  procedure="ZZ_WORKS"
+                  param={{ coCd: "200", billBpCd: "A1001" }}
+                  procedure="ZZ_WORKS_BILL"
                   dataKey={{ label: "workNm", value: "workCd" }}
-                  readonly={true}
                />
 
                <InputComp title="수량" value={inputValues.qty} 
@@ -1112,19 +1112,17 @@ const Sp0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
          
          
             <SelectSearch
-                  title="작업명"
-                  value={inputValues.searchWorkNm}
-                  onChange={(label, value) => {
-                     onInputChange("searchWorkNm", value);
-                  }}
-                
-                  addData={"999"}
-                  stringify={true}
-                  param={{ coCd: "200" }}
-                  procedure="ZZ_WORKS"
-                  dataKey={{ label: "workNm", value: "workCd" }}
-                
-               />
+               title="작업명"
+               value={inputValues.workCd}
+               onChange={(label, value) => {
+                  onInputChange("workCd", value);
+               }}
+               addData={"999"}
+               stringify={true}
+               param={{ coCd: "200", billBpCd: "A1001" }}
+               procedure="ZZ_WORKS_BILL"
+               dataKey={{ label: "workNm", value: "workCd" }}
+            />
             
             
             {userInfo.coCd === '999' && (
@@ -1138,7 +1136,7 @@ const Sp0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
                      onInputChange("searchWorkStatus", value);
                   }}
                 
-                  datas={inputValues.zzMA0005}
+                  datas={[{value : '999', label : '전체'},{value : 'MA0019', label : '검수완료'},{value : 'MA0020', label : '정산마감'}]}
                   
                />
 
