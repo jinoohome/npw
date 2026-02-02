@@ -468,6 +468,28 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
            }
        };
 
+       // 숫자 입력 시 자동으로 하이픈 추가 (20260121 → 2026-01-21)
+       const formatInputWithHyphens = (input: string): string => {
+          const numbers = input.replace(/[^0-9]/g, '');
+          const limited = numbers.slice(0, 8);
+
+          if (limited.length <= 4) {
+             return limited;
+          } else if (limited.length <= 6) {
+             return `${limited.slice(0, 4)}-${limited.slice(4)}`;
+          } else {
+             return `${limited.slice(0, 4)}-${limited.slice(4, 6)}-${limited.slice(6)}`;
+          }
+       };
+
+       const handleRawChange = (e?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
+          const target = e?.target as HTMLInputElement;
+          if (target?.value) {
+             const formatted = formatInputWithHyphens(target.value);
+             target.value = formatted;
+          }
+       };
+
        return (
            <div
                className={` ${layout === 'horizontal' ? 'grid grid-cols-3 gap-3 items-center' : ''} ${
@@ -489,7 +511,9 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
                        <ReactDatePicker
                            selected={selectedDate}
                            onChange={handleChange}
+                           onChangeRaw={handleRawChange}
                            onInputClick={handleClick}
+                           onFocus={(e) => (e.target as HTMLInputElement).select()}
                            dateFormat={format}
                            showTimeSelect={timePicker}
                            timeFormat="p"
@@ -501,10 +525,10 @@ const DatePickerComp = forwardRef<HTMLInputElement, Props4>(
                                        ${require ? "border-orange-500" : ""}
                                     `}
                            wrapperClassName="w-full z-50"
-                           popperClassName="custom-datepicker-popper"  
+                           popperClassName="custom-datepicker-popper"
                            showIcon
                            showMonthYearPicker={type === "month"}
-                           
+
                        />
                    </div>
                </div>
@@ -523,6 +547,9 @@ interface DateRangePickerCompProps {
    startPlaceholder?: string;
    endPlaceholder?: string;
    handleCallSearch?: () => void;
+   onStartBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+   onEndBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+   onCalendarSelect?: () => void;
 }
 
 const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
@@ -533,7 +560,10 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
    layout = 'horizontal',
    startPlaceholder,
    endPlaceholder,
-   handleCallSearch
+   handleCallSearch,
+   onStartBlur,
+   onEndBlur,
+   onCalendarSelect
 }) => {
    const [startDate, setStartDate] = useState<Date | undefined>(startValue ? new Date(startValue) : undefined);
    const [endDate, setEndDate] = useState<Date | undefined>(endValue ? new Date(endValue) : undefined);
@@ -585,7 +615,37 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
          console.log('enter')
          handleCallSearch();
       }
-    
+
+   };
+
+   // 숫자 입력 시 자동으로 하이픈 추가 (20260121 → 2026-01-21)
+   const formatInputWithHyphens = (input: string): string => {
+      const numbers = input.replace(/[^0-9]/g, '');
+      const limited = numbers.slice(0, 8);
+
+      if (limited.length <= 4) {
+         return limited;
+      } else if (limited.length <= 6) {
+         return `${limited.slice(0, 4)}-${limited.slice(4)}`;
+      } else {
+         return `${limited.slice(0, 4)}-${limited.slice(4, 6)}-${limited.slice(6)}`;
+      }
+   };
+
+   const handleStartRawChange = (e?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
+      const target = e?.target as HTMLInputElement;
+      if (target?.value) {
+         const formatted = formatInputWithHyphens(target.value);
+         target.value = formatted;
+      }
+   };
+
+   const handleEndRawChange = (e?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
+      const target = e?.target as HTMLInputElement;
+      if (target?.value) {
+         const formatted = formatInputWithHyphens(target.value);
+         target.value = formatted;
+      }
    };
 
    const handleStartDateChange = (date: Date | null) => {
@@ -636,19 +696,6 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
       return `${year}-${month}-${day}`;
     };
 
-   const CustomInput = forwardRef<HTMLInputElement, any>(({ value, onClick, onKeyDown, placeholder }, ref) => (
-      <input
-        ref={ref}
-        onClick={onClick}
-        onKeyDown={onKeyDown}
-        value={value}
-        placeholder={placeholder}
-        className="border rounded-md h-8 p-2 w-full focus:outline-orange-300"
-        readOnly
-      />
-    ));
-
-
    return (
        <div className={`grid ${layout === 'horizontal' ? 'grid-cols-3 gap-3 items-center' : 'grid-cols-1 '}`}>
            <label className={`col-span-1 ${layout === 'vertical' ? '' : 'text-right'}`}>{title}</label>
@@ -656,8 +703,11 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
                <div className="relative w-full">
                    <ReactDatePicker
                        selected={startDate}
-                      // onChange={(date: Date | null) => setStartDate(date || undefined)}
                        onChange={handleStartDateChange}
+                       onChangeRaw={handleStartRawChange}
+                       onSelect={onCalendarSelect}
+                       onBlur={onStartBlur}
+                       onFocus={(e) => (e.target as HTMLInputElement).select()}
                        selectsStart
                        startDate={startDate}
                        endDate={endDate}
@@ -666,16 +716,19 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
                        placeholderText={startPlaceholder}
                        locale={ko}
                        wrapperClassName="w-full z-50"
-                       popperClassName="custom-datepicker-popper" 
+                       popperClassName="custom-datepicker-popper"
                        showIcon = {!startDate}
-                       customInput={<CustomInput onKeyDown={handleKeyDown} placeholder={startPlaceholder} />}
-                      
+
                    />
                </div>
                <div className="relative w-full">
                    <ReactDatePicker
                        selected={endDate}
                        onChange={handleEndDateChange}
+                       onChangeRaw={handleEndRawChange}
+                       onSelect={onCalendarSelect}
+                       onBlur={onEndBlur}
+                       onFocus={(e) => (e.target as HTMLInputElement).select()}
                        selectsEnd
                        startDate={startDate}
                        endDate={endDate}
@@ -685,10 +738,9 @@ const DateRangePickerComp: React.FC<DateRangePickerCompProps> = ({
                        placeholderText={endPlaceholder}
                        locale={ko}
                        wrapperClassName="w-full z-50"
-                       popperClassName="custom-datepicker-popper" 
+                       popperClassName="custom-datepicker-popper"
                        showIcon = {!endDate}
-                       customInput={<CustomInput onKeyDown={handleKeyDown} placeholder={startPlaceholder} />}
-                       
+
                    />
                </div>
            </div>

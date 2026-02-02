@@ -75,12 +75,33 @@ const Sp0116 = ({ item, activeComp, userInfo }: Props) => {
       refreshGrid(gridRef);
    }, [activeComp]);
 
-   // 검색조건 변경 시 자동 조회
+   // 날짜 형식 유효성 검사 (YYYY-MM-DD)
+   const isValidDateFormat = (dateStr: string): boolean => {
+      if (!dateStr) return false;
+      const regex = /^\d{4}-\d{2}-\d{2}$/;
+      return regex.test(dateStr);
+   };
+
+   // 조회 트리거 (달력 선택, 엔터, 포커스아웃 시에만 조회)
+   const [searchTrigger, setSearchTrigger] = useState(0);
+
+   const triggerSearch = () => {
+      setSearchTrigger(prev => prev + 1);
+   };
+
+   // 관리역 변경 시 자동 조회
    useEffect(() => {
-      if (inputValues.startDt && inputValues.endDt) {
+      if (isValidDateFormat(inputValues.startDt) && isValidDateFormat(inputValues.endDt)) {
          search();
       }
-   }, [inputValues.usrId, inputValues.startDt, inputValues.endDt]);
+   }, [inputValues.usrId]);
+
+   // 트리거 발생 시 조회
+   useEffect(() => {
+      if (searchTrigger > 0 && isValidDateFormat(inputValues.startDt) && isValidDateFormat(inputValues.endDt)) {
+         search();
+      }
+   }, [searchTrigger]);
 
    useEffect(() => {
       if (gridRef.current && inputValues.gridDatas1) {
@@ -148,6 +169,46 @@ const Sp0116 = ({ item, activeComp, userInfo }: Props) => {
       }
    };
 
+   // 입력값을 날짜로 파싱 (20260125 -> Date)
+   const parseInputToDate = (input: string): string | null => {
+      const numbers = input.replace(/[^0-9]/g, '');
+      if (numbers.length === 8) {
+         const year = parseInt(numbers.slice(0, 4));
+         const month = parseInt(numbers.slice(4, 6));
+         const day = parseInt(numbers.slice(6, 8));
+         // 유효한 날짜인지 확인
+         const date = new Date(year, month - 1, day);
+         if (date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
+            return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+         }
+      }
+      return null;
+   };
+
+   // 시작일 입력 완료 시 (포커스 아웃)
+   const handleStartBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      if (value) {
+         const parsedDate = parseInputToDate(value);
+         if (parsedDate) {
+            onInputChange("startDt", parsedDate);
+            triggerSearch();
+         }
+      }
+   };
+
+   // 종료일 입력 완료 시 (포커스 아웃)
+   const handleEndBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      if (value) {
+         const parsedDate = parseInputToDate(value);
+         if (parsedDate) {
+            onInputChange("endDt", parsedDate);
+            triggerSearch();
+         }
+      }
+   };
+
    // 파일 미리보기
    const handleFilePreview = (file: any) => {
       const fileFullPath = `https://fnr.nhp.co.kr:8443/files/${file.filePath}/${file.saveFileNm}`;
@@ -203,7 +264,18 @@ const Sp0116 = ({ item, activeComp, userInfo }: Props) => {
             return "";
          }
       },
-      { header: "등록일시", name: "regdt", width: 180, align: "center" },
+      {
+         header: "등록일시",
+         name: "regdt",
+         width: 180,
+         align: "center",
+         formatter: (e: any) => {
+            if (e.value) {
+               return `<span style="white-space: nowrap;">${e.value}</span>`;
+            }
+            return "";
+         }
+      },
    ];
 
    const grid = () => (
@@ -256,6 +328,9 @@ const Sp0116 = ({ item, activeComp, userInfo }: Props) => {
                      onInputChange("startDt", start);
                      onInputChange("endDt", end);
                   }}
+                  onCalendarSelect={triggerSearch}
+                  onStartBlur={handleStartBlur}
+                  onEndBlur={handleEndBlur}
                />
             </div>
          </div>
