@@ -1,5 +1,6 @@
 import { React, useEffect, useState, useRef, SelectSearch, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2 } from "../../comp/Import";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, XMarkIcon, PaperAirplaneIcon } from "@heroicons/react/24/outline";
+import Swal from "sweetalert2";
 import { useLoadingFetch } from '../../hooks/useLoadingFetch';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
@@ -306,6 +307,21 @@ const So0103 = ({ item, activeComp, userInfo }: Props) => {
 
       if (!rowData.reqTelNo) {
          alertSwal("알림", "연락처가 없는 회원입니다.", "warning");
+         return;
+      }
+
+      // 확인 다이얼로그
+      const confirmResult = await Swal.fire({
+         title: "알림톡 전송",
+         text: `"${rowData.reqNm}"님께 알림톡을 전송하시겠습니까?`,
+         icon: "question",
+         showCancelButton: true,
+         confirmButtonText: "전송",
+         cancelButtonText: "취소",
+         confirmButtonColor: "#22c55e",
+      });
+
+      if (!confirmResult.isConfirmed) {
          return;
       }
 
