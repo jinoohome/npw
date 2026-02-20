@@ -1,5 +1,5 @@
 import { React, useEffect, useState, useRef, SelectSearch, alertSwal, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, InputComp1, InputComp2 } from "../../comp/Import";
-import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, XMarkIcon, PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import { useLoadingFetch } from '../../hooks/useLoadingFetch';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
@@ -115,6 +115,15 @@ const So0103 = ({ item, activeComp, userInfo }: Props) => {
          const param = { coCd, memberId };
          const data = JSON.stringify(param);
          const result = await fetchPost(`SO0103_S02`, { data });
+         return result;
+      } catch (error) {
+         throw error;
+      }
+   };
+
+   const SO0103_A01 = async (data: any) => {
+      try {
+         const result = await fetchPost(`SO0103_A01`, data);
          return result;
       } catch (error) {
          throw error;
@@ -278,6 +287,49 @@ const So0103 = ({ item, activeComp, userInfo }: Props) => {
       setGridData();
    };
 
+   // 알림톡 전송
+   const sendAlimtalk = async () => {
+      const grid = gridRef.current.getInstance();
+      const focusedCell = grid.getFocusedCell();
+
+      if (!focusedCell || focusedCell.rowKey === null) {
+         alertSwal("알림", "전송할 회원을 선택해주세요.", "warning");
+         return;
+      }
+
+      const rowData = grid.getRow(focusedCell.rowKey);
+
+      if (!rowData || !rowData.memberId) {
+         alertSwal("알림", "저장된 회원만 알림톡을 전송할 수 있습니다.", "warning");
+         return;
+      }
+
+      if (!rowData.reqTelNo) {
+         alertSwal("알림", "연락처가 없는 회원입니다.", "warning");
+         return;
+      }
+
+      await fetchWithLoading(async () => {
+         try {
+            const param = {
+               memberId: rowData.memberId,
+               reqNm: rowData.reqNm,
+               reqTelNo: rowData.reqTelNo,
+               coCd: rowData.coCd || '100',
+               templateCd: 'SJR_247730',
+               insrtUserId: userInfo.usrId
+            };
+
+            const result = await SO0103_A01(param);
+            if (result) {
+               alertSwal(result.msgtext, result.msgcd, result.msgstatus);
+            }
+         } catch (error) {
+            alertSwal("오류", "알림톡 전송 중 오류가 발생했습니다.", "error");
+         }
+      });
+   };
+
    // 민감정보 버튼 클릭 핸들러
    const handleSensitiveInfoClick = async () => {
       const grid = gridRef.current.getInstance();
@@ -388,6 +440,10 @@ const So0103 = ({ item, activeComp, userInfo }: Props) => {
          <button type="button" onClick={save} className="bg-blue-500 text-white rounded-lg px-2 py-1 flex items-center shadow">
             <ServerIcon className="w-5 h-5 mr-1" />
             저장
+         </button>
+         <button type="button" onClick={sendAlimtalk} className="bg-green-500 text-white rounded-lg px-2 py-1 flex items-center shadow">
+            <PaperAirplaneIcon className="w-5 h-5 mr-1" />
+            알림톡 전송
          </button>
       </div>
    );
