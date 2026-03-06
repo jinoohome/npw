@@ -34,6 +34,7 @@ interface FileUploadProps {
   minWidth?: string;
   textAlign?: "left" | "right";
   onFilesChange?: (files: File[], uploadedFiles?: UploadedFile[], deletedFiles?: UploadedFile[]) => void;
+  hideDragArea?: boolean;
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
@@ -47,6 +48,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   minWidth = "100px",
   textAlign = "right",
   onFilesChange,
+  hideDragArea = false,
 }) => {
   const { fetchWithLoading } = useLoadingFetch();
   const [compressedFiles, setCompressedFiles] = useState<File[]>(value);
@@ -236,9 +238,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
             파일 업로드
           </button>
 
-          <div {...getRootProps()} className='border rounded-md p-3'>
+          <div {...getRootProps()} className={hideDragArea && compressedFiles.length === 0 ? '' : 'border rounded-md p-3'}>
             <input {...getInputProps()} />
-            {compressedFiles.length === 0 && (
+            {compressedFiles.length === 0 && !hideDragArea && (
               <div>
                 {isDragActive ? (
                   <p>여기에 놓아주세요.</p>

@@ -1101,22 +1101,36 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
 
    const save = async () => {
       await fetchWithLoading(async () => {
-     
-         setErrorMsgs({});
-         const gridInstance = gridRef3.current.getInstance();
-         gridInstance.blur();
-         const gridInstance2 = gridRef7.current.getInstance();
-         gridInstance2.blur();
-         
-         const data = await getGridValues();
+         try {
+            setErrorMsgs({});
+            if (gridRef3.current) {
+               const gridInstance = gridRef3.current.getInstance();
+               gridInstance.blur();
+            }
+            if (gridRef7.current) {
+               const gridInstance2 = gridRef7.current.getInstance();
+               gridInstance2.blur();
+            }
 
-         if (!validateData("save", data)) return false;
+            const data = await getGridValues();
 
-         if (data) {
+            if (!data) return false;
+
+            // 저장 시 체크된 상품이 없으면 차단
+            const sSoDtl = JSON.parse(data.sSoDtl);
+            if (!sSoDtl || sSoDtl.length === 0) {
+               alertSwal("입력확인", "주문 상품을 추가해주세요.", "warning");
+               return false;
+            }
+
+            if (!validateData("save", data)) return false;
+
             let result = await SO0201_U05(data);
             if (result) {
                await returnResult(result, 'save');
             }
+         } catch (error) {
+            alertSwal("오류", "저장 중 오류가 발생했습니다. 다시 시도해주세요.", "error");
          }
       });
    };
@@ -1188,40 +1202,54 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
           }
         });
       });
-    
+
+      if (!isValid) {
+         const missingFields = requiredFields
+            .filter((field) => {
+               const item = dataArray[0];
+               const val = item?.[field];
+               return val === undefined || val === null || (typeof val === 'string' && val.trim() === '');
+            })
+            .map((field) => fieldTitles[field]);
+         alertSwal("입력확인", `${missingFields.join(', ')}을(를) 입력해주세요.`, "warning");
+      }
+
       return isValid;
     };
     
     
-   const returnResult = async(result:any, div:string) => {     
+   const returnResult = async(result:any, div:string) => {
+      if (!result) {
+         alertSwal("오류", "서버 응답이 없습니다. 다시 시도해주세요.", "error");
+         return;
+      }
       search(result.soNoOut);
       if(result.msgCd === '1') {
          if(div === 'save') {
-            alertSwal('저장되었습니다.', result.msgCd, result.msgStatus);
+            alertSwal('저장', '저장되었습니다.', 'success');
          }else if(div === 'CONFIRM') {
-            alertSwal('확정되었습니다.', result.msgCd, result.msgStatus);
+            alertSwal('확정', '주문이 확정되었습니다.', 'success');
          }else if(div === 'CANCEL') {
-            alertSwal('저장되었습니다.', result.msgCd, result.msgStatus);
+            alertSwal('취소', '주문이 취소되었습니다.', 'success');
          }else if(div === 'DEL') {
-            alertSwal('저장되었습니다.', result.msgCd, result.msgStatus);
+            alertSwal('삭제', '주문이 삭제되었습니다.', 'success');
             create();
          }
-        
+
       } else {
-         alertSwal(result.msgText, result.msgCd, result.msgStatus);
+         alertSwal("처리 실패", result.msgText || "요청 처리 중 문제가 발생했습니다.", "error");
       }
    };
 
-   const returnCardPay = async(result:any) => {     
-
-      let payInfo = await SO0201_S03({ soNo: result.soNoOut });
-      setGridDatas5(payInfo);
-
-      setTimeout(() => {
+   const returnCardPay = async(result:any) => {
+      try {
+         let payInfo = await SO0201_S03({ soNo: result.soNoOut });
+         setGridDatas5(payInfo);
          setPayAmt();
-      },500);
-
-      alertSwal(result.msgText, result.msgCd, result.msgStatus);
+         alertSwal(result.msgText, result.msgCd, result.msgStatus);
+      } catch (error) {
+         alertSwal("오류", "결제 결과 조회 중 오류가 발생했습니다.", "error");
+      }
    };
 
    // 모든 grid Data 내용을 가져옴
@@ -1263,12 +1291,29 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
    }; 
 
    //grid 삭제버튼 상품정보
-   const delGridRow = () => {
-      let grid = gridRef2.current.getInstance();      
+   const delGridRow = async () => {
+      if (!gridRef2.current) return;
+      let grid = gridRef2.current.getInstance();
 
       let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      if (rowKey === null || rowKey === undefined) {
+         alertSwal("알림", "삭제할 상품을 선택해주세요.", "warning");
+         return;
+      }
+
+      const confirmResult = await Swal.fire({
+         title: "삭제 확인",
+         text: "선택한 상품을 삭제하시겠습니까?",
+         icon: "warning",
+         showCancelButton: true,
+         confirmButtonText: "삭제",
+         cancelButtonText: "취소",
+         confirmButtonColor: "#ef4444",
+      });
+      if (!confirmResult.isConfirmed) return;
+
       let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
-      
+
       // 행을 삭제
       grid.removeRow(rowKey, {});
 
@@ -1287,12 +1332,29 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
    }; 
 
 //grid 삭제버튼 결제처리
-   const delGridRow2 = () => {
-      let grid = gridRef5.current.getInstance();      
+   const delGridRow2 = async () => {
+      if (!gridRef5.current) return;
+      let grid = gridRef5.current.getInstance();
 
       let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      if (rowKey === null || rowKey === undefined) {
+         alertSwal("알림", "삭제할 결제정보를 선택해주세요.", "warning");
+         return;
+      }
+
+      const confirmResult = await Swal.fire({
+         title: "삭제 확인",
+         text: "선택한 결제정보를 삭제하시겠습니까?",
+         icon: "warning",
+         showCancelButton: true,
+         confirmButtonText: "삭제",
+         cancelButtonText: "취소",
+         confirmButtonColor: "#ef4444",
+      });
+      if (!confirmResult.isConfirmed) return;
+
       let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
-      
+
       // 행을 삭제
       grid.removeRow(rowKey, {});
 
@@ -1312,13 +1374,21 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
 
    // 주문취소
    const fnCancel = async () => {
+         if (!inputValues.soNo) {
+            alertSwal("알림", "취소할 주문을 선택해주세요.", "warning");
+            return;
+         }
 
-         const param = {    
+         const param = {
             soNo: inputValues.soNo,
          };
          const data = JSON.stringify(param);
          const soItem = await fetchPost("SO0201_S01_V2", {data});
 
+         if (!soItem || soItem.length === 0) {
+            alertSwal("오류", "주문 정보를 조회할 수 없습니다.", "error");
+            return;
+         }
 
          if(soItem[0].saleCloseSoNo) {
             alertSwal("", `매출마감 처리된 주문입니다.`, "warning");
@@ -1481,15 +1551,19 @@ const SO0201 = ({ item, activeComp, userInfo, soNo }: Props) => {
 
 // 주문확정
 const fnConfirm = async () => {
-   console.log(inputValues.hsDiv);
-  
    setErrorMsgs({});
-   const gridInstance = gridRef3.current.getInstance();
-   gridInstance.blur();
-   const gridInstance2 = gridRef7.current.getInstance();
-   gridInstance2.blur();
-   
+   if (gridRef3.current) {
+      const gridInstance = gridRef3.current.getInstance();
+      gridInstance.blur();
+   }
+   if (gridRef7.current) {
+      const gridInstance2 = gridRef7.current.getInstance();
+      gridInstance2.blur();
+   }
+
    const saveData = await getGridValues();
+
+   if (!saveData) return;
 
    const sSoDtlArray = JSON.parse(saveData.sSoDtl);
    
@@ -1969,6 +2043,7 @@ const fnConfirm = async () => {
 
          if (result.length > 0) {
             onInputChange('preRcptNo', result[0].preRcptNo);
+            onInputChange('memberYn', result[0].memberYn || 'N');
 
             // 사전상담
             let preRcpt = await SO0101_S02({ preRcptNo: result[0].preRcptNo });
@@ -2167,10 +2242,12 @@ const fnConfirm = async () => {
    const handleDblClick4 = async () => {
       await fetchWithLoading(async () => {
          const gridInstance = gridRefP4.current.getInstance();
-         const { rowKey } = gridInstance.getFocusedCell(); // 현재 선택된 행의 rowKey를 가져옴
+         const { rowKey } = gridInstance.getFocusedCell();
 
-         const preRcptNo = gridInstance.getValue(rowKey, "preRcptNo"); // 해당 rowKey에서 bpCd 값을 가져옴
-         
+         const preRcptNo = gridInstance.getValue(rowKey, "preRcptNo");
+
+         onInputChange('preRcptNo', preRcptNo);
+
          let preRcpt = await SO0101_S02({ preRcptNo: preRcptNo });
 
          setGridDatas4(preRcpt);
@@ -2633,7 +2710,8 @@ const changeSoPrice = async (price: number, rowKey: any) => {
 
    // 결제대상금액
   const setPayAmt = () => {
-   
+      if (!gridRef2.current || !gridRef5.current) return;
+
       // 전체 행의 체크된 행 중에서 COND_TYPE이 'FU0010' 또는 'FU0012'인 항목의 soAmt 합계 계산
       const gridInstance2 = gridRef2.current.getInstance();
       const allRows = gridInstance2.getData();
@@ -4151,28 +4229,28 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                                  ${tabIndex === index ? "text-white bg-sky-900  " : "text-gray-500"}
                               `}
                               onClick={() => {
-                                 const preIndex = tabIndex; // 현재 탭 인덱스를 미리 저장         
+                                 const preIndex = tabIndex; // 현재 탭 인덱스를 미리 저장
 
                                  let setData;
-                                 if (preIndex === 0 || preIndex === 2 || preIndex === 3 || preIndex === 4) {
+                                 if ((preIndex === 0 || preIndex === 2 || preIndex === 3 || preIndex === 4) && gridRef2.current) {
                                     const gridInstance = gridRef2.current.getInstance();
                                     gridInstance.blur();
                                     setData = gridInstance.getData();
-                                 } else if (preIndex === 1) {
+                                 } else if (preIndex === 1 && gridRef3.current) {
                                     const gridInstance = gridRef3.current.getInstance();
                                     gridInstance.blur();
                                     setData = gridInstance.getData();
-                                 } else if (preIndex === 5) {
+                                 } else if (preIndex === 5 && gridRef7.current) {
                                     const gridInstance = gridRef7.current.getInstance();
                                     gridInstance.blur();
                                     setData = gridInstance.getData();
-                                 } else if (preIndex === 6) {
+                                 } else if (preIndex === 6 && gridRef8.current) {
                                     const gridInstance = gridRef8.current.getInstance();
                                     gridInstance.blur();
                                     setData = gridInstance.getData();
                                  }
 
-                                 if (index === 0) {    
+                                 if (index === 0 && gridRef2.current) {
                                     const gridInstance = gridRef2.current.getInstance();
                                     gridInstance.blur();
 
@@ -4180,7 +4258,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                                     setGridDatas3(setData);
                                     setGridDatas7(setData);
                                     setGridDatas8(setData);
-                                  } else if (index === 1) {
+                                  } else if (index === 1 && gridRef3.current) {
                                     const gridInstance = gridRef3.current.getInstance();
                                     gridInstance.blur();
 
@@ -4192,22 +4270,22 @@ const changeSoPrice = async (price: number, rowKey: any) => {
 
                                     const gridInstance = gridRef4.current.getInstance();
                                     gridInstance.blur();
-                                    const data = gridInstance.getData(); // 올바르게 데이터를 가져옴
+                                    const data = gridInstance.getData();
                                     setGridDatas4(data);
                                   } else if (index === 3 && gridRef5.current) {
 
                                     const gridInstance = gridRef5.current.getInstance();
                                     gridInstance.blur();
-                                    const data = gridInstance.getData(); // 올바르게 데이터를 가져옴
+                                    const data = gridInstance.getData();
                                     setGridDatas5(data);
                                     setPayAmt();
                                   } else if (index === 4 && gridRef6.current) {
 
                                     const gridInstance = gridRef6.current.getInstance();
                                     gridInstance.blur();
-                                    const data = gridInstance.getData(); // 올바르게 데이터를 가져옴
+                                    const data = gridInstance.getData();
                                     setGridDatas6(data);
-                                  } else if (index === 5) {
+                                  } else if (index === 5 && gridRef7.current) {
                                     const gridInstance = gridRef7.current.getInstance();
                                     gridInstance.blur();
 
@@ -4215,7 +4293,7 @@ const changeSoPrice = async (price: number, rowKey: any) => {
                                     setGridDatas3(setData);
                                     setGridDatas7(setData);
                                     setGridDatas8(setData);
-                                  } else if (index === 6) {
+                                  } else if (index === 6 && gridRef8.current) {
                                     const gridInstance = gridRef8.current.getInstance();
                                     gridInstance.blur();
 

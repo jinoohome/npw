@@ -258,6 +258,11 @@ const Mm0202 = ({ item, activeComp, userInfo }: Props) => {
       { header: "패키지품목추가", name: "pkgItemYn", align: "center", width: 120},
       { header: "대체유무", name: "subsYn", align: "center", width: 80},
       { header: "공제유무", name: "deduYn", align: "center", width: 80},
+      { header: "차감금액", name: "deduPrice", align: "right", width: 100,
+         formatter: function(e: any) {
+            if(e.value){return commas(e.value);}
+         }
+      },
       { header: "사용여부", name: "useYn", align: "center", width: 80},
    ];
 

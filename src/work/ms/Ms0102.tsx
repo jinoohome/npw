@@ -40,6 +40,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       endDate: date(),
       status: '999',
       mouYn: '999',
+      resultPkgYn: '999',
    });
 
    const onInputChange = (name: string, value: any) => {
@@ -79,9 +80,9 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
    useEffect(() => {
       if (GridRef1.current && gridDatas1) {
          let grid1 = GridRef1.current.getInstance();
-         grid1.resetData(gridDatas1);      
-         
-      } 
+         grid1.resetData(gridDatas1);
+
+      }
    }, [gridDatas1]);
 
    useEffect(() => {
@@ -91,7 +92,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       };
   
       handleSearch();
-  }, [inputValues.status, inputValues.startDate, inputValues.endDate, inputValues.mouYn]);
+  }, [inputValues.status, inputValues.startDate, inputValues.endDate, inputValues.mouYn, inputValues.resultPkgYn]);
 
  
    //---------------------- api -----------------------------
@@ -108,6 +109,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
          status: inputValues.status || '999',
          dlvyNm: searchRef6.current?.value || '999',
          mouYn: inputValues.mouYn || '999',
+         resultPkgYn: inputValues.resultPkgYn || '999',
          itemNm: searchRef7.current?.value || '999',
       };
 
@@ -208,10 +210,17 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
                   //초기값 세팅시
                   datas={[{value : '999', label : '전체'},{value : '1', label : 'Y'},{value : '0', label : 'N'}]}
             />
-            <InputComp title="품목" ref={searchRef7} value={inputValues.itemNm} handleCallSearch={handleCallSearch} 
+            <InputComp title="품목" ref={searchRef7} value={inputValues.itemNm} handleCallSearch={handleCallSearch}
                           onChange={(e)=>{
                           onInputChange('itemNm', e);
                      }} />
+            <SelectSearch  title="패키지결과"
+                  value={inputValues.resultPkgYn}
+                  onChange={(label, value) => {
+                        onInputChange('resultPkgYn', value);
+                     }}
+                  datas={[{value : '999', label : '전체'},{value : 'Y', label : 'Y'},{value : 'N', label : 'N'}]}
+            />
          </div>
       </div>
    );
@@ -226,6 +235,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       { header: "구분", name: "rcptMeth", align: "center", width: 80 },
       { header: "접수자", name: "rcptUserNm", align: "center", width: 80 },
       { header: "고객사", name: "bpNm", width: 200 },
+      { header: "회사구분", name: "bpDiv", align: "center", width: 100 },
       { header: "재직구분", name: "subCodeNm", align: "left", width: 100 },
       { header: "부서", name: "deptNm", align: "left", width: 120 },
       { header: "직급", name: "roleNm", align: "left", width: 100 },
@@ -269,6 +279,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       { header: "계산서입금일", name: "chkReceiptDt", align: "center", width: 120 },
       { header: "카드입금일", name: "chkCardtDt", align: "center", width: 120 },
       { header: "현금입금일", name: "chkCashDt", align: "center", width: 120 },
+      { header: "입금자명", name: "dpsNm", align: "center", width: 150 },
       { header: "무상사유", name: "reason", width: 200 },
    ];
 
@@ -283,7 +294,7 @@ const So0202 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
             </div>
          </div>
 
-         <TuiGrid01 columns={grid1Columns} gridRef={GridRef1} height={window.innerHeight-540} handleDblClick={handleDblClick}/>
+         <TuiGrid01 columns={grid1Columns} gridRef={GridRef1} height={window.innerHeight-540} handleDblClick={handleDblClick} perPage={100}/>
       </div>
    );
 

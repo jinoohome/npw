@@ -164,15 +164,15 @@ const So0103 = ({ item, activeComp, userInfo }: Props) => {
             if (["U", "I"].includes(item.status)) {
                if (!item.reqNm) {
                   alertSwal("입력확인", "신청자를 입력해주세요.", "warning");
-                  result = false;
+                  return false;
                }
                if (!item.reqTelNo) {
                   alertSwal("입력확인", "연락처를 입력해주세요.", "warning");
-                  result = false;
+                  return false;
                }
                if (!item.bpCd) {
                   alertSwal("입력확인", "고객사를 선택해주세요.", "warning");
-                  result = false;
+                  return false;
                }
             }
          }
@@ -238,10 +238,29 @@ const So0103 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    //grid 삭제버튼
-   const delGridRow = () => {
+   const delGridRow = async () => {
       let grid = gridRef.current.getInstance();
 
       let rowKey = grid.getFocusedCell() ? grid.getFocusedCell().rowKey : 0;
+      if (rowKey === null || rowKey === undefined) {
+         alertSwal("알림", "삭제할 회원을 선택해주세요.", "warning");
+         return;
+      }
+
+      const confirmResult = await Swal.fire({
+         title: "삭제 확인",
+         text: "선택한 회원을 삭제하시겠습니까?",
+         icon: "warning",
+         showCancelButton: true,
+         confirmButtonText: "삭제",
+         cancelButtonText: "취소",
+         confirmButtonColor: "#ef4444",
+      });
+
+      if (!confirmResult.isConfirmed) {
+         return;
+      }
+
       let rowIndex = grid.getIndexOfRow(rowKey) > grid.getRowCount() - 2 ? grid.getRowCount() - 2 : grid.getIndexOfRow(rowKey);
 
       grid.removeRow(rowKey, {});
@@ -306,6 +325,25 @@ const So0103 = ({ item, activeComp, userInfo }: Props) => {
       }
 
       if (!rowData.reqTelNo) {
+         alertSwal("알림", "연락처가 없는 회원입니다. 민감정보에서 연락처를 입력해주세요.", "warning");
+         return;
+      }
+
+      // 저장된 회원이면 서버에서 실제 연락처 조회
+      let actualTelNo = rowData.reqTelNo;
+      if (rowData.memberId) {
+         try {
+            const sensitiveResult = await SO0103_S02(rowData.memberId, rowData.coCd || '100');
+            if (sensitiveResult && sensitiveResult.length > 0) {
+               actualTelNo = sensitiveResult[0].reqTelNo;
+            }
+         } catch (error) {
+            alertSwal("오류", "연락처 조회 중 오류가 발생했습니다.", "error");
+            return;
+         }
+      }
+
+      if (!actualTelNo) {
          alertSwal("알림", "연락처가 없는 회원입니다.", "warning");
          return;
       }
@@ -330,7 +368,7 @@ const So0103 = ({ item, activeComp, userInfo }: Props) => {
             const param = {
                memberId: rowData.memberId,
                reqNm: rowData.reqNm,
-               reqTelNo: rowData.reqTelNo,
+               reqTelNo: actualTelNo,
                coCd: rowData.coCd || '100',
                templateCd: 'SJR_247730',
                insrtUserId: userInfo.usrId

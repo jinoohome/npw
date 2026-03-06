@@ -42,6 +42,7 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
       pkgItemYn: useRef<any>(null),
       subsYn: useRef<any>(null),
       deduYn: useRef<any>(null),
+      deduPrice: useRef<any>(null),
       useYn: useRef<any>(null),
       delYn: useRef<any>(null),
       insrtUserId: useRef<any>(null),
@@ -374,7 +375,7 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
    const addMajorGridRow = () => {
       let grid = gridRef.current.getInstance();
 
-      grid.appendRow({ coCd: "100", itemGrp: "", itemDiv: "", taxYn: "N", pkgItemYn: "N", subsYn: "N", deduYn: "N", useYn: "Y" }, { at: 0 });
+      grid.appendRow({ coCd: "100", itemGrp: "", itemDiv: "", taxYn: "N", pkgItemYn: "N", subsYn: "N", deduYn: "N", deduPrice: 0, useYn: "Y" }, { at: 0 });
       grid.getPagination().movePageTo(0);
       grid.focusAt(0, 1, true);
    };
@@ -538,6 +539,7 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
             </div>
 
             <div className="grid grid-cols-4  gap-12  justify-around items-center">
+               <InputComp ref={refs.deduPrice} value={inputValues.deduPrice} layout="vertical" title="차감금액" target="deduPrice" setChangeGridData={setChangeGridData} type="number"/>
                <SelectSearch title="과세여부(협력업체)" 
                                  value={inputValues.taxYn}
                                  layout="vertical"
@@ -571,26 +573,26 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
                                  //초기값 세팅시
                                  datas={[{value : '', label : ''},{value : 'Y', label : '사용'},{value : 'N', label : '미사용'}]}
                />
-               <SelectSearch title="공제유무" 
+            </div>
+            <div className="grid grid-cols-4  gap-12  justify-around items-center">
+               <SelectSearch title="공제유무"
                                  value={inputValues.deduYn}
                                  layout="vertical"
                                  onChange={(label, value) => {
                                        setChangeGridData("deduYn", value);
                                        onInputChange('deduYn', value);
-                                    }}                           
+                                    }}
 
                                  //초기값 세팅시
                                  datas={[{value : '', label : ''},{value : 'Y', label : '사용'},{value : 'N', label : '미사용'}]}
                />
-            </div>
-            <div className="grid grid-cols-4  gap-12  justify-around items-center">
-               <SelectSearch title="사용유무" 
+               <SelectSearch title="사용유무"
                                     value={inputValues.useYn}
                                     layout="vertical"
                                     onChange={(label, value) => {
                                           setChangeGridData("useYn", value);
                                           onInputChange('useYn', value);
-                                       }}                           
+                                       }}
 
                                     //초기값 세팅시
                                     datas={[{value : '', label : ''},{value : 'Y', label : '사용'},{value : 'N', label : '미사용'}]}
@@ -614,6 +616,7 @@ const Mm0201 = ({ item, activeComp, userInfo }: Props) => {
       { header: "패키지품목추가", name: "pkgItemYn", hidden: true },
       { header: "대체유무", name: "subsYn", hidden: true },
       { header: "공제유무", name: "deduYn", hidden: true },
+      { header: "차감금액", name: "deduPrice", hidden: true },
       { header: "사용여부", name: "useYn", hidden: true },
 
       // { header: "등록자", name: "insrtUserId", hidden: true },

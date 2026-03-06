@@ -1,5 +1,5 @@
 import {
-   React, useEffect, useState, commas, useRef, SelectSearch, date, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
+   React, useEffect, useState, commas, useRef, SelectSearch, date, getGridCheckedDatas, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2, DateTimePickerComp,
 } from "../../comp/Import";
 import { ZZ_CODE_REQ, ZZ_CODE_RES, ZZ_CODE_API } from "../../ts/ZZ_CODE";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
@@ -430,15 +430,19 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
       }];
 
       setSoItem(newSoItem[0]);
-  
+
       let data2 = {
           soNo: inputValues.soNo,
           tmpCd: "SJR_062666",
           callback: "1/0",
-          soItem: newSoItem, // 배열로 전달!
+          soItem: newSoItem,
       }
-  
-      await fetchPost(`SP0105_U03_ALIMTALK`, { data: JSON.stringify(data2) });
+
+      try {
+         await fetchPost(`SP0105_U03_ALIMTALK`, { data: JSON.stringify(data2) });
+      } catch (e) {
+         console.warn("알림톡 전송 실패:", e);
+      }
   }
 
 
@@ -472,6 +476,10 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
    const returnResult = async (result: any) => {
       alertSwal(result.msgText, result.msgCd, result.msgStatus);
       if (result.msgCd === "1") {
+         const grid = gridRef2.current?.getInstance();
+         const focusedCell = grid?.getFocusedCell();
+         const rowIndex = focusedCell?.rowKey != null ? grid.getIndexOfRow(focusedCell.rowKey) : 0;
+         onInputChange("focusKey", rowIndex);
          search();
       }
    };
@@ -824,7 +832,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
       { header: "진행상태", name: "workStatusNm", width: 100, align: "center",  }, // 
       { header: "작업희망일", name: "hopeDt", width: 100, align: "center",  hidden: true }, // 
       { header: "작업요청일", name: "workReqDt", width: 100, align: "center",  hidden: true }, // 
-      { header: "작업예정일", name: "expectDt", width: 100, align: "center",  hidden: true }, //
+      { header: "작업예정일", name: "expectDt", width: 130, align: "center",  hidden: true }, //
       { header: "작업완료일", name: "finishDt", width: 100, align: "center", hidden: true }, // 
       { header: "수량", name: "qty", width: 100, align: "center",  hidden: true }, // 
       { header: "구분", name: "workDiv", width: 100, align: "center",  hidden: true }, // 
@@ -1021,7 +1029,7 @@ const Sp0105 = ({ item, activeComp, userInfo }: Props) => {
             </div>
 
             <div className="grid grid-cols-3 gap-y-2 justify-start">
-               <DatePickerComp
+               <DateTimePickerComp
                   title="작업예정일"
                   value={inputValues.expectDt}
                   onChange={(e) => {

@@ -1,8 +1,9 @@
 import {
-   React, useEffect, useState,commas, useRef,SelectSearch, getGridCheckedDatas2, date, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
+   React, useEffect, useState,commas, useRef,SelectSearch, FileUpload, getGridCheckedDatas2, date, useCallback, initChoice, updateChoices, alertSwal, InputSearchComp, fetchPost, Breadcrumb, TuiGrid01, refreshGrid, reSizeGrid, getGridDatas, SelectSearchComp, InputComp, InputComp1, InputComp2, InputSearchComp1, SelectComp1, SelectComp2, TextArea, RadioGroup, RadioGroup2, CheckboxGroup1, CheckboxGroup2, Checkbox, CommonModal, DatePickerComp, DateRangePickerComp, Tabs1, Tabs2,
 } from "../../comp/Import";
 import { SwatchIcon, MinusIcon, PlusIcon, MagnifyingGlassIcon, ServerIcon, TrashIcon, ChevronDoubleDownIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
 import { hi } from "date-fns/locale";
+import Swal from "sweetalert2";
 import "tui-date-picker/dist/tui-date-picker.css";
 import { useLoading } from '../../context/LoadingContext';
 import { useLoadingFetch } from '../../hooks/useLoadingFetch';
@@ -44,6 +45,95 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    });
 
    const [errorMsgs, setErrorMsgs] = useState<{ [key: string]: string }>({});
+   const [replaceFiles, setReplaceFiles] = useState<File[]>([]);
+
+   const uploadReplaceFile = async (file: File) => {
+      if (!inputValues.contNo || !file) {
+         return;
+      }
+      try {
+         const formData = new FormData();
+         formData.append("file", file);
+         formData.append("menuId", activeComp.menuId);
+         formData.append("insrtUserId", userInfo.usrId);
+         formData.append("coCd", "100");
+         formData.append("soNo", inputValues.contNo);
+         formData.append("programId", "MM0602");
+
+         const baseURL = process.env.REACT_APP_API_URL;
+         const response = await fetch(`${baseURL}/MM0602_U04`, {
+            method: "POST",
+            body: formData,
+         });
+         const result = await response.json();
+         if (result.msgCd === "1") {
+            await MM0602_S04();
+            setReplaceFiles([]);
+         } else {
+            alertSwal(result.msgText, result.msgCd, "error");
+         }
+      } catch (error) {
+         console.error("File Upload Error:", error);
+      }
+   };
+
+   const deleteReplaceFile = async (mgNo: string) => {
+      if (!mgNo) return;
+      try {
+         const formData = new FormData();
+         formData.append("menuId", activeComp.menuId);
+         formData.append("insrtUserId", userInfo.usrId);
+         formData.append("coCd", "100");
+         formData.append("soNo", inputValues.contNo);
+         formData.append("programId", "MM0602");
+         formData.append("deleteFiles", JSON.stringify([{ mgNo: mgNo, status: "D" }]));
+
+         const baseURL = process.env.REACT_APP_API_URL;
+         const response = await fetch(`${baseURL}/MM0602_U04`, {
+            method: "POST",
+            body: formData,
+         });
+         const result = await response.json();
+         if (result.msgCd === "1") {
+            await MM0602_S04();
+         } else {
+            alertSwal(result.msgText, result.msgCd, "error");
+         }
+      } catch (error) {
+         console.error("File Delete Error:", error);
+      }
+   };
+
+   const MM0602_S04 = async (contNo?: string) => {
+      try {
+         const param = {
+            soNo: contNo || inputValues.contNo,
+            programId: "MM0602",
+         };
+         const data = JSON.stringify(param);
+         const result = await fetchPost("MM0602_S04", { data });
+         onInputChange("replaceFiles", result || []);
+      } catch (error) {
+         console.error("MM0602_S04 not ready:", error);
+         onInputChange("replaceFiles", []);
+      }
+   };
+
+   const handleReplaceFilesChange = (newFiles: File[], uploadedFiles: any, deletedFiles: any) => {
+      // 새 파일이 추가되면 즉시 업로드
+      if (newFiles.length > replaceFiles.length) {
+         const addedFile = newFiles[newFiles.length - 1];
+         uploadReplaceFile(addedFile);
+      }
+      setReplaceFiles(newFiles);
+      onInputChange("replaceFiles", uploadedFiles);
+      // 파일 삭제 시 즉시 처리
+      if (deletedFiles && deletedFiles.length > 0) {
+         for (const file of deletedFiles) {
+            deleteReplaceFile(file.mgno);
+         }
+      }
+   };
 
 
    const gridRef = useRef<any>(null);
@@ -316,6 +406,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
    useEffect(() => {
       if (gridRef4.current && inputValues.gridDatas4) {
          let grid = gridRef4.current.getInstance();
+         grid.clear();
          grid.resetData(inputValues.gridDatas4);
       }
    }, [inputValues.gridDatas4]);
@@ -522,10 +613,9 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                insrtUserId: userInfo.usrId,
             };
 
-         
             const result = await fetchPost(`MM0602_U03`, data);
             returnResult(result);
-           
+
          } catch (error) {
             console.error("Save Error:", error);
          }
@@ -598,6 +688,10 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
             onInputChange("contFrDt", "");
             onInputChange("contToDt", "");
             onInputChange("mouYn", "N");
+            onInputChange("compReplaceYn", "N");
+            onInputChange("replaceFiles", []);
+            onInputChange("deleteFiles", []);
+            setReplaceFiles([]);
             onInputChange("remark", "");
             onInputChange("gridDatas1", []);
             onInputChange("gridDatas2", []);
@@ -894,6 +988,7 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
       MM0601_S03();
       MM0601_S04();
       MM0601_S08();
+      MM0602_S04(e);
       ZZ_CONT_INFO(e,'SUB');
       ZZ_CONT_INFO(e,'BP_HS');
       ZZ_CONT_INFO(e,'ITEM_TYPE2');
@@ -1421,12 +1516,52 @@ const MM0602 = ({ item, activeComp, userInfo }: Props) => {
                   }}
                />
             </div>
-            <div className="w-full">
-               <TextArea title="비고" value={inputValues.remark} onChange={(e) => onInputChange("remark", e)} layout="flex" />
+            <div className="flex items-center justify-end space-x-3">
+               <RadioGroup
+                  title="회사지원 대체가능"
+                  value={inputValues.compReplaceYn || "N"}
+                  options={[
+                     { label: "Y", value: "Y" },
+                     { label: "N", value: "N" },
+                  ]}
+                  onChange={(e) => {
+                     onInputChange("compReplaceYn", e);
+                  }}
+                  onClick={() => {}}
+               />
+               {inputValues.replaceFiles && inputValues.replaceFiles.length > 0 ? (
+                  <div className="flex space-x-1">
+                     <button type="button" onClick={() => {
+                        const file = inputValues.replaceFiles[0];
+                        const fileFullPath = `https://fnr.nhp.co.kr:8443/files/${file.filepath}/${file.savefilename}`;
+                        window.open(fileFullPath, '_blank', 'width=800,height=600,scrollbars=yes');
+                     }} className="bg-sky-500 text-white rounded-md px-2 py-1 text-xs shadow">
+                        보기
+                     </button>
+                     <button type="button" onClick={async () => {
+                        const confirmResult = await Swal.fire({
+                           title: "파일 삭제",
+                           text: "첨부된 파일을 삭제하시겠습니까?",
+                           icon: "warning",
+                           showCancelButton: true,
+                           confirmButtonText: "삭제",
+                           cancelButtonText: "취소",
+                           confirmButtonColor: "#ef4444",
+                        });
+                        if (!confirmResult.isConfirmed) return;
+                        const file = inputValues.replaceFiles[0];
+                        deleteReplaceFile(file.mgno);
+                     }} className="bg-rose-500 text-white rounded-md px-2 py-1 text-xs shadow">
+                        삭제
+                     </button>
+                  </div>
+               ) : (
+                  <FileUpload value={replaceFiles} uploadedFiles={[]} title="" minWidth="0px" layout="flex" multiple={false} hideDragArea={true} onFilesChange={handleReplaceFilesChange} />
+               )}
             </div>
-            
-
-
+            <div className="w-full">
+               <TextArea title="비고" value={inputValues.remark} onChange={(e) => onInputChange("remark", e)} layout="flex" minWidth="150px" />
+            </div>
 
          </div>
       </div>

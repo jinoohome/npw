@@ -807,21 +807,21 @@ const Sp0104 = ({ item, activeComp, userInfo,  handleAddMenuClick, setSoNo, setS
       { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
       { header: "발주번호", name: "soNo", width: 130, align: "center", rowSpan: true,   }, // SO_NO: 발주 번호
       { header: "구분번호", name: "soSeq", width: 120, align: "center", hidden: true }, // SO_NO: 발주 번호
-      { header: "사업장", name: "bpNm", width: 200, rowSpan: false }, 
-      { header: "사업장", name: "bpCd", width: 300,   hidden: true }, 
-      { header: "작업명", name: "workCd", width: 250,  hidden: true }, 
-      { header: "작업명", name: "workNm", width: 200 }, 
-      { header: "협력업체", name: "poBpCd", width: 300,  hidden: true }, 
-      { header: "협력업체", name: "poBpNm", width: 200 }, 
+      { header: "사업장", name: "bpNm", width: 200, rowSpan: false, sortable: true },
+      { header: "사업장", name: "bpCd", width: 300,   hidden: true },
+      { header: "작업명", name: "workCd", width: 250,  hidden: true },
+      { header: "작업명", name: "workNm", width: 200, sortable: true },
+      { header: "협력업체", name: "poBpCd", width: 300,  hidden: true },
+      { header: "협력업체", name: "poBpNm", width: 200, sortable: true },
       // { header: "신청일자", name: "orderDt", width: 80, align: "center", }, // ORDER_DT: 발주 일자
-      { header: "요청일자", name: "reqDt", width: 80, align: "center" }, // REQ_DT: 요청 일자
-      { header: "발주상태", name: "orderStatus", width: 100, align: "center", hidden: true }, // 
-      { header: "진행상태", name: "workStatus", width: 80, align: "center", hidden: true }, // 
-      { header: "진행상태", name: "workStatusNm", width: 80, align: "center",  }, // 
-      { header: "작업희망일", name: "hopeDt", width: 90, align: "center" }, // 
-      { header: "작업요청일", name: "workReqDt", width: 90, align: "center" }, // 
-      { header: "작업예정일", name: "expectDt", width: 90, align: "center" }, //
-      { header: "작업완료일", name: "finishDt", width: 90, align: "center" }, // 
+      { header: "요청일자", name: "reqDt", width: 80, align: "center", sortable: true }, // REQ_DT: 요청 일자
+      { header: "발주상태", name: "orderStatus", width: 100, align: "center", hidden: true }, //
+      { header: "진행상태", name: "workStatus", width: 80, align: "center", hidden: true }, //
+      { header: "진행상태", name: "workStatusNm", width: 80, align: "center",  }, //
+      { header: "작업희망일", name: "hopeDt", width: 90, align: "center", sortable: true }, //
+      { header: "작업요청일", name: "workReqDt", width: 90, align: "center", sortable: true }, //
+      { header: "작업예정일", name: "expectDt", width: 130, align: "center", sortable: true }, //
+      { header: "작업완료일", name: "finishDt", width: 90, align: "center", sortable: true }, // 
       { header: "수량", name: "qty", width: 60, align: "center"}, // 
       { header: "천장형", name: "itemQty1", width: 60, align: "center"}, // 
       { header: "스탠드형", name: "itemQty2", width: 60, align: "center"}, // 

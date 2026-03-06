@@ -537,7 +537,7 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
          const gridInstance2 = GridRef2.current.getInstance();
          
          // itemAmt 변경 시 처리
-         if (change.columnName === "itemAmt") {
+         if (change.columnName === "itemAmt" || change.columnName === "qty") {
             const rowKey = change.rowKey;
             const value = change.value;
    
@@ -927,6 +927,11 @@ const Mm0205 = ({ item, activeComp, leftMode, userInfo }: Props) => {
       { header: "품목코드", name: "itemCd", align: "center" },
       { header: "품목명", name: "itemNm", width: 300},
       { header: "금액", name: "itemAmt", align: "right", editor: "text", width: 100,
+         formatter: function(e: any) {
+            if(e.value){return commas(e.value);}
+         }
+       },
+      { header: "수량", name: "qty", align: "right", editor: "text", width: 80,
          formatter: function(e: any) {
             if(e.value){return commas(e.value);}
          }

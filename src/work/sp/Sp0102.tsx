@@ -144,18 +144,18 @@ const Sp0102 = ({ item, activeComp, userInfo }: Props) => {
       { header: "회사코드", name: "coCd", hidden: true }, // CO_CD: 회사 코드
       { header: "수주번호", name: "soNo", width: 130, align: "center", rowSpan: true,   }, // SO_NO: 수주 번호
       { header: "구분번호", name: "soSeq", width: 120, align: "center", hidden: true }, // SO_NO: 수주 번호
-      { header: "사업장", name: "bpNm", width: 220, rowSpan: false }, 
-      { header: "사업장", name: "bpCd", hidden: true }, 
-      { header: "작업명", name: "workNm", width: 170 }, 
-      { header: "협력업체", name: "poBpNm", width: 170 }, 
+      { header: "사업장", name: "bpNm", width: 220, rowSpan: false, sortable: true },
+      { header: "사업장", name: "bpCd", hidden: true },
+      { header: "작업명", name: "workNm", width: 170, sortable: true },
+      { header: "협력업체", name: "poBpNm", width: 170, sortable: true },
       // { header: "신청일자", name: "orderDt", width: 120, align: "center", }, // ORDER_DT: 수주 일자
-      { header: "요청일자", name: "reqDt", width: 80, align: "center" }, // REQ_DT: 요청 일자
-      { header: "수주상태", name: "orderStatus", width: 100, align: "center", hidden: true }, // 
-      { header: "진행상태", name: "workStatusNm", width: 80, align: "center",  }, // 
-      { header: "작업희망일", name: "hopeDt", width: 90, align: "center" }, // 
-      { header: "작업요청일", name: "workReqDt", width: 90, align: "center" }, // 
-      { header: "작업예정일", name: "expectDt", width: 90, align: "center" }, //
-      { header: "작업완료일", name: "finishDt", width: 90, align: "center" }, // 
+      { header: "요청일자", name: "reqDt", width: 80, align: "center", sortable: true }, // REQ_DT: 요청 일자
+      { header: "수주상태", name: "orderStatus", width: 100, align: "center", hidden: true }, //
+      { header: "진행상태", name: "workStatusNm", width: 80, align: "center",  }, //
+      { header: "작업희망일", name: "hopeDt", width: 90, align: "center", sortable: true }, //
+      { header: "작업요청일", name: "workReqDt", width: 90, align: "center", sortable: true }, //
+      { header: "작업예정일", name: "expectDt", width: 130, align: "center", sortable: true }, //
+      { header: "작업완료일", name: "finishDt", width: 90, align: "center", sortable: true }, //
       { header: "구분", name: "workDiv", width: 80, align: "center" }, // 
       // { header: "수량", name: "qty", width: 60, align: "center"}, // 
       // { header: "매출단가", name: "soPrice", align: "right", width: 90, formatter: function(e: any) {if (e.value === 0) {return '0';} if (e.value) {return commas(e.value); } return '';} },

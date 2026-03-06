@@ -236,15 +236,34 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
    };
 
    const add = async () => {
-      setInputValues([]);
+      setInputValues({
+         startDate: date(-1, 'month'),
+         endDate: date(),
+         rcptUserId: userInfo.usrId,
+         subCode: "",
+         hsCd: "",
+         consultMemo: "",
+         preRcptNo: "",
+         contNo: "",
+         reqNm: "",
+         reqTelNo: "",
+         bpCd: "",
+         bpNm: "",
+         mouYn: "",
+         rcptDt: "",
+         ownNm: "",
+      });
       setGridDatas([]);
       setGridDatas2([]);
       setGridDatas3([]);
       setGridDatas4([]);
 
-      onInputChange('startDate', date(-1, 'month'));
-      onInputChange('endDate', date());
-
+      // refs 입력창 초기화
+      Object.values(refs).forEach((ref) => {
+         if (ref.current) {
+            ref.current.value = "";
+         }
+      });
    };
 
    const save = async () => {
@@ -275,7 +294,8 @@ const SO0101 = ({ item, activeComp, userInfo }: Props) => {
                   if (data) {
                      let result = await SO0101_U04(data);
                      if (result) {
-                        await returnResult(result);
+                        alertSwal(result.msgText, result.msgCd, result.msgStatus);
+                        add();
                      }
                   }
                });

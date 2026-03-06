@@ -817,7 +817,7 @@ const Sp0104 = ({ item, activeComp, leftMode, userInfo, handleAddMenuClick, setS
       { header: "진행상태", name: "workStatusNm", width: 90, align: "center",  }, // 
       { header: "작업희망일", name: "hopeDt", width: 90, align: "center" }, // 
       { header: "작업요청일", name: "workReqDt", width: 90, align: "center" }, // 
-      { header: "작업예정일", name: "expectDt", width: 90, align: "center" }, //
+      { header: "작업예정일", name: "expectDt", width: 130, align: "center" }, //
       { header: "작업완료일", name: "finishDt", width: 90, align: "center" }, // 
       { header: "품목명", name: "itemNm", width: 300 }, // 
       { header: "수량", name: "qty", width: 70, align: "center"}, // 
